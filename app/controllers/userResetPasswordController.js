@@ -81,8 +81,8 @@ exports.forgotPassword = (req, res) => {
       const token = jwt.sign({ id: data.id, email_add: data.email_add }, process.env.JWT_SECRET, {
         expiresIn: "5m",
       });
-    const resetLink = `http://localhost:8000/api/v1/resetpassword/${token}`;
-    // const resetLink = `http://3.135.237.241:8000/api/v1/resetpassword/${token}`; 
+    // const resetLink = `http://localhost:8000/api/v1/resetpassword/${token}`;
+    const resetLink = `http://3.145.100.103:8000/api/v1/resetpassword/${token}`; 
       // Create a transport object to send the email
       const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
