@@ -26,13 +26,13 @@ app.get("/", (req, res) => {
 
 // routes should be here
 const userSignupRoute = require("./app/routes/userSignupRoutes");
-const userLoginRoute = require("./app/routes/userLoginRoutes");
-const userResetPasswordRoute = require("./app/routes/userResetPasswordRoutes");
+// const userLoginRoute = require("./app/routes/userLoginRoutes");
+// const userResetPasswordRoute = require("./app/routes/userResetPasswordRoutes");
 
 //middlewares here
 app.use("/api/v1/signup", userSignupRoute)
-app.use("/api/v1/login", userLoginRoute)
-app.use("/api/v1", userResetPasswordRoute)
+// app.use("/api/v1/login", userLoginRoute)
+// app.use("/api/v1", userResetPasswordRoute)
 
 
 //port listening
