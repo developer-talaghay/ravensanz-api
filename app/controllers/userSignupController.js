@@ -16,11 +16,6 @@ exports.createUser = function (req, res) {
   const newUser = {
     email_add: req.body.email_add.toLowerCase(), // Convert email to lowercase
     password: req.body.password,
-    first_name: req.body.first_name,
-    last_name: req.body.last_name,
-    birth_date: req.body.birth_date,
-    country: req.body.country,
-    phone_number: req.body.phone_number
   };
 
   // Check if the email address is valid
