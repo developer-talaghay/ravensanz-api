@@ -33,21 +33,7 @@ User.create = (newUser, callback) => {
                   console.error("Error inserting user into database: ", error);
                   return callback(error, null);
                 } else {
-                  const userId = result.insertId; // Retrieve the auto-generated user ID
-
-                  // Insert user details into the 'user_details' table
-                  dbConn.query(
-                    "INSERT INTO user_details (user_id, first_name, last_name, birth_date, country, phone_number) VALUES (?, ?, ?, ?, ?, ?)",
-                    [userId, newUser.first_name, newUser.last_name, newUser.birth_date, newUser.country, newUser.phone_number],
-                    (error, result) => {
-                      if (error) {
-                        console.error("Error inserting user details into database: ", error);
-                        return callback(error, null);
-                      } else {
-                        return callback(null, result);
-                      }
-                    }
-                  );
+                  return callback(null, result);
                 }
               }
             );
@@ -57,6 +43,5 @@ User.create = (newUser, callback) => {
     }
   );
 };
-
 
 module.exports = User;
