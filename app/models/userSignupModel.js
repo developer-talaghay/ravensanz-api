@@ -1,5 +1,5 @@
 const dbConn = require("../config/db.config");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 
 const User = {};
 
@@ -26,8 +26,8 @@ User.create = (newUser, callback) => {
           } else {
             // Insert the user into the database
             dbConn.query(
-              "INSERT INTO user (email_add, password) VALUES (?, ?)",
-              [newUser.email_add, hashedPassword],
+              "INSERT INTO user (email_add, password, status) VALUES (?, ?, ?)",
+              [newUser.email_add, hashedPassword, "pending"], // Set the status to "pending"
               (error, result) => {
                 if (error) {
                   console.error("Error inserting user into database: ", error);
@@ -39,6 +39,22 @@ User.create = (newUser, callback) => {
             );
           }
         });
+      }
+    }
+  );
+};
+
+// Function to update user status and token
+User.updateUserStatus = (email, status, callback) => {
+  dbConn.query(
+    "UPDATE user SET status = ? WHERE email_add = ?",
+    [status, email],
+    (error, result) => {
+      if (error) {
+        console.error("Error updating user status: ", error);
+        return callback(error);
+      } else {
+        return callback(null);
       }
     }
   );
