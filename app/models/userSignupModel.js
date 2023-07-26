@@ -44,6 +44,21 @@ User.create = (newUser, callback) => {
   );
 };
 
+User.updateUserStatusAndToken = (email, status, token, callback) => {
+  dbConn.query(
+    "UPDATE user SET status = ?, token = ? WHERE email_add = ?",
+    [status, token, email],
+    (error, result) => {
+      if (error) {
+        console.error("Error updating user status and token: ", error);
+        return callback(error);
+      } else {
+        return callback(null);
+      }
+    }
+  );
+};
+
 // Function to update user status and token
 User.updateUserStatus = (email, status, callback) => {
   dbConn.query(
