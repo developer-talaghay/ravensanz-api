@@ -44,7 +44,7 @@ exports.createUser = function (req, res) {
       });
 
       // Update user status to "pending" and store the token in the database
-      UserModel.updateUserStatusAndToken(newUser.email_add, "pending", token, (updateError) => {
+      UserModel.updateUserStatusAndToken(newUser.email_add, "false", token, (updateError) => {
         if (updateError) {
           console.error("Error updating user status and token: ", updateError);
           return res.status(500).send({message: "Error updating user status and token"});

@@ -1,8 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const sequelize = require('./app/config/db.config.sequelize');
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 8000;
+
+sequelize.sync()
+  .then(() => {
+    console.log('Database synchronized with models');
+  })
+  .catch(error => {
+    console.error('Error synchronizing database:', error);
+  });
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -41,12 +50,16 @@ const userSignupRoute = require('./app/routes/userSignupRoutes');
 const userLoginRoute = require('./app/routes/userLoginRoutes');
 const userResetPasswordRoute = require('./app/routes/userResetPasswordRoutes');
 const userVerificationRoute = require("./app/routes/userVerificationRoute");
+const authentication = require("./app/routes/authentication");
+const storyRoute = require("./app/routes/story");
 
 app.use('/api/v1/google-signup', googleSignupRoute);
 app.use('/api/v1/signup', userSignupRoute);
 app.use('/api/v1/login', userLoginRoute);
 app.use('/api/v1', userResetPasswordRoute);
 app.use('/',userVerificationRoute)
+app.use('/api/v1/auth',authentication)
+app.use('/api/v1/story', storyRoute);
 
 // Default route
 app.get('/', (req, res) => {
