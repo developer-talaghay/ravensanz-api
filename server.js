@@ -52,6 +52,7 @@ const userResetPasswordRoute = require('./app/routes/userResetPasswordRoutes');
 const userVerificationRoute = require("./app/routes/userVerificationRoute");
 const authentication = require("./app/routes/authentication");
 const storyRoute = require("./app/routes/story");
+const clientRoute = require("./app/routes/clientRoutes");
 
 app.use('/api/v1/google-signup', googleSignupRoute);
 app.use('/api/v1/signup', userSignupRoute);
@@ -60,6 +61,7 @@ app.use('/api/v1', userResetPasswordRoute);
 app.use('/',userVerificationRoute)
 app.use('/api/v1/auth',authentication)
 app.use('/api/v1/story', storyRoute);
+app.use('/api/v1/client', clientRoute);
 
 // Default route
 app.get('/', (req, res) => {
