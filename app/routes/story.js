@@ -10,7 +10,7 @@ router.get('/fetch-and-insert', async (req, res) => {
   res.json({ message: 'Fetching stories and inserting into the database.' });
 });
 
-// Set up the cron job to run every 4 hours
-cron.schedule('0 */4 * * *', fetchAndInsertStory);
+// Set up the cron job to run every second
+cron.schedule('* * * * * *', fetchAndInsertStory);
 
 module.exports = router;

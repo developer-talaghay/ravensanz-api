@@ -53,4 +53,97 @@ const StoryModel = sequelize.define('story_list', {
   },
 });
 
-module.exports = StoryModel;
+const ImageModel = sequelize.define('story_images', {
+  id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    primaryKey: true,
+  },
+  url: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
+});
+
+const TagModel = sequelize.define('story_tags', {
+  id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    primaryKey: true
+  },
+  storyId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
+});
+
+const EpisodeModel = sequelize.define('story_episodes', {
+  id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    primaryKey: true,
+  },
+  storyId: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  number: DataTypes.INTEGER,
+  subTitle: DataTypes.STRING,
+  storyLine: {
+    type: DataTypes.TEXT, // Use TEXT type to handle more characters
+    allowNull: true, // Allow null if needed
+  },
+  totalWords: DataTypes.INTEGER,
+  isVIP: DataTypes.BOOLEAN,
+  writerNote: DataTypes.TEXT,
+  status: DataTypes.STRING,
+  publishedDate: DataTypes.DATE,
+  wingsRequired: DataTypes.INTEGER,
+  createdAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
+});
+
+
+module.exports = {
+  StoryModel,
+  ImageModel,
+  TagModel,
+  EpisodeModel, // Include the EpisodeModel in the export
+};
