@@ -1,9 +1,13 @@
 const express = require('express');
+const passport = require('passport');
 const bodyParser = require('body-parser');
 const sequelize = require('./app/config/db.config.sequelize');
+const dbConn = require('./app/config/db.config'); // Update with the correct path to your db.config file
+const session = require('express-session')
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 8000;
+require('./auth')
 
 sequelize.sync()
   .then(() => {
@@ -18,55 +22,100 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors());
 
-// Google OAuth
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
-
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: '1001534039958-8bfqeo9ls4mif2i0bt38hdr9t761d4ui.apps.googleusercontent.com',
-      clientSecret: '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',
-      callbackURL: '/api/v1/google-signup/callback',
-    },
-    (accessToken, refreshToken, profile, done) => {
-      // Extract necessary user data from the Google profile
-      const user = {
-        email: profile.emails[0].value,
-        // Add any other necessary fields
-      };
-
-      // Handle the user data in the callback
-      done(null, user);
-    }
-  )
-);
-
-app.use(passport.initialize());
-
 // Routes
-const googleSignupRoute = require('./app/routes/googleSignUpRoutes');
 const userSignupRoute = require('./app/routes/userSignupRoutes');
 const userLoginRoute = require('./app/routes/userLoginRoutes');
 const userResetPasswordRoute = require('./app/routes/userResetPasswordRoutes');
 const userVerificationRoute = require("./app/routes/userVerificationRoute");
-const authentication = require("./app/routes/authentication");
 const storyRoute = require("./app/routes/story");
 const clientRoute = require("./app/routes/clientRoutes");
 
-app.use('/api/v1/google-signup', googleSignupRoute);
 app.use('/api/v1/signup', userSignupRoute);
 app.use('/api/v1/login', userLoginRoute);
 app.use('/api/v1', userResetPasswordRoute);
 app.use('/',userVerificationRoute)
-app.use('/api/v1/auth',authentication)
 app.use('/api/v1/story', storyRoute);
 app.use('/api/v1/client', clientRoute);
+
+
+function isLoggedIn(req,res,next){
+  req.user ? next() : res.sendStatus(401)
+}
 
 // Default route
 app.get('/', (req, res) => {
   res.send("It's working");
 });
+
+
+// google OAUTH
+
+app.use(session({
+    secret: 'mysecret',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {secure: false}
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.get('/auth/google',
+  passport.authenticate('google', { scope:
+      [ 'email', 'profile' ] }
+));
+
+app.get( '/auth/google/callback',
+    passport.authenticate( 'google', {
+        successRedirect: '/auth/google/protected',
+        failureRedirect: '/auth/google/failure'
+}));
+
+app.get('/auth/google/protected', isLoggedIn, (req, res) => {
+  const userProfile = req.user._json;
+
+  const responseText = `
+    sub: ${userProfile.sub} 
+    name: ${userProfile.name}
+    given_name: ${userProfile.given_name}
+    family_name: ${userProfile.family_name}
+    picture: ${userProfile.picture}
+    email: ${userProfile.email}
+    email_verified: ${userProfile.email_verified}
+    locale: ${userProfile.locale}
+  `;
+
+  const sub = userProfile.sub;
+
+  // Check if a matching record exists in the local database
+  const query = `SELECT * FROM user_google WHERE sub = '${sub}'`;
+
+  dbConn.query(query, (err, results) => {
+    if (err) {
+      console.error('MySQL query error:', err);
+      return res.status(500).send('Internal Server Error');
+    }
+
+    if (results.length === 0) {
+      // No match found, respond with "Signed up successfully"
+      res.send('Signed up successfully\n' + responseText);
+    } else {
+      // Match found, respond with "Login Successful"
+      res.send('Login Successful\n' + responseText);
+    }
+  });
+});
+
+app.get('/auth/google/failure', (req, res)=>{
+  res.send("Something went wrong")
+})
+
+app.get('/auth/google/logout', (req, res)=>{
+  req.session.destroy();
+  res.send("Logged Out");
+})
+
+
 
 // Start the server
 app.listen(port, () => {
