@@ -41,4 +41,15 @@ ClientModel.getOngoingStories = (callback) => {
     );
   };
 
+  ClientModel.getAllDetails = (callback) => {
+    dbConn.query("SELECT * FROM v_story_details", (error, result) => {
+      if (error) {
+        console.error("Error retrieving story details: ", error);
+        return callback(error, null);
+      }
+  
+      return callback(null, result);
+    });
+  };
+
 module.exports = ClientModel;

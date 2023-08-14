@@ -38,4 +38,17 @@ clientController.getStoriesListOngoing = (req, res) => {
     });
   };
 
+  clientController.getAllDetails = (req, res) => {
+    // Call the model to get all story details
+    ClientModel.getAllDetails((error, storyDetails) => {
+      if (error) {
+        console.error("Error getting story details: ", error);
+        return res.status(500).json({ message: "Error getting story details" });
+      }
+  
+      return res.status(200).json({ message: "Story details retrieved", data: storyDetails });
+    });
+  };
+  
+
 module.exports = clientController;
