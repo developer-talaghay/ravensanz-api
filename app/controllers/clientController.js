@@ -49,6 +49,24 @@ clientController.getStoriesListOngoing = (req, res) => {
       return res.status(200).json({ message: "Story details retrieved", data: storyDetails });
     });
   };
+
+  clientController.getStoryDetailsById = (req, res) => {
+    const id = req.query.story_id;
+  
+    if (!id) {
+      return res.status(400).json({ message: "Missing id parameter" });
+    }
+  
+    // Call the model to get story details by id
+    ClientModel.getStoryDetailsById(id, (error, storyDetails) => {
+      if (error) {
+        console.error("Error getting story details by id: ", error);
+        return res.status(500).json({ message: "Error getting story details by id" });
+      }
+  
+      return res.status(200).json({ message: "Story details retrieved by id", data: storyDetails });
+    });
+  };
   
 
 module.exports = clientController;

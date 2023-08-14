@@ -9,5 +9,6 @@ router.get("/stories/completed", clientController.getStoriesListCompleted);
 
 // Story Chapters
 router.get("/stories/details", clientController.getAllDetails);
+router.get("/stories/id", clientController.getStoryDetailsById);
 
 module.exports = router;
