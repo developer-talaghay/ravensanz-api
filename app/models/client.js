@@ -63,4 +63,15 @@ ClientModel.getOngoingStories = (callback) => {
     });
   };
 
+  ClientModel.getRelatedStoriesByTag = (tagName, callback) => {
+    dbConn.query("SELECT * FROM v_story_tags WHERE tag_name = ?", [tagName], (error, results) => {
+        if (error) {
+            console.error("Error retrieving related stories by tag: ", error);
+            return callback(error, null);
+        }
+
+        return callback(null, results);
+    });
+};
+
 module.exports = ClientModel;

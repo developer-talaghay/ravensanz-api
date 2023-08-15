@@ -11,4 +11,7 @@ router.get("/stories/completed", clientController.getStoriesListCompleted);
 router.get("/stories/details", clientController.getAllDetails);
 router.get("/stories/id", clientController.getStoryDetailsById);
 
+// Related Stories
+router.get("/stories/related", clientController.getRelatedStoryLists);
+
 module.exports = router;
