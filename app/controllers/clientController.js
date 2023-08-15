@@ -51,22 +51,22 @@ clientController.getStoriesListOngoing = (req, res) => {
   };
 
   clientController.getStoryDetailsById = (req, res) => {
-    const id = req.query.story_id;
-  
-    if (!id) {
-      return res.status(400).json({ message: "Missing id parameter" });
+    const storyId = req.query.story_id;
+
+    if (!storyId) {
+        return res.status(400).json({ message: "Missing story_id parameter" });
     }
-  
-    // Call the model to get story details by id
-    ClientModel.getStoryDetailsById(id, (error, storyDetails) => {
-      if (error) {
-        console.error("Error getting story details by id: ", error);
-        return res.status(500).json({ message: "Error getting story details by id" });
-      }
-  
-      return res.status(200).json({ message: "Story details retrieved by id", data: storyDetails });
+
+    // Call the model to get story details and related tags by storyId
+    ClientModel.getStoryDetailsById(storyId, (error, storyDetails) => {
+        if (error) {
+            console.error("Error getting story details by storyId: ", error);
+            return res.status(500).json({ message: "Error getting story details by storyId" });
+        }
+
+        return res.status(200).json({ message: "Story details retrieved by storyId", data: storyDetails });
     });
-  };
+};
 
   clientController.getRelatedStoryLists = (req, res) => {
     const tags = req.query.tags;
@@ -78,17 +78,25 @@ clientController.getStoriesListOngoing = (req, res) => {
     // Split the tags into an array
     const tagArray = tags.split(',');
 
-    // Call the model to get related stories by tag
-    ClientModel.getRelatedStoriesByTag(tagArray, (error, relatedStories) => {
-        if (error) {
-            console.error("Error getting related stories by tag: ", error);
-            return res.status(500).json({ message: "Error getting related stories by tag" });
-        }
+    const relatedStoriesByTags = [];
 
-        return res.status(200).json({ message: "Related stories retrieved by tag", data: relatedStories });
+    // Call the model to get related stories for each tag
+    tagArray.forEach(tag => {
+        ClientModel.getRelatedStoriesByTag(tag.trim(), (error, relatedStories) => {
+            if (error) {
+                console.error("Error getting related stories by tag: ", error);
+                return res.status(500).json({ message: "Error getting related stories by tag" });
+            }
+
+            relatedStoriesByTags.push({ tag, stories: relatedStories });
+            
+            // Respond when all tags have been processed
+            if (relatedStoriesByTags.length === tagArray.length) {
+                return res.status(200).json({ message: "Related stories retrieved by tags", data: relatedStoriesByTags });
+            }
+        });
     });
 };
-  
   
 
 module.exports = clientController;
