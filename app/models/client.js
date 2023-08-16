@@ -69,18 +69,15 @@ ClientModel.getOngoingStories = (callback) => {
 
             storyDetails[0].tags = tagDetails.map(tag => tag.name);
 
-            // Get additional episode details from story_episodes
+            // Get all episode details from story_episodes
             dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ?", [storyId], (error, episodeDetails) => {
                 if (error) {
                     console.error("Error retrieving episode details by id: ", error);
                     return callback(error, null);
                 }
 
-                storyDetails[0].subTitle = episodeDetails[0].subTitle;
-                storyDetails[0].storyLine = episodeDetails[0].storyLine;
-                storyDetails[0].isVIP = episodeDetails[0].isVIP;
-                storyDetails[0].status = episodeDetails[0].status;
-                storyDetails[0].wingsRequired = episodeDetails[0].wingsRequired;
+                // Add array of episode details to the storyDetails object
+                storyDetails[0].episodes = episodeDetails;
 
                 return callback(null, storyDetails);
             });
