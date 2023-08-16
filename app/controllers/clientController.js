@@ -129,7 +129,13 @@ clientController.putUserLastRead = (req, res) => {
   
 
 clientController.getUserLastRead = (req, res) => {
-  ClientModel.getUserLastRead((error, data) => {
+  const { user_id, story_id } = req.query;
+
+  if (!user_id || !story_id) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.getUserLastRead(user_id, story_id, (error, data) => {
     if (error) {
       console.error('Error getting user last read: ', error);
       return res.status(500).json({ message: 'Error getting user last read' });

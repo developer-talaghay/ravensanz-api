@@ -118,26 +118,56 @@ ClientModel.getNewArrivals = (callback) => {
 
 ClientModel.updateLastRead = (userId, storyId, episode, callback) => {
   dbConn.query(
-    'INSERT INTO user_last_read (user_id, story_id, episode) VALUES (?, ?, ?) ' +
-    'ON DUPLICATE KEY UPDATE story_id = VALUES(story_id), episode = ?',
-    [userId, storyId, episode, episode], // Update the episode value
-    (error, result) => {
+    'SELECT * FROM user_last_read WHERE user_id = ? AND story_id = ?',
+    [userId, storyId],
+    (error, rows) => {
       if (error) {
-        console.error('Error updating last read: ', error);
+        console.error('Error selecting rows: ', error);
         return callback(error, null);
       }
 
-      return callback(null, result);
+      if (rows.length === 0) {
+        dbConn.query(
+          'INSERT INTO user_last_read (user_id, story_id, episode) VALUES (?, ?, ?)',
+          [userId, storyId, episode],
+          (insertError, result) => {
+            if (insertError) {
+              console.error('Error inserting new row: ', insertError);
+              return callback(insertError, null);
+            }
+
+            return callback(null, result);
+          }
+        );
+      } else {
+        dbConn.query(
+          'UPDATE user_last_read SET episode = ? WHERE user_id = ? AND story_id = ?',
+          [episode, userId, storyId],
+          (updateError, result) => {
+            if (updateError) {
+              console.error('Error updating episode: ', updateError);
+              return callback(updateError, null);
+            }
+
+            return callback(null, result);
+          }
+        );
+      }
     }
   );
 };
 
-ClientModel.getUserLastRead = (callback) => {
+
+
+
+ClientModel.getUserLastRead = (userId, storyId, callback) => {
   dbConn.query(
     'SELECT u.user_id, u.story_id, u.episode, s.storyId, s.subTitle, s.storyLine, v.* ' +
     'FROM user_last_read u ' +
     'LEFT JOIN story_episodes s ON u.story_id = s.storyId AND u.episode = s.subTitle ' +
-    'LEFT JOIN v_story_images v ON u.story_id = v.story_id',
+    'LEFT JOIN v_story_images v ON u.story_id = v.story_id ' +
+    'WHERE u.user_id = ? AND u.story_id = ?',
+    [userId, storyId],
     (error, result) => {
       if (error) {
         console.error('Error getting user last read: ', error);
@@ -148,6 +178,7 @@ ClientModel.getUserLastRead = (callback) => {
     }
   );
 };
+
 
 
 module.exports = ClientModel;
