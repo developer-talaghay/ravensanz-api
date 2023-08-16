@@ -97,6 +97,18 @@ clientController.getStoriesListOngoing = (req, res) => {
         });
     });
 };
+
+clientController.getStoriesNewArrivals = (req, res) => {
+  // Call the model to get the latest 10 completed stories sorted by createdAt
+  ClientModel.getNewArrivals((error, completedStories) => {
+    if (error) {
+      console.error("Error getting completed stories: ", error);
+      return res.status(500).json({ message: "Error getting completed stories" });
+    }
+
+    return res.status(200).json({ message: "Completed stories retrieved", data: completedStories });
+  });
+};
   
 
 module.exports = clientController;

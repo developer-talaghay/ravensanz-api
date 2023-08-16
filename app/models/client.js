@@ -102,4 +102,19 @@ ClientModel.getOngoingStories = (callback) => {
     });
 };
 
+ClientModel.getNewArrivals = (callback) => {
+  dbConn.query(
+    "SELECT * FROM v_story_images ORDER BY createdAt DESC LIMIT 10",
+    (error, result) => {
+      if (error) {
+        console.error("Error retrieving ongoing stories: ", error);
+        return callback(error, null);
+      }
+
+      return callback(null, result);
+    }
+  );
+};
+
+
 module.exports = ClientModel;
