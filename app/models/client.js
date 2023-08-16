@@ -116,5 +116,38 @@ ClientModel.getNewArrivals = (callback) => {
   );
 };
 
+ClientModel.updateLastRead = (userId, storyId, episode, callback) => {
+  dbConn.query(
+    'INSERT INTO user_last_read (user_id, story_id, episode) VALUES (?, ?, ?) ' +
+    'ON DUPLICATE KEY UPDATE story_id = VALUES(story_id), episode = ?',
+    [userId, storyId, episode, episode], // Update the episode value
+    (error, result) => {
+      if (error) {
+        console.error('Error updating last read: ', error);
+        return callback(error, null);
+      }
+
+      return callback(null, result);
+    }
+  );
+};
+
+ClientModel.getUserLastRead = (callback) => {
+  dbConn.query(
+    'SELECT u.user_id, u.story_id, u.episode, s.storyId, s.subTitle, s.storyLine, v.* ' +
+    'FROM user_last_read u ' +
+    'LEFT JOIN story_episodes s ON u.story_id = s.storyId AND u.episode = s.subTitle ' +
+    'LEFT JOIN v_story_images v ON u.story_id = v.story_id',
+    (error, result) => {
+      if (error) {
+        console.error('Error getting user last read: ', error);
+        return callback(error, null);
+      }
+
+      return callback(null, result);
+    }
+  );
+};
+
 
 module.exports = ClientModel;

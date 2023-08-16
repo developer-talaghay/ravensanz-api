@@ -17,4 +17,8 @@ router.get("/stories/related", clientController.getRelatedStoryLists);
 // New Arrivals
 router.get("/stories/newarrivals", clientController.getStoriesNewArrivals);
 
+// Last Read
+router.put("/stories/continue", clientController.putUserLastRead);
+router.get("/stories/continue/id", clientController.getUserLastRead);
+
 module.exports = router;

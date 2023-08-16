@@ -109,6 +109,34 @@ clientController.getStoriesNewArrivals = (req, res) => {
     return res.status(200).json({ message: "Completed stories retrieved", data: completedStories });
   });
 };
+
+clientController.putUserLastRead = (req, res) => {
+  const { user_id, storyId, episode } = req.body;
+
+  if (!user_id || !storyId || !episode) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.updateLastRead(user_id, storyId, episode, (error, result) => {
+    if (error) {
+      console.error('Error updating last read: ', error);
+      return res.status(500).json({ message: 'Error updating last read' });
+    }
+
+    return res.status(200).json({ message: 'Last read updated successfully' });
+  });
+};
   
+
+clientController.getUserLastRead = (req, res) => {
+  ClientModel.getUserLastRead((error, data) => {
+    if (error) {
+      console.error('Error getting user last read: ', error);
+      return res.status(500).json({ message: 'Error getting user last read' });
+    }
+
+    return res.status(200).json({ message: 'User last read retrieved', data });
+  });
+};
 
 module.exports = clientController;
