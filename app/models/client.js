@@ -70,7 +70,7 @@ ClientModel.getOngoingStories = (callback) => {
             storyDetails[0].tags = tagDetails.map(tag => tag.name);
 
             // Get all episode details from story_episodes
-            dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ?", [storyId], (error, episodeDetails) => {
+            dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired, updatedAt FROM story_episodes WHERE storyId = ?", [storyId], (error, episodeDetails) => {
                 if (error) {
                     console.error("Error retrieving episode details by id: ", error);
                     return callback(error, null);
