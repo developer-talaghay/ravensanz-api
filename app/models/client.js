@@ -157,14 +157,14 @@ ClientModel.updateLastRead = (userId, storyId, episode, callback) => {
 
 
 
-ClientModel.getUserLastRead = (userId, storyId, callback) => {
+ClientModel.getUserLastRead = (userId, callback) => {
   dbConn.query(
     'SELECT u.user_id, u.story_id, u.episode, s.storyId, s.subTitle, s.storyLine, v.* ' +
     'FROM user_last_read u ' +
     'LEFT JOIN story_episodes s ON u.story_id = s.storyId AND u.episode = s.subTitle ' +
     'LEFT JOIN v_story_images v ON u.story_id = v.story_id ' +
-    'WHERE u.user_id = ? AND u.story_id = ?',
-    [userId, storyId],
+    'WHERE u.user_id = ?',
+    [userId],
     (error, result) => {
       if (error) {
         console.error('Error getting user last read: ', error);
@@ -175,6 +175,7 @@ ClientModel.getUserLastRead = (userId, storyId, callback) => {
     }
   );
 };
+
 
 
 
