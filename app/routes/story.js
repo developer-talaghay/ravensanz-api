@@ -14,9 +14,9 @@ router.get('/fetch-and-insert', async (req, res) => {
 
 // Schedule the cron job
 function scheduleCronJob() {
-  // Start the job every hour
-  job = cron.schedule('0 * * * *', runJob);
-  console.log("Cron job scheduled to start every 1 hour.");
+  // Start the job every 12 hours
+  job = cron.schedule('0 */12 * * *', runJob);
+  console.log("Cron job scheduled to start and end every 12 hours.");
 }
 
 function runJob() {
@@ -25,18 +25,19 @@ function runJob() {
   // Call the fetchAndInsertStory function
   fetchAndInsertStory();
 
-  // Stop the job after 1 hour
+  // Stop the job after 12 hours
   setTimeout(() => {
     console.log("Cron job has been stopped.");
     job.stop();
 
-    // Restart the job after a 1-hour pause
+    // Restart the job after a 12-hour pause
     setTimeout(() => {
       scheduleCronJob();
-    }, 3600000); // 1 hour in milliseconds
-  }, 3600000); // Stop after 1 hour
+    }, 12 * 3600000); // 12 hours in milliseconds
+  }, 12 * 3600000); // Stop after 12 hours
 }
 
 scheduleCronJob(); // Initial scheduling
+
 
 module.exports = router;
