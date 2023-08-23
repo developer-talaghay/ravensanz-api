@@ -145,4 +145,16 @@ clientController.getUserLastRead = (req, res) => {
   });
 };
 
+clientController.getStoryVip = (req, res) => {
+  // Call the model to get all VIP stories
+  ClientModel.getVipStories((error, vipStories) => {
+    if (error) {
+      console.error("Error getting VIP stories: ", error);
+      return res.status(500).json({ message: "Error getting VIP stories" });
+    }
+
+    return res.status(200).json({ message: "VIP stories retrieved", data: vipStories });
+  });
+};
+
 module.exports = clientController;

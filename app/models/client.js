@@ -176,6 +176,20 @@ ClientModel.getUserLastRead = (userId, callback) => {
   );
 };
 
+ClientModel.getVipStories = (callback) => {
+  dbConn.query(
+    'SELECT * FROM v_story_vip',
+    (error, result) => {
+      if (error) {
+        console.error('Error getting VIP stories: ', error);
+        return callback(error, null);
+      }
+
+      return callback(null, result);
+    }
+  );
+};
+
 
 
 

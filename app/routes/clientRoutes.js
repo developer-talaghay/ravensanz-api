@@ -7,6 +7,9 @@ router.get("/stories", clientController.getStoriesList);
 router.get("/stories/ongoing", clientController.getStoriesListOngoing);
 router.get("/stories/completed", clientController.getStoriesListCompleted);
 
+// VIP Stories
+router.get("/stories/vip", clientController.getStoryVip);
+
 // Story Chapters
 router.get("/stories/details", clientController.getAllDetails);
 router.get("/stories/id", clientController.getStoryDetailsById);
