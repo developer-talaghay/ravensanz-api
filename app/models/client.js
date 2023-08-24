@@ -113,55 +113,26 @@ ClientModel.getNewArrivals = (callback) => {
   );
 };
 
-ClientModel.updateLastRead = (userId, storyId, episode, callback) => {
+ClientModel.insertStoryId = (userId, storyId, callback) => {
   dbConn.query(
-    'SELECT * FROM user_last_read WHERE user_id = ? AND story_id = ?',
+    'INSERT IGNORE INTO user_last_read (user_id, story_id) VALUES (?, ?)',
     [userId, storyId],
-    (error, rows) => {
+    (error, result) => {
       if (error) {
-        console.error('Error selecting rows: ', error);
+        console.error('Error inserting story_id: ', error);
         return callback(error, null);
       }
 
-      if (rows.length === 0) {
-        dbConn.query(
-          'INSERT INTO user_last_read (user_id, story_id, episode) VALUES (?, ?, ?)',
-          [userId, storyId, episode],
-          (insertError, result) => {
-            if (insertError) {
-              console.error('Error inserting new row: ', insertError);
-              return callback(insertError, null);
-            }
-
-            return callback(null, result);
-          }
-        );
-      } else {
-        dbConn.query(
-          'UPDATE user_last_read SET episode = ? WHERE user_id = ? AND story_id = ?',
-          [episode, userId, storyId],
-          (updateError, result) => {
-            if (updateError) {
-              console.error('Error updating episode: ', updateError);
-              return callback(updateError, null);
-            }
-
-            return callback(null, result);
-          }
-        );
-      }
+      return callback(null, result);
     }
   );
 };
 
 
-
-
-ClientModel.getUserLastRead = (userId, callback) => {
+ClientModel.getStoryDetails = (userId, callback) => {
   dbConn.query(
-    'SELECT u.user_id, u.story_id, u.episode, s.storyId, s.subTitle, s.storyLine, v.* ' +
+    'SELECT u.user_id, u.story_id, v.* ' +
     'FROM user_last_read u ' +
-    'LEFT JOIN story_episodes s ON u.story_id = s.storyId AND u.episode = s.subTitle ' +
     'LEFT JOIN v_story_images v ON u.story_id = v.story_id ' +
     'WHERE u.user_id = ?',
     [userId],

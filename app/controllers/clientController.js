@@ -110,32 +110,36 @@ clientController.getStoriesNewArrivals = (req, res) => {
   });
 };
 
-clientController.putUserLastRead = (req, res) => {
-  const { user_id, storyId, episode } = req.body;
+clientController.insertStoryId = (req, res) => {
+  const { user_id, story_id } = req.body;
 
-  if (!user_id || !storyId || !episode) {
+  if (!user_id || !story_id) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  ClientModel.updateLastRead(user_id, storyId, episode, (error, result) => {
+  ClientModel.insertStoryId(user_id, story_id, (error, result) => {
     if (error) {
-      console.error('Error updating last read: ', error);
-      return res.status(500).json({ message: 'Error updating last read' });
+      console.error('Error inserting story_id: ', error);
+      return res.status(500).json({ message: 'Error inserting story_id' });
     }
 
-    return res.status(200).json({ message: 'Last read updated successfully' });
+    if (result.affectedRows === 0) {
+      return res.status(200).json({ message: 'Story ID already exists' });
+    }
+
+    return res.status(200).json({ message: 'Story ID inserted successfully' });
   });
 };
   
 
-clientController.getUserLastRead = (req, res) => {
+clientController.getStoryDetails = (req, res) => {
   const { user_id } = req.query;
 
   if (!user_id) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  ClientModel.getUserLastRead(user_id, (error, data) => {
+  ClientModel.getStoryDetails(user_id, (error, data) => {
     if (error) {
       console.error('Error getting user last read: ', error);
       return res.status(500).json({ message: 'Error getting user last read' });
