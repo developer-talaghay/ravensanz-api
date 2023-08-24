@@ -22,8 +22,23 @@ function scheduleCronJob() {
 function runJob() {
   console.log("Cron job running...");
 
-  // Call the fetchAndInsertStory function
-  fetchAndInsertStory();
+  try {
+    // Call the fetchAndInsertStory function
+    fetchAndInsertStory();
+  } catch (error) {
+    console.error("An error occurred:", error.message);
+
+    // Stop the job due to the error
+    console.log("Stopping cron job due to error.");
+    job.stop();
+
+    // Restart the job after a 12-hour pause
+    setTimeout(() => {
+      console.log("Restarting cron job...");
+      scheduleCronJob();
+    }, 12 * 3600000); // 12 hours in milliseconds
+    return;
+  }
 
   // Stop the job after 30 minutes
   setTimeout(() => {
