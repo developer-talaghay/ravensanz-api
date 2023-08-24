@@ -25,19 +25,20 @@ function runJob() {
   // Call the fetchAndInsertStory function
   fetchAndInsertStory();
 
-  // Stop the job after 12 hours
+  // Stop the job after 30 minutes
   setTimeout(() => {
     console.log("Cron job has been stopped.");
     job.stop();
 
     // Restart the job after a 12-hour pause
     setTimeout(() => {
+      console.log("Restarting cron job...");
       scheduleCronJob();
     }, 12 * 3600000); // 12 hours in milliseconds
-  }, 12 * 3600000); // Stop after 12 hours
+  }, 30 * 60000); // 30 minutes in milliseconds
 }
 
-scheduleCronJob(); // Initial scheduling
-
+// Initial scheduling
+scheduleCronJob();
 
 module.exports = router;
