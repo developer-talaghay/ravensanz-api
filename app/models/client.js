@@ -114,31 +114,50 @@ ClientModel.getNewArrivals = (callback) => {
 };
 
 ClientModel.insertStoryId = (userId, storyId, callback) => {
-  dbConn.query(
-    'INSERT IGNORE INTO user_last_read (user_id, story_id) VALUES (?, ?)',
-    [userId, storyId],
-    (error, result) => {
-      if (error) {
-        console.error('Error inserting story_id: ', error);
-        return callback(error, null);
+    // Check if a record exists with the given user_id and story_id
+    dbConn.query(
+      'SELECT * FROM user_last_read WHERE user_id = ? AND story_id = ?',
+      [userId, storyId],
+      (error, result) => {
+        if (error) {
+          console.error('Error checking for existing record: ', error);
+          return callback(error);
+        }
+  
+        if (result.length === 0) {
+          // If no matching record found, insert a new row
+          dbConn.query(
+            'INSERT INTO user_last_read (user_id, story_id) VALUES (?, ?)',
+            [userId, storyId],
+            (insertError) => {
+              if (insertError) {
+                console.error('Error inserting new record: ', insertError);
+                return callback(insertError);
+              }
+  
+              return callback(null, 'New record inserted successfully');
+            }
+          );
+        } else {
+          // If matching record found, do nothing
+          return callback(null, 'Record already exists');
+        }
       }
-
-      return callback(null, result);
-    }
-  );
-};
+    );
+  };
 
 
+ // Model
 ClientModel.getStoryDetails = (userId, callback) => {
+  // Get all records from user_last_read for the given user_id
   dbConn.query(
-    'SELECT u.user_id, u.story_id, v.* ' +
-    'FROM user_last_read u ' +
-    'LEFT JOIN v_story_images v ON u.story_id = v.story_id ' +
-    'WHERE u.user_id = ?',
+    'SELECT ulr.*, vsi.* FROM user_last_read ulr ' +
+    'LEFT JOIN v_story_images vsi ON ulr.story_id = vsi.story_id ' +
+    'WHERE ulr.user_id = ?',
     [userId],
     (error, result) => {
       if (error) {
-        console.error('Error getting user last read: ', error);
+        console.error('Error fetching story details: ', error);
         return callback(error, null);
       }
 
@@ -146,6 +165,7 @@ ClientModel.getStoryDetails = (userId, callback) => {
     }
   );
 };
+
 
 ClientModel.getVipStories = (callback) => {
   dbConn.query(

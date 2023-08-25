@@ -133,7 +133,7 @@ clientController.insertStoryId = (req, res) => {
   
 
 clientController.getStoryDetails = (req, res) => {
-  const { user_id } = req.query;
+  const { user_id } = req.query; // Using req.query to get user_id
 
   if (!user_id) {
     return res.status(400).json({ message: 'Missing required fields' });
@@ -141,11 +141,11 @@ clientController.getStoryDetails = (req, res) => {
 
   ClientModel.getStoryDetails(user_id, (error, data) => {
     if (error) {
-      console.error('Error getting user last read: ', error);
-      return res.status(500).json({ message: 'Error getting user last read' });
+      console.error('Error getting story details: ', error);
+      return res.status(500).json({ message: 'Error getting story details' });
     }
 
-    return res.status(200).json({ message: 'User last read retrieved', data });
+    return res.status(200).json({ message: 'Story details retrieved', data });
   });
 };
 
