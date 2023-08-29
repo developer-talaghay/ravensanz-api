@@ -181,7 +181,22 @@ ClientModel.getVipStories = (callback) => {
   );
 };
 
+ClientModel.searchStories = (searchQuery, callback) => {
+  const sqlQuery = `
+    SELECT * 
+    FROM v_story_images 
+    WHERE title LIKE ? OR author LIKE ?
+  `;
+  
+  dbConn.query(sqlQuery, [`%${searchQuery}%`, `%${searchQuery}%`], (error, result) => {
+    if (error) {
+      console.error("Error searching stories: ", error);
+      return callback(error, null);
+    }
 
+    return callback(null, result);
+  });
+};
 
 
 module.exports = ClientModel;

@@ -24,4 +24,7 @@ router.get("/stories/newarrivals", clientController.getStoriesNewArrivals);
 router.post("/stories/continue", clientController.insertStoryId);
 router.get("/stories/continue/id", clientController.getStoryDetails);
 
+// Story Search
+router.get("/stories/search", clientController.searchByTitleOrAuthor);
+
 module.exports = router;

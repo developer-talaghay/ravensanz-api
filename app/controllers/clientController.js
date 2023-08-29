@@ -161,4 +161,18 @@ clientController.getStoryVip = (req, res) => {
   });
 };
 
+clientController.searchByTitleOrAuthor = (req, res) => {
+  const searchQuery = req.query.search;
+
+  // Call the model to search stories
+  ClientModel.searchStories(searchQuery, (error, searchResults) => {
+    if (error) {
+      console.error("Error searching stories: ", error);
+      return res.status(500).json({ message: "Error searching stories" });
+    }
+
+    return res.status(200).json({ message: "Search results retrieved", data: searchResults });
+  });
+};
+
 module.exports = clientController;
