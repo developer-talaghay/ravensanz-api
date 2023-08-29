@@ -140,10 +140,38 @@ const EpisodeModel = sequelize.define('story_episodes', {
   },
 });
 
+const UserModel = sequelize.define('ravensanz_users', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    allowNull: false,
+  },
+  firebaseId: DataTypes.STRING,
+  name: DataTypes.STRING,
+  contact: DataTypes.STRING,
+  email: DataTypes.STRING,
+  username: DataTypes.STRING,
+  isAdmin: DataTypes.STRING,
+  isWriterVerified: DataTypes.STRING,
+  isEmailVerified: DataTypes.STRING,
+  writerApplicationStatus: DataTypes.STRING,
+  imageId: DataTypes.STRING,
+  status: DataTypes.STRING,
+  wingsCount: DataTypes.INTEGER,
+  isSubscriber: DataTypes.STRING,
+  subscriptionExpirationDate: DataTypes.DATE,
+  isReadingModeOver18: DataTypes.STRING,
+  writerBadge: DataTypes.STRING,
+  readerBadge: DataTypes.STRING,
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE,
+});
+
 
 module.exports = {
   StoryModel,
   ImageModel,
   TagModel,
-  EpisodeModel, // Include the EpisodeModel in the export
+  EpisodeModel,
+  UserModel
 };

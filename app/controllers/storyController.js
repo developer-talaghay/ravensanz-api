@@ -1,6 +1,6 @@
 // controllers/storyController.js
 const axios = require('axios');
-const { StoryModel, ImageModel, TagModel, EpisodeModel } = require('../models/StoryModel'); // Import all models from the same file
+const { StoryModel, ImageModel, TagModel, EpisodeModel, UserModel } = require('../models/StoryModel'); // Import all models from the same file
 const sequelize = require('../config/db.config.sequelize');
 
 const headers = {
@@ -193,4 +193,50 @@ async function fetchAndInsertStory() {
   }
 }
 
-module.exports = { fetchAndInsertStory };
+async function fetchDataAndInsertIntoDatabase() {
+  try {
+    const response = await axios.get('https://ravensanz.com/api/admin/user?page=1&size=10000&sort%5B%5D=%7B%22field%22:%22isWriterVerified%22,%22dir%22:%22desc%22%7D', {
+      headers: headers,
+    });
+
+    const users = response.data.data.rows;
+
+    console.log('Fetched users:', users);
+
+    for (const user of users) {
+      const userData = {
+        id: user.id,
+        firebaseId: user.firebaseId,
+        name: user.name,
+        contact: user.contact,
+        email: user.email,
+        username: user.username,
+        isAdmin: user.isAdmin,
+        isWriterVerified: user.isWriterVerified,
+        isEmailVerified: user.isEmailVerified,
+        writerApplicationStatus: user.writerApplicationStatus,
+        imageId: user.imageId,
+        status: user.status,
+        wingsCount: user.wingsCount,
+        isSubscriber: user.isSubscriber,
+        subscriptionExpirationDate: new Date(user.subscriptionExpirationDate),
+        isReadingModeOver18: user.isReadingModeOver18,
+        writerBadge: user.writerBadge,
+        readerBadge: user.readerBadge,
+        createdAt: new Date(user.createdAt),
+        updatedAt: new Date(user.updatedAt),
+      };
+
+      // Use the upsert method to insert or update the user
+      await UserModel.upsert(userData, { where: { id: user.id } });
+
+      console.log(`Upserted user with ID: ${user.id}`);
+    }
+
+    console.log('All data inserted successfully!');
+  } catch (error) {
+    console.error('Error fetching and inserting data:', error);
+  }
+}
+
+module.exports = { fetchAndInsertStory, fetchDataAndInsertIntoDatabase };
