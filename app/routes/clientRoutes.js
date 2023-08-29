@@ -27,4 +27,5 @@ router.get("/stories/continue/id", clientController.getStoryDetails);
 // Story Search
 router.get("/stories/search", clientController.searchByTitleOrAuthor);
 
+
 module.exports = router;

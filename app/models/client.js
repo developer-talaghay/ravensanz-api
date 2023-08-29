@@ -181,6 +181,8 @@ ClientModel.getVipStories = (callback) => {
   );
 };
 
+
+
 ClientModel.searchStories = (searchQuery, callback) => {
   const sqlQuery = `
     SELECT * 
