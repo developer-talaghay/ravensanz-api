@@ -200,5 +200,22 @@ ClientModel.searchStories = (searchQuery, callback) => {
   });
 };
 
+ClientModel.getPublishedStoryDetails = (callback) => {
+  const sqlQuery = `
+    SELECT * 
+    FROM v_story_details 
+    WHERE isPublished = 1
+  `;
+  
+  dbConn.query(sqlQuery, (error, result) => {
+    if (error) {
+      console.error("Error retrieving published story details: ", error);
+      return callback(error, null);
+    }
+
+    return callback(null, result);
+  });
+};
+
 
 module.exports = ClientModel;

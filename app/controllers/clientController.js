@@ -175,6 +175,19 @@ clientController.searchByTitleOrAuthor = (req, res) => {
   });
 };
 
+clientController.getStoriesPublished = (req, res) => {
+  // Call the model to get published story details
+  ClientModel.getPublishedStoryDetails((error, publishedStoryDetails) => {
+    if (error) {
+      console.error("Error getting published story details: ", error);
+      return res.status(500).json({ message: "Error getting published story details" });
+    }
+
+    return res.status(200).json({ message: "Published story details retrieved", data: publishedStoryDetails });
+  });
+};
+
+
 
 
 module.exports = clientController;
