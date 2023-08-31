@@ -61,7 +61,7 @@ clientController.getStoriesListOngoing = (req, res) => {
     ClientModel.getStoryDetailsById(storyId, (error, storyDetails) => {
         if (error) {
             console.error("Error getting story details by storyId: ", error);
-            return res.status(500).json({ message: "Error getting story details by storyId" });
+            return res.status(500).json({ message: "No Story Found" });
         }
 
         return res.status(200).json({ message: "Story details retrieved by storyId", data: storyDetails });

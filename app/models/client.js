@@ -53,37 +53,45 @@ ClientModel.getOngoingStories = (callback) => {
   };
 
   ClientModel.getStoryDetailsById = (storyId, callback) => {
-    // Get story details from v_story_details
-    dbConn.query("SELECT * FROM v_story_details WHERE id = ?", [storyId], (error, storyDetails) => {
+    // Get story details from v_story_details where isPublished = 1
+    dbConn.query("SELECT * FROM v_story_details WHERE id = ? AND isPublished = 1", [storyId], (error, storyDetails) => {
+      if (error) {
+        console.error("Error retrieving story details by id: ", error);
+        return callback(error, null);
+      }
+  
+      if (storyDetails.length === 0) {
+        // No data found for the provided storyId
+        return callback("No story details found for the provided storyId", null);
+      }
+  
+      // Get related tags from story_tags
+      dbConn.query("SELECT name FROM story_tags WHERE storyId = ?", [storyId], (error, tagDetails) => {
         if (error) {
-            console.error("Error retrieving story details by id: ", error);
-            return callback(error, null);
+          console.error("Error retrieving tag details by storyId: ", error);
+          return callback(error, null);
         }
-
-        // Get related tags from story_tags
-        dbConn.query("SELECT name FROM story_tags WHERE storyId = ?", [storyId], (error, tagDetails) => {
-            if (error) {
-                console.error("Error retrieving tag details by storyId: ", error);
-                return callback(error, null);
-            }
-
-            storyDetails[0].tags = tagDetails.map(tag => tag.name);
-
-            // Get all episode details from story_episodes
-            dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired, updatedAt FROM story_episodes WHERE storyId = ?", [storyId], (error, episodeDetails) => {
-                if (error) {
-                    console.error("Error retrieving episode details by id: ", error);
-                    return callback(error, null);
-                }
-
-                // Add array of episode details to the storyDetails object
-                storyDetails[0].episodes = episodeDetails;
-
-                return callback(null, storyDetails);
-            });
+  
+        // Add tags only if storyDetails exist
+        storyDetails[0].tags = tagDetails.map(tag => tag.name);
+  
+        // Get published episode details from story_episodes
+        dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired, updatedAt FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
+          if (error) {
+            console.error("Error retrieving published episode details by id: ", error);
+            return callback(error, null);
+          }
+  
+          // Add array of episode details to the storyDetails object
+          storyDetails[0].episodes = episodeDetails;
+  
+          return callback(null, storyDetails);
         });
+      });
     });
-};
+  };
+  
+  
 
 
   ClientModel.getRelatedStoriesByTag = (tagName, callback) => {
@@ -187,9 +195,9 @@ ClientModel.searchStories = (searchQuery, callback) => {
   const sqlQuery = `
     SELECT * 
     FROM v_story_images 
-    WHERE title LIKE ? OR author LIKE ?
+    WHERE (title LIKE ? OR author LIKE ?) AND isPublished = 1
   `;
-  
+
   dbConn.query(sqlQuery, [`%${searchQuery}%`, `%${searchQuery}%`], (error, result) => {
     if (error) {
       console.error("Error searching stories: ", error);
