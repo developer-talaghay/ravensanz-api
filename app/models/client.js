@@ -3,7 +3,7 @@ const dbConn = require("../config/db.config");
 const ClientModel = {};
 
 ClientModel.getStoryImages = (callback) => {
-  dbConn.query("SELECT * FROM v_story_images", (error, result) => {
+  dbConn.query("SELECT * FROM v_story_images WHERE isPublished = 1", (error, result) => {
     if (error) {
       console.error("Error retrieving story images: ", error);
       return callback(error, null);
@@ -15,7 +15,7 @@ ClientModel.getStoryImages = (callback) => {
 
 ClientModel.getOngoingStories = (callback) => {
     dbConn.query(
-      "SELECT * FROM v_story_images WHERE status = 'Ongoing'",
+      "SELECT * FROM v_story_images WHERE status = 'Ongoing' AND isPublished = 1",
       (error, result) => {
         if (error) {
           console.error("Error retrieving ongoing stories: ", error);
@@ -29,7 +29,7 @@ ClientModel.getOngoingStories = (callback) => {
 
   ClientModel.getCompletedStories = (callback) => {
     dbConn.query(
-      "SELECT * FROM v_story_images WHERE status = 'Completed'",
+      "SELECT * FROM v_story_images WHERE status = 'Completed' AND isPublished = 1",
       (error, result) => {
         if (error) {
           console.error("Error retrieving ongoing stories: ", error);
@@ -42,7 +42,7 @@ ClientModel.getOngoingStories = (callback) => {
   };
 
   ClientModel.getAllDetails = (callback) => {
-    dbConn.query("SELECT * FROM v_story_details", (error, result) => {
+    dbConn.query("SELECT * FROM v_story_details WHERE isPublished = 1", (error, result) => {
       if (error) {
         console.error("Error retrieving story details: ", error);
         return callback(error, null);
@@ -95,7 +95,7 @@ ClientModel.getOngoingStories = (callback) => {
 
 
   ClientModel.getRelatedStoriesByTag = (tagName, callback) => {
-    const query = "SELECT * FROM v_story_tags WHERE tag_name LIKE '%" + tagName + "%'";
+    const query = "SELECT * FROM v_story_tags WHERE tag_name LIKE '%" + tagName + "%' AND isPublished = 1";
 
     dbConn.query(query, (error, results) => {
         if (error) {
@@ -109,7 +109,7 @@ ClientModel.getOngoingStories = (callback) => {
 
 ClientModel.getNewArrivals = (callback) => {
   dbConn.query(
-    "SELECT * FROM v_story_images ORDER BY createdAt DESC LIMIT 10",
+    "SELECT * FROM v_story_images WHERE isPublished = 1 ORDER BY createdAt DESC LIMIT 10",
     (error, result) => {
       if (error) {
         console.error("Error retrieving ongoing stories: ", error);
@@ -161,7 +161,7 @@ ClientModel.getStoryDetails = (userId, callback) => {
   dbConn.query(
     'SELECT ulr.*, vsi.* FROM user_last_read ulr ' +
     'LEFT JOIN v_story_images vsi ON ulr.story_id = vsi.story_id ' +
-    'WHERE ulr.user_id = ?',
+    'WHERE ulr.user_id = ? AND isPublished = 1',
     [userId],
     (error, result) => {
       if (error) {
@@ -177,7 +177,7 @@ ClientModel.getStoryDetails = (userId, callback) => {
 
 ClientModel.getVipStories = (callback) => {
   dbConn.query(
-    'SELECT * FROM v_story_vip',
+    'SELECT * FROM v_story_vip WHERE isPublished = 1',
     (error, result) => {
       if (error) {
         console.error('Error getting VIP stories: ', error);
