@@ -31,6 +31,7 @@ const storyRoute = require("./app/routes/story");
 const clientRoute = require("./app/routes/clientRoutes");
 const userRoute = require("./app/routes/userRoutes");
 
+
 app.use('/api/v1/signup', userSignupRoute);
 app.use('/api/v1/login', userLoginRoute);
 app.use('/api/v1', userResetPasswordRoute);
