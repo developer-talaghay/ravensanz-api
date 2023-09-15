@@ -2,6 +2,7 @@
 const PictureUploadModel = require('../models/uploadModel');
 const multer = require("multer");
 const path = require('path');
+const fs = require("fs");
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -60,3 +61,47 @@ exports.uploadPicture = (req, res) => {
     });
   });
 };
+
+exports.getPictureByUserId = (req, res) => {
+  const { user_id } = req.query;
+
+  PictureUploadModel.findOne(user_id, (err, picture) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send("Internal server error.");
+    }
+
+    if (!picture) {
+      console.error(`Picture not found for user_id: ${user_id}`);
+      return res.status(404).send("Picture not found.");
+    }
+
+    const { picture_directory } = picture;
+
+    if (!picture_directory) {
+      console.error(`picture_directory not found for user_id: ${user_id}`);
+      return res.status(404).send("picture_directory not found.");
+    }
+
+    // Construct the correct absolute file path to the picture
+    const pictureAbsPath = path.join(__dirname, "../", picture_directory);
+    console.log("Picture Abs Path:", pictureAbsPath);
+    console.log("__dirname:", __dirname);
+
+
+    // Check if the file exists
+    if (fs.existsSync(pictureAbsPath)) {
+      res.set("Content-Type", "image/png");
+      res.sendFile(pictureAbsPath, (err) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).send("Internal server error.");
+        }
+      });
+    } else {
+      console.error(`Picture file not found for user_id: ${user_id}`);
+      return res.status(404).send("Picture file not found.");
+    }
+  });
+};
+
