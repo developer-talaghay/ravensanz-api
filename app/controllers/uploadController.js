@@ -7,7 +7,7 @@ const fs = require("fs");
 const upload = multer({
   storage: multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, './profile_picture/'); // Set the destination folder for profile pictures
+      cb(null, path.join(__dirname, '../profile_picture')); // Set the destination folder for profile pictures
     },
     filename: function (req, file, cb) {
       const { user_id } = req.body;
@@ -47,7 +47,7 @@ exports.uploadPicture = (req, res) => {
       return res.status(400).send("No picture provided");
     }
 
-    const picture_directory = path.join('./profile_picture', req.file.filename);
+    const picture_directory = path.join('profile_picture', req.file.filename);
     console.log(picture_directory)
 
     // Update the picture_directory in the database
@@ -61,6 +61,7 @@ exports.uploadPicture = (req, res) => {
     });
   });
 };
+
 
 exports.getPictureByUserId = (req, res) => {
   const { user_id } = req.query;
