@@ -35,6 +35,7 @@ const storyRoute = require("./app/routes/story");
 const clientRoute = require("./app/routes/clientRoutes");
 const userRoute = require("./app/routes/userRoutes");
 const uploadPictureRoute = require("./app/routes/uploadRoutes");
+const theNestRoute = require("./app/routes/theNestRoutes");
 
 app.use('/api/v1/signup', userSignupRoute);
 app.use('/api/v1/login', userLoginRoute);
@@ -44,7 +45,7 @@ app.use('/api/v1/story', storyRoute);
 app.use('/api/v1/client', clientRoute);
 app.use('/api/v1/user/details', userRoute);
 app.use('/api/v1/upload', uploadPictureRoute);
-
+app.use('/api/v1/thenest', theNestRoute);
 
 function isLoggedIn(req,res,next){
   req.user ? next() : res.sendStatus(401)
