@@ -82,4 +82,21 @@ theNestController.getMyStoryList = (req, res) => {
     });
   };
 
+  theNestController.getRecommendedList = (req, res) => {
+    const { user_id } = req.query;
+  
+    if (!user_id) {
+      return res.status(400).json({ message: 'Missing user_id parameter' });
+    }
+  
+    TheNestModel.getRecommendedStories(user_id, (error, recommendedStories) => {
+      if (error) {
+        console.error('Error getting recommended stories: ', error);
+        return res.status(500).json({ message: 'Error retrieving recommended stories' });
+      }
+  
+      return res.status(200).json({ message: 'Recommended stories retrieved successfully', data: recommendedStories });
+    });
+  };
+
 module.exports = theNestController;

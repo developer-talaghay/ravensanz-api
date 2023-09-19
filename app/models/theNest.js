@@ -202,4 +202,20 @@ TheNestModel.getMyStoryList = (userId, callback) => {
       );
     };
 
+    TheNestModel.getRecommendedStories = (userId, callback) => {
+      // Retrieve data from v_matching_tag_name
+      dbConn.query(
+        'SELECT * FROM v_matching_tag_name WHERE user_id = ? AND isPublished = 1',
+        [userId],
+        (error, recommendedStories) => {
+          if (error) {
+            console.error('Error retrieving recommended stories: ', error);
+            return callback(error, null);
+          }
+    
+          return callback(null, recommendedStories);
+        }
+      );
+    };
+
 module.exports = TheNestModel;

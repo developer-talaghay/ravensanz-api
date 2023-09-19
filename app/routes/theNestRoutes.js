@@ -7,5 +7,5 @@ router.post("/mystories", theNestControllers.myReadingList);
 router.get("/getmystories", theNestControllers.getMyStoryList);
 router.get("/getmyvipstories", theNestControllers.getMyVipStoryList);
 router.delete("/mystories/delete", theNestControllers.deleteFromMyReadingList);
-
+router.get("/getmyrecommendedstories", theNestControllers.getRecommendedList);
 module.exports = router;
