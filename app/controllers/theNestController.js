@@ -61,4 +61,25 @@ theNestController.getMyStoryList = (req, res) => {
     });
   };
 
+  theNestController.deleteFromMyReadingList = (req, res) => {
+    const { user_id, story_id } = req.body;
+  
+    if (!user_id || !story_id) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+  
+    TheNestModel.deleteUserStory(user_id, story_id, (error, result) => {
+      if (error) {
+        console.error('Error deleting user story: ', error);
+        return res.status(500).json({ message: 'Error deleting user story' });
+      }
+  
+      if (result.affectedRows === 0) {
+        return res.status(200).json({ message: 'User story does not exist' });
+      }
+  
+      return res.status(200).json({ message: 'User story deleted successfully' });
+    });
+  };
+
 module.exports = theNestController;

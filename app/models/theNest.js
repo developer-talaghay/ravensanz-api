@@ -186,4 +186,20 @@ TheNestModel.getMyStoryList = (userId, callback) => {
       );
     };
 
+    TheNestModel.deleteUserStory = (userId, storyId, callback) => {
+      // Check if a record exists with the given user_id and story_id
+      dbConn.query(
+        'DELETE FROM user_thenest WHERE user_id = ? AND story_id = ?',
+        [userId, storyId],
+        (error, result) => {
+          if (error) {
+            console.error('Error deleting user story: ', error);
+            return callback(error);
+          }
+    
+          return callback(null, result);
+        }
+      );
+    };
+
 module.exports = TheNestModel;

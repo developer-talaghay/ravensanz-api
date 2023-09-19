@@ -6,5 +6,6 @@ const theNestControllers = require('../controllers/theNestController');
 router.post("/mystories", theNestControllers.myReadingList);
 router.get("/getmystories", theNestControllers.getMyStoryList);
 router.get("/getmyvipstories", theNestControllers.getMyVipStoryList);
+router.delete("/mystories/delete", theNestControllers.deleteFromMyReadingList);
 
 module.exports = router;
