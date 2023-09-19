@@ -56,7 +56,7 @@ TheNestModel.getMyStoryList = (userId, callback) => {
   
         // Get published story details from v_story_details where id is in the storyIdArray, isPublished = 1, and isVip = 1
         dbConn.query(
-          'SELECT * FROM v_story_details WHERE id IN (?) AND isPublished = 1',
+          'SELECT * FROM v_story_images WHERE story_id IN (?) AND isPublished = 1',
           [storyIdArray],
           (error, storyDetails) => {
             if (error) {
@@ -71,7 +71,7 @@ TheNestModel.getMyStoryList = (userId, callback) => {
             const getTagsForStory = (index) => {
               if (index < storyDetails.length) {
                 const story = storyDetails[index];
-                const storyId = story.id;
+                const storyId = story.story_id;
   
                 // Get tags for the story from v_story_tags
                 dbConn.query(
