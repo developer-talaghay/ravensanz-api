@@ -8,4 +8,9 @@ router.get("/getmystories", theNestControllers.getMyStoryList);
 router.get("/getmyvipstories", theNestControllers.getMyVipStoryList);
 router.delete("/mystories/delete", theNestControllers.deleteFromMyReadingList);
 router.get("/getmyrecommendedstories", theNestControllers.getRecommendedList);
+
+// Readling List Search
+router.get("/getmystories/search", theNestControllers.getMyStoryListByTitle);
+router.get("/getmyvipstories/search", theNestControllers.getMyVipStoryListByTitle);
+
 module.exports = router;

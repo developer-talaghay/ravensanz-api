@@ -56,7 +56,7 @@ TheNestModel.getMyStoryList = (userId, callback) => {
   
         // Get published story details from v_story_details where id is in the storyIdArray, isPublished = 1, and isVip = 1
         dbConn.query(
-          'SELECT * FROM v_story_images WHERE story_id IN (?) AND isPublished = 1',
+          'SELECT * FROM v_story_images WHERE story_id IN (?) AND isPublished = 1 AND isVip = 0',
           [storyIdArray],
           (error, storyDetails) => {
             if (error) {
@@ -217,5 +217,40 @@ TheNestModel.getMyStoryList = (userId, callback) => {
         }
       );
     };
+
+TheNestModel.searchTitlesAndUserIDsInUserThenestView = (title, user_id, callback) => {
+  const sqlQuery = `
+    SELECT *
+    FROM user_thenest_view
+    WHERE title LIKE ? AND user_id = ?
+  `;
+
+  dbConn.query(sqlQuery, [`%${title}%`, user_id], (error, result) => {
+    if (error) {
+      console.error("Error searching titles and user IDs in user_thenest_view: ", error);
+      return callback(error, null);
+    }
+
+    return callback(null, result);
+  });
+};
+
+TheNestModel.searchVipTitlesAndUserIDsInUserThenestView = (title, user_id, callback) => {
+  const sqlQuery = `
+    SELECT *
+    FROM user_thenest_view
+    WHERE title LIKE ? AND user_id = ? AND isVIP = 1
+  `;
+
+  dbConn.query(sqlQuery, [`%${title}%`, user_id], (error, result) => {
+    if (error) {
+      console.error("Error searching VIP titles and user IDs in user_thenest_view: ", error);
+      return callback(error, null);
+    }
+
+    return callback(null, result);
+  });
+};
+
 
 module.exports = TheNestModel;

@@ -99,4 +99,32 @@ theNestController.getMyStoryList = (req, res) => {
     });
   };
 
+  theNestController.getMyStoryListByTitle = (req, res) => {
+    const { title, user_id } = req.body;
+  
+    // Call the model to search for titles and user IDs in the view
+    TheNestModel.searchTitlesAndUserIDsInUserThenestView(title, user_id, (error, searchResults) => {
+      if (error) {
+        console.error("Error searching titles and user IDs in user_thenest_view: ", error);
+        return res.status(500).json({ message: "Error searching titles and user IDs in user_thenest_view" });
+      }
+  
+      return res.status(200).json({ message: "Search results retrieved", data: searchResults });
+    });
+  };
+
+  theNestController.getMyVipStoryListByTitle = (req, res) => {
+    const { title, user_id } = req.body;
+  
+    // Call the model to search for titles and user IDs with isVIP = 1 in the view
+    TheNestModel.searchVipTitlesAndUserIDsInUserThenestView(title, user_id, (error, searchResults) => {
+      if (error) {
+        console.error("Error searching VIP titles and user IDs in user_thenest_view: ", error);
+        return res.status(500).json({ message: "Error searching VIP titles and user IDs in user_thenest_view" });
+      }
+  
+      return res.status(200).json({ message: "Search results retrieved", data: searchResults });
+    });
+  };
+
 module.exports = theNestController;
