@@ -225,5 +225,58 @@ ClientModel.getPublishedStoryDetails = (callback) => {
   });
 };
 
+ClientModel.searchOngoingStories = (searchQuery, callback) => {
+  const sqlQuery = `
+    SELECT * 
+    FROM v_story_images 
+    WHERE (title LIKE ? OR author LIKE ?) AND status = 'ongoing' AND isPublished = '1'
+  `;
+
+  dbConn.query(sqlQuery, [`%${searchQuery}%`, `%${searchQuery}%`], (error, result) => {
+    if (error) {
+      console.error("Error searching ongoing stories: ", error);
+      return callback(error, null);
+    }
+
+    return callback(null, result);
+  });
+};
+
+ClientModel.searchNewestStories = (searchQuery, callback) => {
+  const sqlQuery = `
+    SELECT *
+    FROM v_story_images
+    WHERE (title LIKE ? OR author LIKE ?) AND isPublished = 1
+    ORDER BY createdAt DESC
+    LIMIT 10
+  `;
+
+  dbConn.query(sqlQuery, [`%${searchQuery}%`, `%${searchQuery}%`], (error, result) => {
+    if (error) {
+      console.error("Error searching newest stories: ", error);
+      return callback(error, null);
+    }
+
+    return callback(null, result);
+  });
+};
+
+ClientModel.searchVipStories = (searchQuery, callback) => {
+  const sqlQuery = `
+    SELECT *
+    FROM v_story_vip
+    WHERE (title LIKE ? OR author LIKE ?)
+  `;
+
+  dbConn.query(sqlQuery, [`%${searchQuery}%`, `%${searchQuery}%`], (error, result) => {
+    if (error) {
+      console.error("Error searching VIP stories: ", error);
+      return callback(error, null);
+    }
+
+    return callback(null, result);
+  });
+};
+
 
 module.exports = ClientModel;

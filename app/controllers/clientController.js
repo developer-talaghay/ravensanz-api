@@ -187,7 +187,61 @@ clientController.getStoriesPublished = (req, res) => {
   });
 };
 
+clientController.searchByTitleOrAuthorOngoing = (req, res) => {
+  const searchQuery = req.query.search;
 
+  // Call the model to search ongoing stories
+  ClientModel.searchOngoingStories(searchQuery, (error, searchResults) => {
+    if (error) {
+      console.error("Error searching ongoing stories: ", error);
+      return res.status(500).json({ message: "Error searching ongoing stories" });
+    }
+
+    return res.status(200).json({ message: "Search results retrieved", data: searchResults });
+  });
+};
+
+clientController.searchByTitleOrAuthorCompleted = (req, res) => {
+  const searchQuery = req.query.search;
+
+  // Call the model to search completed stories
+  ClientModel.searchCompletedStories(searchQuery, (error, searchResults) => {
+    if (error) {
+      console.error("Error searching completed stories: ", error);
+      return res.status(500).json({ message: "Error searching completed stories" });
+    }
+
+    return res.status(200).json({ message: "Search results retrieved", data: searchResults });
+  });
+};
+
+clientController.searchByTitleOrAuthorNew = (req, res) => {
+  const searchQuery = req.query.search;
+
+  // Call the model to search for the newest stories
+  ClientModel.searchNewestStories(searchQuery, (error, searchResults) => {
+    if (error) {
+      console.error("Error searching newest stories: ", error);
+      return res.status(500).json({ message: "Error searching newest stories" });
+    }
+
+    return res.status(200).json({ message: "Search results retrieved", data: searchResults });
+  });
+};
+
+clientController.searchByTitleOrAuthorVip = (req, res) => {
+  const searchQuery = req.query.search;
+
+  // Call the model to search for VIP stories
+  ClientModel.searchVipStories(searchQuery, (error, searchResults) => {
+    if (error) {
+      console.error("Error searching VIP stories: ", error);
+      return res.status(500).json({ message: "Error searching VIP stories" });
+    }
+
+    return res.status(200).json({ message: "Search results retrieved", data: searchResults });
+  });
+};
 
 
 module.exports = clientController;
