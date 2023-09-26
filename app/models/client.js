@@ -122,46 +122,60 @@ ClientModel.getNewArrivals = (callback) => {
 };
 
 ClientModel.insertStoryId = (userId, storyId, callback) => {
-    // Check if a record exists with the given user_id and story_id
-    dbConn.query(
-      'SELECT * FROM user_last_read WHERE user_id = ? AND story_id = ?',
-      [userId, storyId],
-      (error, result) => {
-        if (error) {
-          console.error('Error checking for existing record: ', error);
-          return callback(error);
-        }
-  
-        if (result.length === 0) {
-          // If no matching record found, insert a new row
-          dbConn.query(
-            'INSERT INTO user_last_read (user_id, story_id) VALUES (?, ?)',
-            [userId, storyId],
-            (insertError) => {
-              if (insertError) {
-                console.error('Error inserting new record: ', insertError);
-                return callback(insertError);
-              }
-  
-              return callback(null, 'New record inserted successfully');
-            }
-          );
-        } else {
-          // If matching record found, do nothing
-          return callback(null, 'Record already exists');
-        }
+  // Check if a record exists with the given user_id and story_id
+  dbConn.query(
+    'SELECT * FROM user_last_read WHERE user_id = ? AND story_id = ?',
+    [userId, storyId],
+    (error, result) => {
+      if (error) {
+        console.error('Error checking for existing record: ', error);
+        return callback(error);
       }
-    );
-  };
+
+      if (result.length === 0) {
+        // If no matching record found, insert a new row
+        dbConn.query(
+          'INSERT INTO user_last_read (user_id, story_id) VALUES (?, ?)',
+          [userId, storyId],
+          (insertError) => {
+            if (insertError) {
+              console.error('Error inserting new record: ', insertError);
+              return callback(insertError);
+            }
+
+            return callback(null, 'New record inserted successfully');
+          }
+        );
+      } else {
+        // If matching record found, update the existing record
+        dbConn.query(
+          'UPDATE user_last_read SET modified_at = NOW() WHERE user_id = ? AND story_id = ?',
+          [userId, storyId],
+          (updateError) => {
+            if (updateError) {
+              console.error('Error updating existing record: ', updateError);
+              return callback(updateError);
+            }
+
+            return callback(null, 'Record updated successfully');
+          }
+        );
+      }
+    }
+  );
+};
+
 
 
  // Model
-ClientModel.getStoryDetails = (userId, callback) => {
-  // Get all records from user_last_read for the given user_id
+ ClientModel.getStoryDetails = (userId, callback) => {
+  // Get the latest record from user_last_read for the given user_id
   dbConn.query(
     'SELECT ulr.*, vsi.* FROM user_last_read ulr ' +
     'LEFT JOIN v_story_images vsi ON ulr.story_id = vsi.story_id ' +
-    'WHERE ulr.user_id = ? AND isPublished = 1',
+    'WHERE ulr.user_id = ? AND isPublished = 1 ' +
+    'ORDER BY ulr.modified_at DESC ' +
+    'LIMIT 100',
     [userId],
     (error, result) => {
       if (error) {
@@ -173,6 +187,7 @@ ClientModel.getStoryDetails = (userId, callback) => {
     }
   );
 };
+
 
 
 ClientModel.getVipStories = (callback) => {
