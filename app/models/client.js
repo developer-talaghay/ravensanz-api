@@ -257,6 +257,25 @@ ClientModel.searchOngoingStories = (searchQuery, callback) => {
   });
 };
 
+
+ClientModel.searchCompletedStories = (searchQuery, callback) => {
+  const sqlQuery = `
+    SELECT * 
+    FROM v_story_images 
+    WHERE (title LIKE ? OR author LIKE ?) AND status = 'completed' AND isPublished = 1
+  `;
+
+  dbConn.query(sqlQuery, [`%${searchQuery}%`, `%${searchQuery}%`], (error, result) => {
+    if (error) {
+      console.error("Error searching completed stories: ", error);
+      return callback(error, null);
+    }
+
+    return callback(null, result);
+  });
+};
+
+
 ClientModel.searchNewestStories = (searchQuery, callback) => {
   const sqlQuery = `
     SELECT *
