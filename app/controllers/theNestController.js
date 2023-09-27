@@ -100,7 +100,7 @@ theNestController.getMyStoryList = (req, res) => {
   };
 
   theNestController.getMyStoryListByTitle = (req, res) => {
-    const { title, user_id } = req.body;
+    const { title, user_id } = req.query;
   
     // Call the model to search for titles and user IDs in the view
     TheNestModel.searchTitlesAndUserIDsInUserThenestView(title, user_id, (error, searchResults) => {
@@ -114,7 +114,7 @@ theNestController.getMyStoryList = (req, res) => {
   };
 
   theNestController.getMyVipStoryListByTitle = (req, res) => {
-    const { title, user_id } = req.body;
+    const { title, user_id } = req.query;
   
     // Call the model to search for titles and user IDs with isVIP = 1 in the view
     TheNestModel.searchVipTitlesAndUserIDsInUserThenestView(title, user_id, (error, searchResults) => {
