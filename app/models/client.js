@@ -298,8 +298,8 @@ ClientModel.searchNewestStories = (searchQuery, callback) => {
 ClientModel.searchVipStories = (searchQuery, callback) => {
   const sqlQuery = `
     SELECT *
-    FROM v_story_vip
-    WHERE (title LIKE ? OR author LIKE ?)
+    FROM v_story_images
+    WHERE (title LIKE ? OR author LIKE ?) AND isVIP = 1
   `;
 
   dbConn.query(sqlQuery, [`%${searchQuery}%`, `%${searchQuery}%`], (error, result) => {
