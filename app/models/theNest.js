@@ -56,7 +56,7 @@ TheNestModel.getMyStoryList = (userId, callback) => {
   
         // Get published story details from v_story_details where id is in the storyIdArray, isPublished = 1, and isVip = 1
         dbConn.query(
-          'SELECT * FROM v_story_images WHERE story_id IN (?) AND isPublished = 1 AND isVip = 0',
+          'SELECT * FROM v_story_images WHERE story_id IN (?) AND isPublished = 1',
           [storyIdArray],
           (error, storyDetails) => {
             if (error) {
@@ -132,7 +132,7 @@ TheNestModel.getMyStoryList = (userId, callback) => {
     
           // Get published story details from v_story_details where id is in the storyIdArray, isPublished = 1, and isVip = 1
           dbConn.query(
-            'SELECT * FROM v_story_details WHERE id IN (?) AND isPublished = 1 AND isVip = 1',
+            'SELECT * FROM v_story_images WHERE story_id IN (?) AND isPublished = 1 AND isVip = 1',
             [storyIdArray],
             (error, storyDetails) => {
               if (error) {
@@ -147,7 +147,7 @@ TheNestModel.getMyStoryList = (userId, callback) => {
               const getTagsForStory = (index) => {
                 if (index < storyDetails.length) {
                   const story = storyDetails[index];
-                  const storyId = story.id;
+                  const storyId = story.story_id;
     
                   // Get tags for the story from v_story_tags
                   dbConn.query(
@@ -203,9 +203,9 @@ TheNestModel.getMyStoryList = (userId, callback) => {
     };
 
     TheNestModel.getRecommendedStories = (userId, callback) => {
-      // Retrieve data from v_matching_tag_name
+      // Retrieve data from v_matching_tag_name, selecting only one row for each unique storyId
       dbConn.query(
-        'SELECT * FROM v_matching_tag_name WHERE user_id = ? AND isPublished = 1',
+        'SELECT MAX(user_id) as user_id, MAX(story_id) as story_id, storyId, MAX(tag_name) as tag_name, story_title, story_imageId, isVip, MAX(isPublished) as isPublished, imageId, url, author FROM v_matching_tag_name WHERE user_id = ? AND isPublished = 1 GROUP BY storyId',
         [userId],
         (error, recommendedStories) => {
           if (error) {
@@ -217,6 +217,7 @@ TheNestModel.getMyStoryList = (userId, callback) => {
         }
       );
     };
+    
 
 TheNestModel.searchTitlesAndUserIDsInUserThenestView = (title, user_id, callback) => {
   const sqlQuery = `
