@@ -127,4 +127,17 @@ theNestController.getMyStoryList = (req, res) => {
     });
   };
 
+  theNestController.getRecommendedListByTitle = (req, res) => {
+    const { user_id, title } = req.query;
+  
+    // Call the model to search the matching_tag_name_view by user_id and title
+    TheNestModel.searchMatchingTagNameViewByUserAndTitle(user_id, title, (error, searchResults) => {
+      if (error) {
+        console.error("Error searching matching_tag_name_view by user_id and title: ", error);
+        return res.status(500).json({ message: "Error searching matching_tag_name_view by user_id and title" });
+      }
+  
+      return res.status(200).json({ message: "Search results retrieved", data: searchResults });
+    });
+  };
 module.exports = theNestController;

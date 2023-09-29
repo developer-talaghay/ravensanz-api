@@ -312,5 +312,22 @@ ClientModel.searchVipStories = (searchQuery, callback) => {
   });
 };
 
+ClientModel.searchUserLastReadWithImages = (searchQuery, callback) => {
+  const sqlQuery = `
+    SELECT story_id, title, status, category, image_id, url, isVip, isPublished, createdAt, author
+    FROM user_last_read_with_images
+    WHERE (title LIKE ? OR author LIKE ?)
+  `;
+
+  dbConn.query(sqlQuery, [`%${searchQuery}%`, `%${searchQuery}%`], (error, result) => {
+    if (error) {
+      console.error("Error searching user_last_read_with_images: ", error);
+      return callback(error, null);
+    }
+
+    return callback(null, result);
+  });
+};
+
 
 module.exports = ClientModel;

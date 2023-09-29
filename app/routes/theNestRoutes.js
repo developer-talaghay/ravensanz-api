@@ -12,5 +12,6 @@ router.get("/getmyrecommendedstories", theNestControllers.getRecommendedList);
 // Readling List Search
 router.get("/getmystories/search", theNestControllers.getMyStoryListByTitle);
 router.get("/getmyvipstories/search", theNestControllers.getMyVipStoryListByTitle);
+router.get("/getmyrecommendedstories/search", theNestControllers.getRecommendedListByTitle);
 
 module.exports = router;

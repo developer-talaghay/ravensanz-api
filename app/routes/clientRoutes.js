@@ -35,5 +35,6 @@ router.get("/stories/ongoing/search", clientController.searchByTitleOrAuthorOngo
 router.get("/stories/completed/search", clientController.searchByTitleOrAuthorCompleted);
 router.get("/stories/new/search", clientController.searchByTitleOrAuthorNew);
 router.get("/stories/vip/search", clientController.searchByTitleOrAuthorVip);
+router.get("/stories/continue/search", clientController.searchByTitleOrAuthorContinue);
 
 module.exports = router;

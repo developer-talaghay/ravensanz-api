@@ -243,5 +243,19 @@ clientController.searchByTitleOrAuthorVip = (req, res) => {
   });
 };
 
+clientController.searchByTitleOrAuthorContinue = (req, res) => {
+  const searchQuery = req.query.search;
+
+  // Call the model to search for user_last_read_with_images
+  ClientModel.searchUserLastReadWithImages(searchQuery, (error, searchResults) => {
+    if (error) {
+      console.error("Error searching user_last_read_with_images: ", error);
+      return res.status(500).json({ message: "Error searching user_last_read_with_images" });
+    }
+
+    return res.status(200).json({ message: "Search results retrieved", data: searchResults });
+  });
+};
+
 
 module.exports = clientController;

@@ -253,5 +253,23 @@ TheNestModel.searchVipTitlesAndUserIDsInUserThenestView = (title, user_id, callb
   });
 };
 
+TheNestModel.searchMatchingTagNameViewByUserAndTitle = (user_id, title, callback) => {
+  const sqlQuery = `
+    SELECT *
+    FROM matching_tag_name_view
+    WHERE user_id = ? AND title LIKE ?
+  `;
+
+  dbConn.query(sqlQuery, [user_id, `%${title}%`], (error, result) => {
+    if (error) {
+      console.error("Error searching matching_tag_name_view by user_id and title: ", error);
+      return callback(error, null);
+    }
+
+    return callback(null, result);
+  });
+};
+
+
 
 module.exports = TheNestModel;
