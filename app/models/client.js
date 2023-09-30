@@ -314,7 +314,7 @@ ClientModel.searchVipStories = (searchQuery, callback) => {
 
 ClientModel.searchUserLastReadWithImages = (searchQuery, callback) => {
   const sqlQuery = `
-    SELECT story_id, title, status, category, image_id, url, isVip, isPublished, createdAt, author
+    SELECT story_id, title, status, category, image_id, url, isVip AS isVIP, isPublished, createdAt, author
     FROM user_last_read_with_images
     WHERE (title LIKE ? OR author LIKE ?)
   `;
