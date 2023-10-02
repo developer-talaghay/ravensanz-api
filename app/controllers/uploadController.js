@@ -84,25 +84,11 @@ exports.getPictureByUserId = (req, res) => {
       return res.status(404).send("picture_directory not found.");
     }
 
-    // Construct the correct absolute file path to the picture
-    const pictureAbsPath = path.join(__dirname, "../", picture_directory);
-    console.log("Picture Abs Path:", pictureAbsPath);
-    console.log("__dirname:", __dirname);
-
-
-    // Check if the file exists
-    if (fs.existsSync(pictureAbsPath)) {
-      res.set("Content-Type", "image/png");
-      res.sendFile(pictureAbsPath, (err) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).send("Internal server error.");
-        }
-      });
-    } else {
-      console.error(`Picture file not found for user_id: ${user_id}`);
-      return res.status(404).send("Picture file not found.");
-    }
+    // Construct the URL to the picture
+    // const pictureURL = `http://localhost:8000/images/${path.basename(picture_directory)}`;
+     const pictureURL = `http://18.117.252.199:8000/images/${path.basename(picture_directory)}`;
+    res.status(200).json({ pictureURL });
   });
 };
+
 
