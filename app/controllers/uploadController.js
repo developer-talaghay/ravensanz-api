@@ -87,7 +87,7 @@ exports.getPictureByUserId = (req, res) => {
     // Construct the URL to the picture
     // const pictureURL = `http://localhost:8000/images/${path.basename(picture_directory)}`;
      const pictureURL = `http://18.117.252.199:8000/images/${path.basename(picture_directory)}`;
-    res.status(200).json({ pictureURL });
+    res.status(200).json({ url: pictureURL });
   });
 };
 
