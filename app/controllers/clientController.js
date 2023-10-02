@@ -244,7 +244,7 @@ clientController.searchByTitleOrAuthorVip = (req, res) => {
 };
 
 clientController.searchByTitleOrAuthorContinue = (req, res) => {
-  const searchQuery = req.query.search;
+  const searchQuery = req.query.title;
   const userId = req.query.user_id; // Add this line to get the user_id from the request query
 
   // Call the model to search for user_last_read_with_images
