@@ -7,11 +7,15 @@ const session = require('express-session')
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 8000;
+const path = require('path');
 
 app.set("view engine", "ejs");
 
-app.use('/images', express.static(__dirname + '/profile_picture'));
-console.log(`express.static: ${__dirname + '/profile_picture'}`);
+// Define the directory where your images are stored
+const imagesDirectory = path.join(__dirname, 'app', 'profile_picture');
+
+// Serve the images from the /images URL
+app.use('/images', express.static(imagesDirectory));
 
 require('./auth')
 

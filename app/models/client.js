@@ -312,14 +312,14 @@ ClientModel.searchVipStories = (searchQuery, callback) => {
   });
 };
 
-ClientModel.searchUserLastReadWithImages = (searchQuery, callback) => {
+ClientModel.searchUserLastReadWithImages = (searchQuery, userId, callback) => {
   const sqlQuery = `
     SELECT story_id, title, status, category, image_id, url, isVip AS isVIP, isPublished, createdAt, author
     FROM user_last_read_with_images
-    WHERE (title LIKE ? OR author LIKE ?)
+    WHERE (title LIKE ? OR author LIKE ?) AND user_id = ?
   `;
 
-  dbConn.query(sqlQuery, [`%${searchQuery}%`, `%${searchQuery}%`], (error, result) => {
+  dbConn.query(sqlQuery, [`%${searchQuery}%`, `%${searchQuery}%`, userId], (error, result) => {
     if (error) {
       console.error("Error searching user_last_read_with_images: ", error);
       return callback(error, null);

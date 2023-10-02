@@ -245,9 +245,10 @@ clientController.searchByTitleOrAuthorVip = (req, res) => {
 
 clientController.searchByTitleOrAuthorContinue = (req, res) => {
   const searchQuery = req.query.search;
+  const userId = req.query.user_id; // Add this line to get the user_id from the request query
 
   // Call the model to search for user_last_read_with_images
-  ClientModel.searchUserLastReadWithImages(searchQuery, (error, searchResults) => {
+  ClientModel.searchUserLastReadWithImages(searchQuery, userId, (error, searchResults) => {
     if (error) {
       console.error("Error searching user_last_read_with_images: ", error);
       return res.status(500).json({ message: "Error searching user_last_read_with_images" });
