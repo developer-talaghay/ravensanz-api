@@ -36,11 +36,11 @@ app.use(cors());
 // firebase
 
 // Initialize Firebase Admin SDK
-// const admin = require('firebase-admin');
-// const serviceAccount = require('./firebase/google-services.json'); // Update with your credentials
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount),
-// });
+const admin = require('firebase-admin');
+const serviceAccount = require('./firebase/ravensanz-10b88-firebase-adminsdk-x8ks2-81041e36c9.json'); // Update with your credentials
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 // Routes
 const userSignupRoute = require('./app/routes/userSignupRoutes');
@@ -52,9 +52,9 @@ const clientRoute = require("./app/routes/clientRoutes");
 const userRoute = require("./app/routes/userRoutes");
 const uploadPictureRoute = require("./app/routes/uploadRoutes");
 const theNestRoute = require("./app/routes/theNestRoutes");
-// const googleAuthRoute = require('./app/routes/googleAuthRoutes');
-// // Import the new route for Google signup
-// const googleSignupRoute = require('./app/routes/googleSignupRoutes');
+//const googleAuthRoute = require('./app/routes/googleAuthRoutes');
+// Import the new route for Google signup
+const googleSignupRoute = require('./app/routes/googleAuthentication');
 
 app.use('/api/v1/signup', userSignupRoute);
 app.use('/api/v1/login', userLoginRoute);
@@ -65,9 +65,9 @@ app.use('/api/v1/client', clientRoute);
 app.use('/api/v1/user/details', userRoute);
 app.use('/api/v1/upload', uploadPictureRoute);
 app.use('/api/v1/thenest', theNestRoute);
-// app.use('/auth/google', googleAuthRoute);
-// // Use the new route for Google signup
-// app.use('/api/v1/google/signup', googleSignupRoute);
+//app.use('/auth/google', googleAuthRoute);
+// Use the new route for Google signup
+app.use('/api/v1/google/signup', googleSignupRoute);
 
 function isLoggedIn(req,res,next){
   req.user ? next() : res.sendStatus(401)

@@ -2,7 +2,7 @@
 const admin = require('firebase-admin');
 
 module.exports = function (req, res, next) {
-  const idToken = req.headers.authorization;
+  const idToken = req.body.token;
 
   admin
     .auth()

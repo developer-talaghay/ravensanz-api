@@ -97,3 +97,24 @@ function isValidEmail(email) {
   const emailRegex = /\S+@\S+\.\S+/;
   return emailRegex.test(email);
 }
+
+exports.deleteUser = (req, res) => {
+  const { user_id } = req.body;
+
+  if (!user_id) {
+    return res.status(400).json({ message: 'Missing user_id in request body' });
+  }
+
+  UserModel.deleteUser(user_id, (error, result) => {
+    if (error) {
+      console.error('Error deleting user and related data: ', error);
+      return res.status(500).json({ message: 'Error deleting user and related data' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(200).json({ message: 'User does not exist' });
+    }
+
+    return res.status(200).json({ message: 'User and related data deleted successfully' });
+  });
+};
