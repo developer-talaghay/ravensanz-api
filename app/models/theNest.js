@@ -257,7 +257,7 @@ TheNestModel.searchMatchingTagNameViewByUserAndTitle = (user_id, title, callback
   const sqlQuery = `
     SELECT *
     FROM matching_tag_name_view
-    WHERE user_id = ? AND title LIKE ?
+    WHERE user_id = ? AND story_title LIKE ?
   `;
 
   dbConn.query(sqlQuery, [user_id, `%${title}%`], (error, result) => {
