@@ -1,11 +1,11 @@
 "use strict";
-const mysql = require("mysql2");
+const mysql = require("mysql");
 const dotenv = require("dotenv").config();
 //local mysql db connection
 const dbConn = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '135&robert081299',
+  password: 'asdqwe123',
   database: 'ravensanz_db',
   connectTimeout: 10000 // Timeout in milliseconds
 });
