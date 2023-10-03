@@ -255,7 +255,7 @@ TheNestModel.searchVipTitlesAndUserIDsInUserThenestView = (title, user_id, callb
 
 TheNestModel.searchMatchingTagNameViewByUserAndTitle = (user_id, title, callback) => {
   const sqlQuery = `
-    SELECT storyId AS story_id, story_title AS title, status, category, url, isPublished,createdAt, author
+    SELECT storyId AS story_id, story_title AS title, status, category, url, isPublished,createdAt, author, isVip
     FROM matching_tag_name_view
     WHERE user_id = ? AND story_title LIKE ?
   `;
