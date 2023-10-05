@@ -329,5 +329,20 @@ ClientModel.searchUserLastReadWithImages = (searchQuery, userId, callback) => {
   });
 };
 
+ClientModel.updateTotalLikers = (storyId, totalLikersToAdd, callback) => {
+  dbConn.query(
+    'UPDATE story_lists SET totalLikers = totalLikers + ? WHERE id = ?',
+    [totalLikersToAdd, storyId],
+    (error, result) => {
+      if (error) {
+        console.error('Error updating totalLikers: ', error);
+        return callback(error);
+      }
+
+      return callback(null, result);
+    }
+  );
+};
+
 
 module.exports = ClientModel;

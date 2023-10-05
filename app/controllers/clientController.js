@@ -258,5 +258,27 @@ clientController.searchByTitleOrAuthorContinue = (req, res) => {
   });
 };
 
+clientController.likeStory = (req, res) => {
+  const { story_id } = req.body;
+  const totalLikers = 1;
+
+  if (!story_id || totalLikers === undefined) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.updateTotalLikers(story_id, totalLikers, (error, result) => {
+    if (error) {
+      console.error('Error updating totalLikers: ', error);
+      return res.status(500).json({ message: 'Error updating totalLikers' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(200).json({ message: 'No matching story found' });
+    }
+
+    return res.status(200).json({ message: 'TotalLikers updated successfully' });
+  });
+};
+
 
 module.exports = clientController;

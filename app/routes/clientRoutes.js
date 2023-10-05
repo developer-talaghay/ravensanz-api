@@ -37,4 +37,7 @@ router.get("/stories/new/search", clientController.searchByTitleOrAuthorNew);
 router.get("/stories/vip/search", clientController.searchByTitleOrAuthorVip);
 router.get("/stories/continue/search", clientController.searchByTitleOrAuthorContinue);
 
+// User interaction
+router.post("/stories/like", clientController.likeStory);
+
 module.exports = router;
