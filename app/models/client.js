@@ -344,5 +344,20 @@ ClientModel.updateTotalLikers = (storyId, totalLikersToAdd, callback) => {
   );
 };
 
+ClientModel.updateTotalUnlikers = (storyId, totalLikersToSubtract, callback) => {
+  dbConn.query(
+    'UPDATE story_lists SET totalLikers = totalLikers - ? WHERE id = ?',
+    [totalLikersToSubtract, storyId],
+    (error, result) => {
+      if (error) {
+        console.error('Error updating totalLikers: ', error);
+        return callback(error);
+      }
+
+      return callback(null, result);
+    }
+  );
+};
+
 
 module.exports = ClientModel;
