@@ -112,12 +112,13 @@ clientController.getStoriesNewArrivals = (req, res) => {
 
 clientController.insertStoryId = (req, res) => {
   const { user_id, story_id } = req.body;
+  const read = 1;
 
-  if (!user_id || !story_id) {
+  if (!user_id || !story_id || read === undefined) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  ClientModel.insertStoryId(user_id, story_id, (error, result) => {
+  ClientModel.insertStoryId(user_id, story_id, read, (error, result) => {
     if (error) {
       console.error('Error inserting story_id: ', error);
       return res.status(500).json({ message: 'Error inserting story_id' });
@@ -301,6 +302,8 @@ clientController.unlikeStory = (req, res) => {
     return res.status(200).json({ message: 'Story Unliked' });
   });
 };
+
+
 
 
 module.exports = clientController;

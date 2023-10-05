@@ -121,7 +121,7 @@ ClientModel.getNewArrivals = (callback) => {
   );
 };
 
-ClientModel.insertStoryId = (userId, storyId, callback) => {
+ClientModel.insertStoryId = (userId, storyId, read, callback) => {
   // Check if a record exists with the given user_id and story_id
   dbConn.query(
     'SELECT * FROM user_last_read WHERE user_id = ? AND story_id = ?',
@@ -136,28 +136,52 @@ ClientModel.insertStoryId = (userId, storyId, callback) => {
         // If no matching record found, insert a new row
         dbConn.query(
           'INSERT INTO user_last_read (user_id, story_id) VALUES (?, ?)',
-          [userId, storyId],
+          [userId, storyId, read],
           (insertError) => {
             if (insertError) {
               console.error('Error inserting new record: ', insertError);
               return callback(insertError);
             }
 
-            return callback(null, 'New record inserted successfully');
+            // Update totalViews in story_lists
+            dbConn.query(
+              'UPDATE story_lists SET totalViews = totalViews + ? WHERE id = ?',
+              [read, storyId],
+              (updateError) => {
+                if (updateError) {
+                  console.error('Error updating totalViews: ', updateError);
+                  return callback(updateError);
+                }
+
+                return callback(null, 'New record inserted successfully');
+              }
+            );
           }
         );
       } else {
         // If matching record found, update the existing record
         dbConn.query(
           'UPDATE user_last_read SET modified_at = NOW() WHERE user_id = ? AND story_id = ?',
-          [userId, storyId],
+          [read, userId, storyId],
           (updateError) => {
             if (updateError) {
               console.error('Error updating existing record: ', updateError);
               return callback(updateError);
             }
 
-            return callback(null, 'Record updated successfully');
+            // Update totalViews in story_lists
+            dbConn.query(
+              'UPDATE story_lists SET totalViews = totalViews + ? WHERE id = ?',
+              [read, storyId],
+              (updateTotalViewsError) => {
+                if (updateTotalViewsError) {
+                  console.error('Error updating totalViews: ', updateTotalViewsError);
+                  return callback(updateTotalViewsError);
+                }
+
+                return callback(null, 'Record updated successfully');
+              }
+            );
           }
         );
       }
