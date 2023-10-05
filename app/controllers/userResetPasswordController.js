@@ -82,15 +82,15 @@ exports.forgotPassword = (req, res) => {
         expiresIn: "5m",
       });
     // const resetLink = `http://localhost:8000/api/v1/resetpassword/${token}`;
-    const resetLink = `http://3.145.100.103:8000/api/v1/resetpassword/${token}`; 
+    const resetLink = `http://18.117.252.199:8000/api/v1/resetpassword/${token}`; 
       // Create a transport object to send the email
       const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
         secure: false,
         auth: {
-          user: "robertchristian.rosales@gmail.com",
-          pass: "lxkepxxjeixoymtu",
+          user: "developer.talaghay@gmail.com",
+          pass: "tcqslwipuknbeocc",
         },
       });
 

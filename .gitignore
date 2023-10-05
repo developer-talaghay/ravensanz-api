@@ -27,3 +27,6 @@ dist/
 
 # MySQL dump files
 *.sql
+
+
+/profile_picture

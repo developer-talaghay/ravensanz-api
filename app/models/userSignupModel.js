@@ -75,4 +75,53 @@ User.updateUserStatus = (email, status, callback) => {
   );
 };
 
+User.deleteUser = (userId, callback) => {
+  const deleteQueries = [
+    'DELETE FROM user_thenest WHERE user_id = ?',
+    'DELETE FROM user_last_read WHERE user_id = ?',
+    'DELETE FROM user_details WHERE user_id = ?',
+    'DELETE FROM picture_table WHERE user_id = ?',
+    'DELETE FROM user WHERE id = ?'
+  ];
+
+  dbConn.beginTransaction((err) => {
+    if (err) {
+      return callback(err);
+    }
+
+    const deletePromises = deleteQueries.map((query) => {
+      return new Promise((resolve, reject) => {
+        dbConn.query(query, [userId], (error, result) => {
+          if (error) {
+            dbConn.rollback(() => {
+              reject(error);
+            });
+          } else {
+            resolve(result);
+          }
+        });
+      });
+    });
+
+    Promise.all(deletePromises)
+      .then(() => {
+        dbConn.commit((err) => {
+          if (err) {
+            dbConn.rollback(() => {
+              callback(err);
+            });
+          } else {
+            callback(null, { affectedRows: 1 }); // Assume user deletion always succeeds
+          }
+        });
+      })
+      .catch((error) => {
+        dbConn.rollback(() => {
+          callback(error);
+        });
+      });
+  });
+};
+
+
 module.exports = User;
