@@ -39,6 +39,7 @@ router.get("/stories/continue/search", clientController.searchByTitleOrAuthorCon
 
 // User interaction
 router.post("/stories/like", clientController.likeStory);
-router.post("/stories/unlike", clientController.unlikeStory);
+router.delete("/stories/unlike", clientController.unlikeStory);
+router.get("/stories/liked", clientController.getLikedStories);
 
 module.exports = router;

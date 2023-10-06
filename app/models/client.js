@@ -353,32 +353,109 @@ ClientModel.searchUserLastReadWithImages = (searchQuery, userId, callback) => {
   });
 };
 
-ClientModel.updateTotalLikers = (storyId, totalLikersToAdd, callback) => {
+ClientModel.likeStory = (userId, storyId, callback) => {
+  // Check if the user_id and story_id already exist in user_likes
   dbConn.query(
-    'UPDATE story_lists SET totalLikers = totalLikers + ? WHERE id = ?',
-    [totalLikersToAdd, storyId],
+    'SELECT * FROM user_likes WHERE user_id = ? AND story_id = ?',
+    [userId, storyId],
     (error, result) => {
       if (error) {
-        console.error('Error updating totalLikers: ', error);
+        console.error('Error checking for existing record: ', error);
         return callback(error);
       }
 
-      return callback(null, result);
+      if (result.length > 0) {
+        // If a matching record is found, it means the user already likes the story
+        return callback(null, 'alreadyExists');
+      } else {
+        // If no matching record found, insert a new row into user_likes
+        dbConn.query(
+          'INSERT INTO user_likes (user_id, story_id) VALUES (?, ?)',
+          [userId, storyId],
+          (insertError) => {
+            if (insertError) {
+              console.error('Error inserting new record: ', insertError);
+              return callback(insertError);
+            }
+
+            // Update totalLikers in story_lists
+            dbConn.query(
+              'UPDATE story_lists SET totalLikers = totalLikers + 1 WHERE id = ?',
+              [storyId],
+              (updateError) => {
+                if (updateError) {
+                  console.error('Error updating totalLikers: ', updateError);
+                  return callback(updateError);
+                }
+
+                return callback(null, 'liked');
+              }
+            );
+          }
+        );
+      }
     }
   );
 };
 
-ClientModel.updateTotalUnlikers = (storyId, totalLikersToSubtract, callback) => {
+ClientModel.unlikeStory = (userId, storyId, totalLikersToSubtract, callback) => {
+  // Check if the user_id and story_id exist in user_likes
   dbConn.query(
-    'UPDATE story_lists SET totalLikers = totalLikers - ? WHERE id = ?',
-    [totalLikersToSubtract, storyId],
+    'SELECT * FROM user_likes WHERE user_id = ? AND story_id = ?',
+    [userId, storyId],
     (error, result) => {
       if (error) {
-        console.error('Error updating totalLikers: ', error);
+        console.error('Error checking for existing record: ', error);
         return callback(error);
       }
 
-      return callback(null, result);
+      if (result.length === 0) {
+        // If no matching record found, it means the user does not like the story
+        return callback(null, 'notFound');
+      } else {
+        // If matching record found, delete the row from user_likes
+        dbConn.query(
+          'DELETE FROM user_likes WHERE user_id = ? AND story_id = ?',
+          [userId, storyId],
+          (deleteError) => {
+            if (deleteError) {
+              console.error('Error deleting record: ', deleteError);
+              return callback(deleteError);
+            }
+
+            // Update totalLikers in story_lists
+            dbConn.query(
+              'UPDATE story_lists SET totalLikers = totalLikers - ? WHERE id = ?',
+              [totalLikersToSubtract, storyId],
+              (updateError) => {
+                if (updateError) {
+                  console.error('Error updating totalLikers: ', updateError);
+                  return callback(updateError);
+                }
+
+                return callback(null, 'unliked');
+              }
+            );
+          }
+        );
+      }
+    }
+  );
+};
+
+ClientModel.getLikedStories = (userId, callback) => {
+  // Query to retrieve liked stories for a user from v_user_likes
+  dbConn.query(
+    'SELECT * FROM v_user_likes WHERE user_id = ?',
+    [userId],
+    (error, likedStories) => {
+      if (error) {
+        console.error('Error retrieving liked stories for user: ', error);
+        return callback(error, null);
+      }
+
+      // Return the liked stories
+      return callback(null, likedStories);
     }
   );
 };

@@ -259,50 +259,67 @@ clientController.searchByTitleOrAuthorContinue = (req, res) => {
   });
 };
 
-clientController.likeStory = (req, res) => {
-  const { story_id } = req.body;
-  const totalLikers = 1;
 
-  if (!story_id || totalLikers === undefined) {
+clientController.likeStory = (req, res) => {
+  const { user_id, story_id } = req.body;
+
+  if (!user_id || !story_id) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  ClientModel.updateTotalLikers(story_id, totalLikers, (error, result) => {
+  ClientModel.likeStory(user_id, story_id, (error, result) => {
     if (error) {
-      console.error('Error updating totalLikers: ', error);
-      return res.status(500).json({ message: 'Error updating totalLikers' });
+      console.error('Error liking story: ', error);
+      return res.status(500).json({ message: 'Error liking story' });
     }
 
-    if (result.affectedRows === 0) {
-      return res.status(200).json({ message: 'No matching story found' });
+    if (result === 'alreadyExists') {
+      return res.status(200).json({ message: 'User already likes this story' });
+    } else if (result === 'liked') {
+      return res.status(200).json({ message: 'Story Liked' });
     }
-
-    return res.status(200).json({ message: 'Story Liked' });
   });
 };
+
 
 clientController.unlikeStory = (req, res) => {
-  const { story_id } = req.body;
+  const { user_id, story_id } = req.body;
   const totalLikers = 1;
 
-  if (!story_id || totalLikers === undefined) {
+  if (!user_id || !story_id || totalLikers === undefined) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  ClientModel.updateTotalUnlikers(story_id, totalLikers, (error, result) => {
+  ClientModel.unlikeStory(user_id, story_id, totalLikers, (error, result) => {
     if (error) {
-      console.error('Error updating totalLikers: ', error);
-      return res.status(500).json({ message: 'Error updating totalLikers' });
+      console.error('Error unliking story: ', error);
+      return res.status(500).json({ message: 'Error unliking story' });
     }
 
-    if (result.affectedRows === 0) {
+    if (result === 'notFound') {
       return res.status(200).json({ message: 'No matching story found' });
+    } else if (result === 'unliked') {
+      return res.status(200).json({ message: 'Story Unliked' });
     }
-
-    return res.status(200).json({ message: 'Story Unliked' });
   });
 };
 
+clientController.getLikedStories = (req, res) => {
+  const { user_id } = req.body;
+
+  if (!user_id) {
+    return res.status(400).json({ message: 'Missing user_id in request body' });
+  }
+
+  ClientModel.getLikedStories(user_id, (error, likedStories) => {
+    if (error) {
+      console.error('Error getting liked stories: ', error);
+      return res.status(500).json({ message: 'Error retrieving liked stories' });
+    }
+
+    return res.status(200).json({ message: 'Liked stories retrieved successfully', data: likedStories });
+  });
+};
 
 
 
