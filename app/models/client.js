@@ -554,7 +554,7 @@ ClientModel.updateComment = (userId, storyId, comment, commentId, callback) => {
 
 ClientModel.getAllCommentsByStoryId = (storyId, callback) => {
   // Define the SQL query to fetch comments by story_id and alias the parent_comment_id as "replied_to"
-  const sqlQuery = 'SELECT comment_id, user_id, story_id, comment, parent_comment_id AS replied_to, path, likes, flagged, created_at, modified_at FROM user_comments_all WHERE story_id = ? ORDER BY modified_at DESC;';
+  const sqlQuery = 'SELECT comment_id, user_id, full_name, display_name, url, story_id, comment, parent_comment_id AS replied_to, path, likes, flagged, created_at, modified_at FROM user_comments_all WHERE story_id = ? ORDER BY modified_at DESC;';
 
   dbConn.query(sqlQuery, [storyId], (error, result) => {
     if (error) {
