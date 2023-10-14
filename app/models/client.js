@@ -525,7 +525,7 @@ ClientModel.commentStory = (userId, storyId, comment, replyToValue, callback) =>
 
 ClientModel.updateComment = (userId, storyId, comment, commentId, callback) => {
   dbConn.query(
-    'UPDATE user_story_comments SET comment = ? WHERE user_id = ? AND story_id = ? AND parent_comment_id = ?',
+    'UPDATE user_story_comments SET comment = ? WHERE user_id = ? AND story_id = ? AND comment_id = ?',
     [comment, userId, storyId, commentId],
     (error) => {
       if (error) {
@@ -535,7 +535,7 @@ ClientModel.updateComment = (userId, storyId, comment, commentId, callback) => {
 
       // Get the updated comment's details
       dbConn.query(
-        'SELECT * FROM user_story_comments WHERE user_id = ? AND story_id = ? AND parent_comment_id = ?',
+        'SELECT * FROM user_story_comments WHERE user_id = ? AND story_id = ? AND comment_id = ?',
         [userId, storyId, commentId],
         (selectError, result) => {
           if (selectError) {
@@ -553,8 +553,8 @@ ClientModel.updateComment = (userId, storyId, comment, commentId, callback) => {
 };
 
 ClientModel.getAllCommentsByStoryId = (storyId, callback) => {
-  // Define the SQL query to fetch comments by story_id
-  const sqlQuery = 'SELECT * FROM user_story_comments WHERE story_id = ? ORDER BY modified_at DESC;';
+  // Define the SQL query to fetch comments by story_id and alias the parent_comment_id as "replied_to"
+  const sqlQuery = 'SELECT comment_id, user_id, story_id, comment, parent_comment_id AS replied_to, path, likes, flagged, created_at, modified_at FROM user_comments_all WHERE story_id = ? ORDER BY modified_at DESC;';
 
   dbConn.query(sqlQuery, [storyId], (error, result) => {
     if (error) {
@@ -593,6 +593,61 @@ function createNestedComments(comments) {
 
   return rootComments;
 }
+
+ClientModel.likeComment = (user_id, comment_id, callback) => {
+  // Check if the comment_id exists in user_story_comments
+  dbConn.query(
+    'SELECT * FROM user_story_comments WHERE comment_id = ?',
+    [comment_id],
+    (selectError, result) => {
+      if (selectError) {
+        console.error('Error checking for existing comment: ', selectError);
+        return callback(selectError);
+      }
+
+      if (result.length === 0) {
+        // If no matching comment found, return an error
+        return callback(new Error('Comment not found'));
+      } else {
+        // Update the likes count in user_story_comments
+        dbConn.query(
+          'UPDATE user_story_comments SET likes = likes + 1 WHERE comment_id = ?',
+          [comment_id],
+          (updateError) => {
+            if (updateError) {
+              console.error('Error updating likes count: ', updateError);
+              return callback(updateError);
+            }
+
+            return callback(null, 'liked');
+          }
+        );
+      }
+    }
+  );
+};
+
+ClientModel.deleteComment = (user_id, comment_id, story_id, callback) => {
+  // Check if the comment_id, user_id, and story_id match or if parent_comment_id equals comment_id
+  dbConn.query(
+    'DELETE FROM user_story_comments WHERE (comment_id = ? AND user_id = ? AND story_id = ?) OR (parent_comment_id = ?)',
+    [comment_id, user_id, story_id, comment_id],
+    (deleteError, result) => {
+      if (deleteError) {
+        console.error('Error deleting comment: ', deleteError);
+        return callback(deleteError);
+      }
+
+      if (result.affectedRows > 0) {
+        // If the row(s) were deleted, return 'deleted'
+        return callback(null, 'deleted');
+      } else {
+        // If no matching row(s) found, return 'not found'
+        return callback(null, 'not found');
+      }
+    }
+  );
+};
 
 
 

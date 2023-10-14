@@ -46,5 +46,7 @@ router.get("/stories/liked", clientController.getLikedStories);
 router.post("/stories/comments", clientController.commentStory);
 router.put("/stories/comments/update", clientController.updateCommentStory);
 router.get("/stories/comments/get", clientController.getAllComments);
+router.post("/stories/comments/like", clientController.likeComment);
+router.delete("/stories/comments/delete", clientController.deleteComment);
 
 module.exports = router;
