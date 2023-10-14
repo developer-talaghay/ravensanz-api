@@ -460,5 +460,140 @@ ClientModel.getLikedStories = (userId, callback) => {
   );
 };
 
+ClientModel.commentStory = (userId, storyId, comment, replyToValue, callback) => {
+  // Determine the path for the new comment
+  let path;
+
+  if (replyToValue === 0) {
+    path = "/";
+    insertComment(null); // Pass null for parent_comment_id for top-level comments
+  } else {
+    // Fetch the path of the parent comment
+    dbConn.query(
+      'SELECT path FROM user_story_comments WHERE comment_id = ?',
+      [replyToValue],
+      (error, result) => {
+        if (error) {
+          console.error('Error retrieving parent comment path: ', error);
+          return callback(error);
+        }
+
+        if (result.length === 0) {
+          return callback(new Error('Parent comment not found'));
+        }
+
+        const parentPath = result[0].path;
+        path = parentPath + replyToValue + '/';
+        insertComment(replyToValue); // Pass replyToValue as parent_comment_id
+      }
+    );
+  }
+
+  // Function to insert the new comment
+  function insertComment(parentCommentId) {
+    dbConn.query(
+      'INSERT INTO user_story_comments (user_id, story_id, comment, path, parent_comment_id) VALUES (?, ?, ?, ?, ?)',
+      [userId, storyId, comment, path, parentCommentId],
+      (error, result) => {
+        if (error) {
+          console.error('Error inserting comment: ', error);
+          return callback(error);
+        }
+
+        const comment_id = result.insertId; // Get the inserted comment's ID
+        const created_at = new Date(); // Current date and time
+        const modified_at = new Date(); // Initially, created_at and modified_at are the same
+
+        const insertedComment = {
+          comment_id,
+          user_id: userId,
+          parentCommentId,
+          comment,
+          created_at,
+          modified_at,
+          path, // Include the path in the response
+        };
+
+        return callback(null, insertedComment);
+      }
+    );
+  }
+};
+
+
+
+
+ClientModel.updateComment = (userId, storyId, comment, commentId, callback) => {
+  dbConn.query(
+    'UPDATE user_story_comments SET comment = ? WHERE user_id = ? AND story_id = ? AND parent_comment_id = ?',
+    [comment, userId, storyId, commentId],
+    (error) => {
+      if (error) {
+        console.error('Error updating comment: ', error);
+        return callback(error);
+      }
+
+      // Get the updated comment's details
+      dbConn.query(
+        'SELECT * FROM user_story_comments WHERE user_id = ? AND story_id = ? AND parent_comment_id = ?',
+        [userId, storyId, commentId],
+        (selectError, result) => {
+          if (selectError) {
+            console.error('Error fetching updated comment: ', selectError);
+            return callback(selectError);
+          }
+
+          const updatedComment = result[0]; // Assuming the query returns a single row
+
+          return callback(null, updatedComment);
+        }
+      );
+    }
+  );
+};
+
+ClientModel.getAllCommentsByStoryId = (storyId, callback) => {
+  // Define the SQL query to fetch comments by story_id
+  const sqlQuery = 'SELECT * FROM user_story_comments WHERE story_id = ? ORDER BY modified_at DESC;';
+
+  dbConn.query(sqlQuery, [storyId], (error, result) => {
+    if (error) {
+      console.error('Error fetching comments by story_id: ', error);
+      return callback(error, null);
+    }
+
+    // Process the comments to create a nested structure
+    const nestedComments = createNestedComments(result);
+
+    return callback(null, nestedComments);
+  });
+};
+
+function createNestedComments(comments) {
+  const commentMap = new Map();
+  const rootComments = [];
+
+  // Organize comments into a map using their comment_id as keys
+  comments.forEach((comment) => {
+    comment.replies = []; // Initialize replies array for each comment
+    commentMap.set(comment.comment_id, comment);
+  });
+
+  // Build the nested structure by connecting replies to their parent comments
+  comments.forEach((comment) => {
+    const parentPath = comment.path.substring(0, comment.path.lastIndexOf('/'));
+    const parentId = commentMap.get(parentPath);
+
+    if (parentId) {
+      parentId.replies.push(comment);
+    } else {
+      rootComments.push(comment);
+    }
+  });
+
+  return rootComments;
+}
+
+
 
 module.exports = ClientModel;

@@ -322,5 +322,76 @@ clientController.getLikedStories = (req, res) => {
 };
 
 
+clientController.commentStory = (req, res) => {
+  const { user_id, story_id, comment, reply_to_parent_comment } = req.body;
+
+  // Set reply_to to 0 if it is empty
+  const replyToValue = reply_to_parent_comment || 0;
+
+  if (!user_id || !story_id || !comment) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.commentStory(user_id, story_id, comment, replyToValue, (error, insertedComment) => {
+    if (error) {
+      console.error('Error commenting on story: ', error);
+      return res.status(500).json({ message: 'Error commenting on story' });
+    }
+
+    return res.status(200).json({
+      status: 'Comment Posted',
+      data: insertedComment,
+    });
+  });
+};
+
+
+clientController.updateCommentStory = (req, res) => {
+  const { user_id, story_id, comment, comment_id } = req.body;
+
+  if (!user_id || !story_id || !comment || !comment_id) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.updateComment(user_id, story_id, comment, comment_id, (error, updatedComment) => {
+    if (error) {
+      console.error('Error updating comment: ', error);
+      return res.status(500).json({ message: 'Error updating comment' });
+    }
+
+    if (!updatedComment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    return res.status(200).json({
+      status: 'Comment Updated',
+      data: updatedComment,
+    });
+  });
+};
+
+clientController.getAllComments = (req, res) => {
+  const { story_id } = req.body;
+
+  if (!story_id) {
+    return res.status(400).json({ message: 'Missing required field: story_id' });
+  }
+
+  // Call the model to fetch comments by story_id
+  ClientModel.getAllCommentsByStoryId(story_id, (error, comments) => {
+    if (error) {
+      console.error('Error fetching comments by story_id: ', error);
+      return res.status(500).json({ message: 'Error fetching comments by story_id' });
+    }
+
+    return res.status(200).json({
+      message: 'Comments retrieved by story_id',
+      data: comments,
+    });
+  });
+};
+
+
+
 
 module.exports = clientController;
