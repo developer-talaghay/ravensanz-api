@@ -562,8 +562,11 @@ ClientModel.getAllCommentsByStoryId = (storyId, callback) => {
       return callback(error, null);
     }
 
+    // Filter out comments with "flagged" count >= 3
+    const filteredComments = result.filter(comment => comment.flagged < 3);
+
     // Process the comments to create a nested structure
-    const nestedComments = createNestedComments(result);
+    const nestedComments = createNestedComments(filteredComments);
 
     return callback(null, nestedComments);
   });
@@ -593,6 +596,7 @@ function createNestedComments(comments) {
 
   return rootComments;
 }
+
 
 ClientModel.likeComment = (user_id, comment_id, callback) => {
   // Check if the comment_id exists in user_story_comments
@@ -648,6 +652,96 @@ ClientModel.deleteComment = (user_id, comment_id, story_id, callback) => {
     }
   );
 };
+
+// Add the 'nodemailer' module for sending emails
+const nodemailer = require('nodemailer');
+
+// Create a nodemailer transporter with your email service credentials
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: "developer.talaghay@gmail.com",
+      pass: "tcqslwipuknbeocc",
+  },
+});
+
+// Function to send an email
+function sendFlaggedCommentEmail(email, comment) {
+  const mailOptions = {
+    from: 'Raven Sanz Accounts <noreply@gmail.com>',
+    to: email,
+    subject: 'Comment Flagged',
+    text: `Your comment has been flagged too many times and has been taken down.`,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error('Error sending email: ', error);
+    } else {
+      console.log('Email sent: ' + info.response);
+    }
+  });
+}
+
+ClientModel.flagComment = (user_id, comment_id, story_id, callback) => {
+  // Check if the comment exists
+  dbConn.query(
+    'SELECT * FROM user_story_comments WHERE comment_id = ? AND story_id = ? AND user_id = ?',
+    [comment_id, story_id, user_id],
+    (selectError, result) => {
+      if (selectError) {
+        console.error('Error checking for existing comment: ', selectError);
+        return callback(selectError);
+      }
+
+      if (result.length === 0) {
+        // If no matching comment is found, return an error
+        return callback(new Error('Comment not found'));
+      }
+
+      // Update the `flagged` column for the given `comment_id`, `story_id`, and `user_id`
+      dbConn.query(
+        'UPDATE user_story_comments SET flagged = flagged + 1 WHERE comment_id = ? AND story_id = ? AND user_id = ?',
+        [comment_id, story_id, user_id],
+        (updateError) => {
+          if (updateError) {
+            console.error('Error flagging comment: ', updateError);
+            return callback(updateError);
+          }
+
+          // Check if the 'flagged' count reaches 3
+          if (result[0].flagged + 1 === 3) {
+            // Fetch the email of the user from the user table
+            dbConn.query(
+              'SELECT email_add FROM user WHERE id = ?',
+              [user_id],
+              (fetchError, userResult) => {
+                if (fetchError) {
+                  console.error('Error fetching user email: ', fetchError);
+                  return callback(fetchError);
+                }
+
+                // Send an email to the user
+                const userEmail = userResult[0].email_add;
+                sendFlaggedCommentEmail(userEmail, result[0]);
+                return callback(null, 'flagged');
+              }
+            );
+          } else {
+            return callback(null, 'flagged');
+          }
+        }
+      );
+    }
+  );
+};
+
+
+
+
+
 
 
 

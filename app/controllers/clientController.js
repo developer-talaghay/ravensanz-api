@@ -433,5 +433,27 @@ clientController.deleteComment = (req, res) => {
   });
 };
 
+clientController.flagComment = (req, res) => {
+  const { user_id, comment_id, story_id } = req.body;
+
+  if (!user_id || !comment_id || !story_id) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.flagComment(user_id, comment_id, story_id, (error, result) => {
+    if (error) {
+      console.error('Error flagging comment: ', error);
+      if (error.message === 'Comment not found') {
+        return res.status(404).json({ message: 'Comment not found' });
+      } else {
+        return res.status(500).json({ message: 'Error flagging comment' });
+      }
+    }
+
+    if (result === 'flagged') {
+      return res.status(200).json({ message: 'Comment Flagged' });
+    }
+  });
+};
 
 module.exports = clientController;
