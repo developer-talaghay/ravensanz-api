@@ -149,7 +149,7 @@ User.createOrLoginGoogleUser = (userData, callback) => {
               console.error('Error inserting Google user into the database: ', error);
               return callback(error, null);
             } else {
-              return callback(null, 'created');
+              return callback(null, result);
             }
           }
         );
