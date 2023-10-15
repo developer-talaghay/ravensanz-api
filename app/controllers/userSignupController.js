@@ -118,3 +118,27 @@ exports.deleteUser = (req, res) => {
     return res.status(200).json({ message: 'User and related data deleted successfully' });
   });
 };
+
+exports.createGoogleUser = (req, res) => {
+  const { idToken, email, fullName } = req.body;
+
+  // Check if the email address is valid
+  if (!isValidEmail(email)) {
+    console.error('Error creating Google user: invalid email address');
+    return res.status(400).send({ message: 'Invalid email address' });
+  }
+
+  // Attempt to create or log in the user in the user_google table
+  UserModel.createOrLoginGoogleUser({ idToken, email, fullName }, (error, result) => {
+    if (error) {
+      console.error('Error creating or logging in Google user: ', error);
+      return res.status(500).send({ message: 'Error creating or logging in Google user' });
+    } else if (result === 'login') {
+      console.log('Google user logged in successfully');
+      res.status(200).json({ message: 'Google user logged in successfully' });
+    } else {
+      console.log('Google user created and logged in successfully');
+      res.status(201).json({ message: 'Google user created and logged in successfully' });
+    }
+  });
+};

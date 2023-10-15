@@ -125,5 +125,38 @@ User.deleteUser = (userId, callback) => {
   });
 };
 
+User.createOrLoginGoogleUser = (userData, callback) => {
+  const { idToken, email } = userData;
+
+  // Check if the email address already exists in the user_google table
+  dbConn.query(
+    'SELECT * FROM user WHERE email_add = ? AND type = "google" ',
+    [email],
+    (error, result) => {
+      if (error) {
+        console.error('Error checking email address existence: ', error);
+        return callback(error, null);
+      } else if (result.length > 0) {
+        // Email address already exists in user_google table, log in the user
+        return callback(null, 'login');
+      } else {
+        // Insert the Google user into the user_google table
+        dbConn.query(
+          'INSERT INTO user (token, email_add, type) VALUES (?, ?, "google")',
+          [idToken, email],
+          (error, result) => {
+            if (error) {
+              console.error('Error inserting Google user into the database: ', error);
+              return callback(error, null);
+            } else {
+              return callback(null, 'created');
+            }
+          }
+        );
+      }
+    }
+  );
+};
+
 
 module.exports = User;
