@@ -125,12 +125,16 @@ User.deleteUser = (userId, callback) => {
   });
 };
 
+// Modify the UserModel.js file
+
+// Modify the UserModel.js file
+
 User.createOrLoginGoogleUser = (userData, callback) => {
   const { idToken, email } = userData;
 
   // Check if the email address already exists in the user_google table
   dbConn.query(
-    'SELECT * FROM user WHERE email_add = ? AND type = "google" ',
+    'SELECT id, token, email_add, status, type, created_at, modified_at FROM user WHERE email_add = ? AND type = "google" ',
     [email],
     (error, result) => {
       if (error) {
@@ -138,7 +142,8 @@ User.createOrLoginGoogleUser = (userData, callback) => {
         return callback(error, null);
       } else if (result.length > 0) {
         // Email address already exists in user_google table, log in the user
-        return callback(null, 'login');
+        const userDetails = result[0];
+        return callback(null, userDetails);
       } else {
         // Insert the Google user into the user_google table
         dbConn.query(
@@ -157,6 +162,7 @@ User.createOrLoginGoogleUser = (userData, callback) => {
     }
   );
 };
+
 
 
 module.exports = User;

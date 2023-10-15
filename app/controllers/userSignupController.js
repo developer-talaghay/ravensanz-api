@@ -132,14 +132,24 @@ exports.createGoogleUser = (req, res) => {
   UserModel.createOrLoginGoogleUser({ idToken, email, fullName }, (error, result) => {
     if (error) {
       console.error('Error creating or logging in Google user: ', error);
-      return res.status(500).json({ message: 'Error creating or logging in Google user', data: result });
-    } else if (result === 'login') {
-      console.log('Google user logged in successfully');
-      res.status(200).json({ message: 'Google user logged in successfully', data: result });
+      return res.status(500).json({ message: 'Error creating or logging in Google user' });
+    }
+
+    if (result.token) {
+      // Google user logged in successfully
+      const response = {
+        message: 'Google user created and logged in successfully',
+        token: result.token, // Use the token from the request
+        userDetails: result, // Include the user details
+      };
+
+      res.status(201).json(response);
     } else {
       console.log('Google user created and logged in successfully');
-      res.status(201).json({ message: 'Google user created and logged in successfully', data: result });
+      res.status(201).json({ message: 'Google user created and logged in successfully' });
     }
   });
 };
+
+
 
