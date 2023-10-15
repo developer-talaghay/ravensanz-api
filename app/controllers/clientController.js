@@ -371,7 +371,7 @@ clientController.updateCommentStory = (req, res) => {
 };
 
 clientController.getAllComments = (req, res) => {
-  const { story_id } = req.body;
+  const { story_id } = req.query;
 
   if (!story_id) {
     return res.status(400).json({ message: 'Missing required field: story_id' });
