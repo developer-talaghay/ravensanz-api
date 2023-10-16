@@ -773,10 +773,4 @@ ClientModel.unlikeComment = (user_id, comment_id, callback) => {
 };
 
 
-
-
-
-
-
-
 module.exports = ClientModel;
