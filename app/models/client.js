@@ -739,6 +739,40 @@ ClientModel.flagComment = (user_id, comment_id, story_id, callback) => {
 };
 
 
+ClientModel.unlikeComment = (user_id, comment_id, callback) => {
+  // Check if the comment_id exists in user_story_comments
+  dbConn.query(
+    'SELECT * FROM user_story_comments WHERE comment_id = ?',
+    [comment_id],
+    (selectError, result) => {
+      if (selectError) {
+        console.error('Error checking for existing comment: ', selectError);
+        return callback(selectError);
+      }
+
+      if (result.length === 0) {
+        // If no matching comment found, return an error
+        return callback(new Error('Comment not found'));
+      } else {
+        // Update the likes count in user_story_comments
+        dbConn.query(
+          'UPDATE user_story_comments SET likes = likes - 1 WHERE comment_id = ?',
+          [comment_id],
+          (updateError) => {
+            if (updateError) {
+              console.error('Error updating likes count: ', updateError);
+              return callback(updateError);
+            }
+
+            return callback(null, 'unliked');
+          }
+        );
+      }
+    }
+  );
+};
+
+
 
 
 

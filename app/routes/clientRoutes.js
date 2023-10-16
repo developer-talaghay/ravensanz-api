@@ -47,6 +47,7 @@ router.post("/stories/comments", clientController.commentStory);
 router.put("/stories/comments/update", clientController.updateCommentStory);
 router.get("/stories/comments/get", clientController.getAllComments);
 router.post("/stories/comments/like", clientController.likeComment);
+router.post("/stories/comments/unlike", clientController.unlikeComment);
 router.delete("/stories/comments/delete", clientController.deleteComment);
 router.post("/stories/comments/flag", clientController.flagComment);
 
