@@ -552,6 +552,7 @@ ClientModel.updateComment = (userId, storyId, comment, commentId, callback) => {
   );
 };
 
+
 ClientModel.getAllCommentsByStoryId = (storyId, callback) => {
   // Define the SQL query to fetch comments by story_id and alias the parent_comment_id as "replied_to"
   const sqlQuery = 'SELECT comment_id, user_id, full_name, display_name, url, story_id, comment, parent_comment_id AS replied_to, path, likes, flagged, created_at, modified_at FROM user_comments_all WHERE story_id = ? ORDER BY modified_at DESC;';
@@ -562,8 +563,15 @@ ClientModel.getAllCommentsByStoryId = (storyId, callback) => {
       return callback(error, null);
     }
 
-    // Filter out comments with "flagged" count >= 3
+    // Filter out comments with "flagged" count < 3
     const filteredComments = result.filter(comment => comment.flagged < 3);
+
+    // Update the url value to the default if it's NULL
+    for (const comment of filteredComments) {
+      if (comment.url === null) {
+        comment.url = 'http://18.117.252.199:8000/images/default_ic.png';
+      }
+    }
 
     // Process the comments to create a nested structure
     const nestedComments = createNestedComments(filteredComments);
@@ -571,6 +579,7 @@ ClientModel.getAllCommentsByStoryId = (storyId, callback) => {
     return callback(null, nestedComments);
   });
 };
+
 
 function createNestedComments(comments) {
   const commentMap = new Map();
