@@ -16,8 +16,17 @@ UserDetails.create = (newUserDetails, callback) => {
         return callback(selectError, null);
       } else if (selectResult.length > 0) {
         // Update the existing record
+
+        // Conditionally update the birth_date if it is not null, empty, or whitespace
+        let updateQuery;
+        if (newUserDetails.birth_date && newUserDetails.birth_date.trim() !== '') {
+          updateQuery = "UPDATE user_details SET full_name = ?, display_name = ?, birth_date = ?, phone_number = ? WHERE user_id = ?";
+        } else {
+          updateQuery = "UPDATE user_details SET full_name = ?, display_name = ?, phone_number = ? WHERE user_id = ?";
+        }
+
         dbConn.query(
-          "UPDATE user_details SET full_name = ?, display_name = ?, birth_date = ?, phone_number = ? WHERE user_id = ?",
+          updateQuery,
           [
             newUserDetails.full_name,
             newUserDetails.display_name,
@@ -47,7 +56,7 @@ UserDetails.create = (newUserDetails, callback) => {
           ],
           (insertError, insertResult) => {
             if (insertError) {
-              console.error("Error inserting user details into database: ", insertError);
+              console.error("Error inserting user details into the database: ", insertError);
               return callback(insertError, null);
             } else {
               return callback(null, insertResult);
@@ -58,6 +67,7 @@ UserDetails.create = (newUserDetails, callback) => {
     }
   );
 };
+
 
 UserDetails.checkEmailExistence = (email, callback) => {
     dbConn.query(
