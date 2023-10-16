@@ -133,4 +133,19 @@ UserDetails.checkEmailExistence = (email, callback) => {
     );
   };
 
+  UserDetails.getUserDetailsByUserId = (user_id, callback) => {
+    dbConn.query(
+      'SELECT u.id, u.email_add, u.type, ud.* FROM user u INNER JOIN user_details ud ON u.id = ud.user_id WHERE u.id = ?',
+      [user_id],
+      (error, result) => {
+        if (error) {
+          console.error('Error fetching user details: ', error);
+          return callback(error, null);
+        } else {
+          return callback(null, result);
+        }
+      }
+    );
+  };
+
 module.exports = UserDetails;
