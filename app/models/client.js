@@ -571,6 +571,9 @@ ClientModel.getAllCommentsByStoryId = (storyId, callback) => {
       if (comment.url === null) {
         comment.url = 'http://18.117.252.199:8000/images/default_ic.png';
       }
+      if (comment.display_name === null) {
+        comment.display_name = 'Anonymous';
+      }
     }
 
     // Process the comments to create a nested structure
