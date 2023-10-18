@@ -15,7 +15,7 @@ ClientModel.getStoryImages = (callback) => {
 
 ClientModel.getOngoingStories = (callback) => {
     dbConn.query(
-      "SELECT * FROM v_story_images WHERE status = 'Ongoing' AND isPublished = 1",
+      "SELECT * FROM v_story_images WHERE status = 'Ongoing' AND isPublished = 1 AND isVIP = 0",
       (error, result) => {
         if (error) {
           console.error("Error retrieving ongoing stories: ", error);
@@ -29,7 +29,7 @@ ClientModel.getOngoingStories = (callback) => {
 
   ClientModel.getCompletedStories = (callback) => {
     dbConn.query(
-      "SELECT * FROM v_story_images WHERE status = 'Completed' AND isPublished = 1",
+      "SELECT * FROM v_story_images WHERE status = 'Completed' AND isPublished = 1 AND isVIP = 0",
       (error, result) => {
         if (error) {
           console.error("Error retrieving ongoing stories: ", error);
@@ -42,7 +42,7 @@ ClientModel.getOngoingStories = (callback) => {
   };
 
   ClientModel.getAllDetails = (callback) => {
-    dbConn.query("SELECT * FROM v_story_details WHERE isPublished = 1", (error, result) => {
+    dbConn.query("SELECT * FROM v_story_details WHERE isPublished = 1 AND isVIP = 0", (error, result) => {
       if (error) {
         console.error("Error retrieving story details: ", error);
         return callback(error, null);
@@ -54,7 +54,7 @@ ClientModel.getOngoingStories = (callback) => {
 
   ClientModel.getStoryDetailsById = (storyId, callback) => {
     // Get story details from v_story_details where isPublished = 1
-    dbConn.query("SELECT * FROM v_story_details WHERE id = ? AND isPublished = 1", [storyId], (error, storyDetails) => {
+    dbConn.query("SELECT * FROM v_story_details WHERE id = ? AND isPublished = 1 AND isVIP = 0", [storyId], (error, storyDetails) => {
       if (error) {
         console.error("Error retrieving story details by id: ", error);
         return callback(error, null);
@@ -95,7 +95,7 @@ ClientModel.getOngoingStories = (callback) => {
 
 
   ClientModel.getRelatedStoriesByTag = (tagName, callback) => {
-    const query = "SELECT * FROM v_story_tags WHERE tag_name LIKE '%" + tagName + "%' AND isPublished = 1";
+    const query = "SELECT * FROM v_story_tags WHERE tag_name LIKE '%" + tagName + "%' AND isPublished = 1 AND isVIP = 0";
 
     dbConn.query(query, (error, results) => {
         if (error) {
@@ -109,7 +109,7 @@ ClientModel.getOngoingStories = (callback) => {
 
 ClientModel.getNewArrivals = (callback) => {
   dbConn.query(
-    "SELECT * FROM v_story_images WHERE isPublished = 1 ORDER BY createdAt DESC LIMIT 10",
+    "SELECT * FROM v_story_images WHERE isPublished = 1 AND isVIP = 0 ORDER BY createdAt DESC LIMIT 10",
     (error, result) => {
       if (error) {
         console.error("Error retrieving ongoing stories: ", error);
@@ -197,7 +197,7 @@ ClientModel.insertStoryId = (userId, storyId, read, callback) => {
   dbConn.query(
     'SELECT ulr.*, vsi.* FROM user_last_read ulr ' +
     'LEFT JOIN v_story_images vsi ON ulr.story_id = vsi.story_id ' +
-    'WHERE ulr.user_id = ? AND isPublished = 1 ' +
+    'WHERE ulr.user_id = ? AND isPublished = 1 AND isVIP = 0' +
     'ORDER BY ulr.modified_at DESC ' +
     'LIMIT 100',
     [userId],
@@ -234,7 +234,7 @@ ClientModel.searchStories = (searchQuery, callback) => {
   const sqlQuery = `
     SELECT * 
     FROM v_story_images 
-    WHERE (title LIKE ? OR author LIKE ?) AND isPublished = 1
+    WHERE (title LIKE ? OR author LIKE ?) AND isPublished = 1 AND isVIP = 0 
   `;
 
   dbConn.query(sqlQuery, [`%${searchQuery}%`, `%${searchQuery}%`], (error, result) => {
@@ -251,7 +251,7 @@ ClientModel.getPublishedStoryDetails = (callback) => {
   const sqlQuery = `
     SELECT * 
     FROM v_story_details 
-    WHERE isPublished = 1
+    WHERE isPublished = 1 AND isVIP = 0
   `;
   
   dbConn.query(sqlQuery, (error, result) => {
@@ -268,7 +268,7 @@ ClientModel.searchOngoingStories = (searchQuery, callback) => {
   const sqlQuery = `
     SELECT * 
     FROM v_story_images 
-    WHERE (title LIKE ? OR author LIKE ?) AND status = 'ongoing' AND isPublished = '1'
+    WHERE (title LIKE ? OR author LIKE ?) AND status = 'Ongoing' AND isPublished = '1' AND isVIP = 0
   `;
 
   dbConn.query(sqlQuery, [`%${searchQuery}%`, `%${searchQuery}%`], (error, result) => {
@@ -286,7 +286,7 @@ ClientModel.searchCompletedStories = (searchQuery, callback) => {
   const sqlQuery = `
     SELECT * 
     FROM v_story_images 
-    WHERE (title LIKE ? OR author LIKE ?) AND status = 'completed' AND isPublished = 1
+    WHERE (title LIKE ? OR author LIKE ?) AND status = 'Completed' AND isPublished = 1 AND isVIP = 0
   `;
 
   dbConn.query(sqlQuery, [`%${searchQuery}%`, `%${searchQuery}%`], (error, result) => {
@@ -304,7 +304,7 @@ ClientModel.searchNewestStories = (searchQuery, callback) => {
   const sqlQuery = `
     SELECT *
     FROM v_story_images
-    WHERE (title LIKE ? OR author LIKE ?) AND isPublished = 1
+    WHERE (title LIKE ? OR author LIKE ?) AND isPublished = 1 AND isVIP = 0
     ORDER BY createdAt DESC
     LIMIT 10
   `;

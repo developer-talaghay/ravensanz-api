@@ -135,7 +135,7 @@ UserDetails.checkEmailExistence = (email, callback) => {
 
   UserDetails.getUserDetailsByUserId = (user_id, callback) => {
     dbConn.query(
-      'SELECT u.id, u.email_add, u.type, ud.* FROM user u LEFT JOIN user_details ud ON u.id = ud.user_id WHERE u.id = ?',
+      'SELECT  u.email_add, u.type, ud.* FROM user u LEFT JOIN user_details ud ON u.id = ud.user_id WHERE u.id = ?',
       [user_id],
       (error, result) => {
         if (error) {
