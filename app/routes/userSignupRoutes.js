@@ -6,4 +6,10 @@ const userSignupController = require('../controllers/userSignupController');
 router.post("/", userSignupController.createUser);
 router.delete("/deleteuser", userSignupController.deleteUser);
 
+//disable user
+router.post("/disableuser", userSignupController.disableUser);
+
+// Continue with Google Signup/Login
+router.post("/google", userSignupController.createGoogleUser);
+
 module.exports = router;

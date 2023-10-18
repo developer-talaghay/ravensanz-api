@@ -37,4 +37,18 @@ router.get("/stories/new/search", clientController.searchByTitleOrAuthorNew);
 router.get("/stories/vip/search", clientController.searchByTitleOrAuthorVip);
 router.get("/stories/continue/search", clientController.searchByTitleOrAuthorContinue);
 
+// User interaction likes
+router.post("/stories/like", clientController.likeStory);
+router.delete("/stories/unlike", clientController.unlikeStory);
+router.get("/stories/liked", clientController.getLikedStories);
+
+//user interaction comments
+router.post("/stories/comments", clientController.commentStory);
+router.put("/stories/comments/update", clientController.updateCommentStory);
+router.get("/stories/comments/get", clientController.getAllComments);
+router.post("/stories/comments/like", clientController.likeComment);
+router.post("/stories/comments/unlike", clientController.unlikeComment);
+router.delete("/stories/comments/delete", clientController.deleteComment);
+router.post("/stories/comments/flag", clientController.flagComment);
+
 module.exports = router;

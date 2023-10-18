@@ -70,51 +70,67 @@ exports.resetPassword = (req, res) => {
   
 exports.forgotPassword = (req, res) => {
   const email_add = req.body.email_add;
+
+  // Check if the user is of type 'google'
   User.findByEmail(email_add, (err, data) => {
     if (err) {
       if (err.kind === "not_found") {
+        // If the user is not found, respond with "User not found"
         return res.status(404).json({ error: "User not found" });
       } else {
+        // Handle other errors, e.g., database errors
         return res.status(500).json({ error: "Error retrieving user" });
       }
+    } else if (data.type === "google") {
+      // If the user's type is 'google,' respond with "Google authenticated, no need for a password"
+      return res.status(200).json({ message: "Google authenticated, no need for a password" });
     } else {
+      // For non-Google users, proceed with sending the reset password link
       const token = jwt.sign({ id: data.id, email_add: data.email_add }, process.env.JWT_SECRET, {
         expiresIn: "5m",
       });
-    // const resetLink = `http://localhost:8000/api/v1/resetpassword/${token}`;
-    const resetLink = `http://18.117.252.199:8000/api/v1/resetpassword/${token}`; 
-      // Create a transport object to send the email
-      const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
-        auth: {
-          user: "developer.talaghay@gmail.com",
-          pass: "tcqslwipuknbeocc",
-        },
-      });
 
-      const mailOptions = {
-        from: "Raven Sanz Accounts <noreply@gmail.com>",
-        to: email_add,
-        subject: "Reset your password",
-        text: `Click on the following link to reset your password: ${resetLink}. This link will expire in 5 minutes`,
-        html: `<p>Click on the following link to reset your password. This link will expire in 5 minutes</p><a href="${resetLink}">${resetLink}</a>`,
-      };
+      // Replace this link with your specific URL
+      // const resetLink = `http://localhost:8000/api/v1/resetpassword/${token}`;
+      const resetLink = `http://18.117.252.199:8000/api/v1/resetpassword/${token}`; 
 
-      // Send the email
-      transporter.sendMail(mailOptions, function(error, info){
-        if (error) {
-          console.log(error);
-          return res.status(500).json({ error: "Error sending email" });
-        } else {
-          console.log('Email sent: ' + info.response);
-          return res.status(200).json({ message: "Reset password link sent to email. Check Spam if not seen on inbox" });
-        }
-      });
+      if (!data.email_verified) {
+        // Create a transport object to send the email
+        const transporter = nodemailer.createTransport({
+          host: 'smtp.gmail.com',
+          port: 587,
+          secure: false,
+          auth: {
+            user: "developer.talaghay@gmail.com",
+            pass: "tcqslwipuknbeocc",
+          },
+        });
+
+        const mailOptions = {
+          from: "Raven Sanz Accounts <noreply@gmail.com>",
+          to: email_add,
+          subject: "Reset your password",
+          text: `Click on the following link to reset your password: ${resetLink}. This link will expire in 5 minutes`,
+          html: `<p>Click on the following link to reset your password. This link will expire in 5 minutes</p><a href="${resetLink}">${resetLink}</a>`,
+        };
+
+        // Send the email
+        transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+            console.log(error);
+            return res.status(500).json({ error: "Error sending email" });
+          } else {
+            console.log('Email sent: ' + info.response);
+            return res.status(200).json({ message: "Reset password link sent to email. Check Spam if not seen in the inbox" });
+          }
+        });
+      } else {
+        return res.status(200).json({ message: "Email is already verified. No need to send a reset password link." });
+      }
     }
   });
 };
+
 
 exports.verifyJWT = (req, res) => {
   const { token } = req.params;

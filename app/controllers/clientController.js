@@ -112,12 +112,13 @@ clientController.getStoriesNewArrivals = (req, res) => {
 
 clientController.insertStoryId = (req, res) => {
   const { user_id, story_id } = req.body;
+  const read = 1;
 
-  if (!user_id || !story_id) {
+  if (!user_id || !story_id || read === undefined) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  ClientModel.insertStoryId(user_id, story_id, (error, result) => {
+  ClientModel.insertStoryId(user_id, story_id, read, (error, result) => {
     if (error) {
       console.error('Error inserting story_id: ', error);
       return res.status(500).json({ message: 'Error inserting story_id' });
@@ -258,5 +259,222 @@ clientController.searchByTitleOrAuthorContinue = (req, res) => {
   });
 };
 
+
+clientController.likeStory = (req, res) => {
+  const { user_id, story_id } = req.body;
+
+  if (!user_id || !story_id) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.likeStory(user_id, story_id, (error, result) => {
+    if (error) {
+      console.error('Error liking story: ', error);
+      return res.status(500).json({ message: 'Error liking story' });
+    }
+
+    if (result === 'alreadyExists') {
+      return res.status(200).json({ message: 'User already likes this story' });
+    } else if (result === 'liked') {
+      return res.status(200).json({ message: 'Story Liked' });
+    }
+  });
+};
+
+
+clientController.unlikeStory = (req, res) => {
+  const { user_id, story_id } = req.body;
+  const totalLikers = 1;
+
+  if (!user_id || !story_id || totalLikers === undefined) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.unlikeStory(user_id, story_id, totalLikers, (error, result) => {
+    if (error) {
+      console.error('Error unliking story: ', error);
+      return res.status(500).json({ message: 'Error unliking story' });
+    }
+
+    if (result === 'notFound') {
+      return res.status(200).json({ message: 'No matching story found' });
+    } else if (result === 'unliked') {
+      return res.status(200).json({ message: 'Story Unliked' });
+    }
+  });
+};
+
+clientController.getLikedStories = (req, res) => {
+  const { user_id } = req.body;
+
+  if (!user_id) {
+    return res.status(400).json({ message: 'Missing user_id in request body' });
+  }
+
+  ClientModel.getLikedStories(user_id, (error, likedStories) => {
+    if (error) {
+      console.error('Error getting liked stories: ', error);
+      return res.status(500).json({ message: 'Error retrieving liked stories' });
+    }
+
+    return res.status(200).json({ message: 'Liked stories retrieved successfully', data: likedStories });
+  });
+};
+
+
+clientController.commentStory = (req, res) => {
+  const { user_id, story_id, comment, reply_to } = req.body;
+
+  // Set reply_to to 0 if it is empty
+  const replyToValue = reply_to || 0;
+
+  if (!user_id || !story_id || !comment) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.commentStory(user_id, story_id, comment, replyToValue, (error, insertedComment) => {
+    if (error) {
+      console.error('Error commenting on story: ', error);
+      return res.status(500).json({ message: 'Error commenting on story' });
+    }
+
+    return res.status(200).json({
+      status: 'Comment Posted',
+      data: insertedComment,
+    });
+  });
+};
+
+
+clientController.updateCommentStory = (req, res) => {
+  const { user_id, story_id, comment, comment_id } = req.body;
+
+  if (!user_id || !story_id || !comment || !comment_id) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.updateComment(user_id, story_id, comment, comment_id, (error, updatedComment) => {
+    if (error) {
+      console.error('Error updating comment: ', error);
+      return res.status(500).json({ message: 'Error updating comment' });
+    }
+
+    if (!updatedComment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    return res.status(200).json({
+      status: 'Comment Updated',
+      data: updatedComment,
+    });
+  });
+};
+
+clientController.getAllComments = (req, res) => {
+  const { story_id } = req.query;
+
+  if (!story_id) {
+    return res.status(400).json({ message: 'Missing required field: story_id' });
+  }
+
+  // Call the model to fetch comments by story_id
+  ClientModel.getAllCommentsByStoryId(story_id, (error, comments) => {
+    if (error) {
+      console.error('Error fetching comments by story_id: ', error);
+      return res.status(500).json({ message: 'Error fetching comments by story_id' });
+    }
+
+    return res.status(200).json({
+      message: 'Comments retrieved by story_id',
+      data: comments,
+    });
+  });
+};
+
+clientController.likeComment = (req, res) => {
+  const { user_id, comment_id } = req.body;
+
+  if (!user_id || !comment_id) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.likeComment(user_id, comment_id, (error, result) => {
+    if (error) {
+      console.error('Error liking comment: ', error);
+      return res.status(500).json({ message: 'Error liking comment' });
+    }
+
+    if (result === 'alreadyExists') {
+      return res.status(200).json({ message: 'User already likes this comment' });
+    } else if (result === 'liked') {
+      return res.status(200).json({ message: 'Comment Liked' });
+    }
+  });
+};
+
+clientController.deleteComment = (req, res) => {
+  const { user_id, comment_id, story_id } = req.body;
+
+  if (!user_id || !comment_id || !story_id) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.deleteComment(user_id, comment_id, story_id, (error, result) => {
+    if (error) {
+      console.error('Error deleting comment: ', error);
+      return res.status(500).json({ message: 'Error deleting comment' });
+    }
+
+    if (result === 'deleted') {
+      return res.status(200).json({ message: 'Comment Deleted' });
+    } else {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+  });
+};
+
+clientController.flagComment = (req, res) => {
+  const { user_id, comment_id, story_id } = req.body;
+
+  if (!user_id || !comment_id || !story_id) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.flagComment(user_id, comment_id, story_id, (error, result) => {
+    if (error) {
+      console.error('Error flagging comment: ', error);
+      if (error.message === 'Comment not found') {
+        return res.status(404).json({ message: 'Comment not found' });
+      } else {
+        return res.status(500).json({ message: 'Error flagging comment' });
+      }
+    }
+
+    if (result === 'flagged') {
+      return res.status(200).json({ message: 'Comment Flagged' });
+    }
+  });
+};
+
+clientController.unlikeComment = (req, res) => {
+  const { user_id, comment_id } = req.body;
+
+  if (!user_id || !comment_id) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.unlikeComment(user_id, comment_id, (error, result) => {
+    if (error) {
+      console.error('Error liking comment: ', error);
+      return res.status(500).json({ message: 'Error liking comment' });
+    }
+
+    if (result === 'alreadyExists') {
+      return res.status(200).json({ message: 'User already likes this comment' });
+    } else if (result === 'unliked') {
+      return res.status(200).json({ message: 'Comment unliked' });
+    }
+  });
+};
 
 module.exports = clientController;

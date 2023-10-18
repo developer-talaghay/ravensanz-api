@@ -52,7 +52,7 @@ const clientRoute = require("./app/routes/clientRoutes");
 const userRoute = require("./app/routes/userRoutes");
 const uploadPictureRoute = require("./app/routes/uploadRoutes");
 const theNestRoute = require("./app/routes/theNestRoutes");
-//const googleAuthRoute = require('./app/routes/googleAuthRoutes');
+// const googleAuthRoute = require('./app/routes/googleAuthRoutes');
 // Import the new route for Google signup
 const googleSignupRoute = require('./app/routes/googleAuthentication');
 
@@ -65,7 +65,7 @@ app.use('/api/v1/client', clientRoute);
 app.use('/api/v1/user/details', userRoute);
 app.use('/api/v1/upload', uploadPictureRoute);
 app.use('/api/v1/thenest', theNestRoute);
-//app.use('/auth/google', googleAuthRoute);
+// app.use('/auth/google', googleAuthRoute);
 // Use the new route for Google signup
 app.use('/api/v1/google/signup', googleSignupRoute);
 

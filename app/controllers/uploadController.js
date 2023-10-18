@@ -69,12 +69,13 @@ exports.getPictureByUserId = (req, res) => {
   PictureUploadModel.findOne(user_id, (err, picture) => {
     if (err) {
       console.error(err);
-      return res.status(500).send("Internal server error.");
+      return res.status(200).json({ url: 'http://18.117.252.199:8000/images/default_ic.png' });
     }
 
     if (!picture) {
       console.error(`Picture not found for user_id: ${user_id}`);
-      return res.status(404).send("Picture not found.");
+      // Return the default picture URL if no picture is found
+      return res.status(200).json({ url: 'http://18.117.252.199:8000/images/default_ic.png' });
     }
 
     const { picture_directory } = picture;

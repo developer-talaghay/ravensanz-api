@@ -55,4 +55,22 @@ exports.checkEmail = (req, res) => {
       res.status(200).json(result);
     });
   };
+
+  exports.getUser = (req, res) => {
+    const user_id = req.query.id; // Assuming the user_id is provided in the query parameter
+  
+    UserDetailsModel.getUserDetailsByUserId(user_id, (error, result) => {
+      if (error) {
+        console.error('Error retrieving user details: ', error);
+        return res.status(500).json({ message: 'Error retrieving user details' });
+      } else {
+        if (result.length > 0) {
+          const userDetails = result[0]; // Assuming there is only one user with the given user_id
+          return res.status(200).json({ message: 'User details retrieved successfully', data: userDetails });
+        } else {
+          return res.status(404).json({ message: 'User details not found' });
+        }
+      }
+    });
+  };
   
