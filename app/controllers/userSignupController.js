@@ -152,4 +152,23 @@ exports.createGoogleUser = (req, res) => {
 };
 
 
+exports.disableUser = (req, res) => {
+  const { id } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ message: 'ID is required in the request body' });
+  }
+
+  UserModel.disableUser(id, (error, result) => {
+    if (error === 'User not found') {
+      return res.status(404).json({ message: 'User not found' });
+    } else if (error) {
+      console.error('Error disabling user: ', error);
+      return res.status(500).send({ message: 'Error disabling user' });
+    } else {
+      console.log('User disabled successfully');
+      res.status(200).json({ message: 'User disabled successfully' });
+    }
+  });
+};
 

@@ -163,6 +163,29 @@ User.createOrLoginGoogleUser = (userData, callback) => {
   );
 };
 
+User.disableUser = (id, callback) => {
+  // Check if the user with the provided ID exists
+  dbConn.query('SELECT * FROM user WHERE id = ?', [id], (selectError, selectResult) => {
+    if (selectError) {
+      return callback(selectError, null);
+    } else if (selectResult.length === 0) {
+      return callback('User not found', null);
+    } else {
+      const updateQuery = 'UPDATE user SET status = ? WHERE id = ?';
+      const status = 'disable';
+
+      dbConn.query(updateQuery, [status, id], (error, result) => {
+        if (error) {
+          return callback(error, null);
+        } else {
+          return callback(null, result);
+        }
+      });
+    }
+  });
+};
+
+
 
 
 module.exports = User;
