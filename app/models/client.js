@@ -610,7 +610,7 @@ function createNestedComments(comments) {
 }
 
 
-ClientModel.likeComment = (user_id, comment_id, callback) => {
+ClientModel.likeComment = (user_id, comment_id, story_id, callback) => {
   // Check if the comment_id exists in user_story_comments
   dbConn.query(
     'SELECT * FROM user_story_comments WHERE comment_id = ?',
@@ -625,23 +625,52 @@ ClientModel.likeComment = (user_id, comment_id, callback) => {
         // If no matching comment found, return an error
         return callback(new Error('Comment not found'));
       } else {
-        // Update the likes count in user_story_comments
+        // Check if the user has already liked this comment
         dbConn.query(
-          'UPDATE user_story_comments SET likes = likes + 1 WHERE comment_id = ?',
-          [comment_id],
-          (updateError) => {
-            if (updateError) {
-              console.error('Error updating likes count: ', updateError);
-              return callback(updateError);
+          'SELECT * FROM user_liked_comments WHERE user_id = ? AND comment_id = ? AND story_id = ?',
+          [user_id, comment_id, story_id],
+          (likeCheckError, likeCheckResult) => {
+            if (likeCheckError) {
+              console.error('Error checking for existing like: ', likeCheckError);
+              return callback(likeCheckError);
             }
 
-            return callback(null, 'liked');
+            if (likeCheckResult.length === 0) {
+              // Insert into user_liked_comments
+              dbConn.query(
+                'INSERT INTO user_liked_comments (user_id, comment_id, story_id) VALUES (?, ?, ?)',
+                [user_id, comment_id, story_id],
+                (insertError) => {
+                  if (insertError) {
+                    console.error('Error inserting into user_liked_comments: ', insertError);
+                    return callback(insertError);
+                  }
+
+                  // Update the likes count in user_story_comments
+                  dbConn.query(
+                    'UPDATE user_story_comments SET likes = likes + 1 WHERE comment_id = ?',
+                    [comment_id],
+                    (updateError) => {
+                      if (updateError) {
+                        console.error('Error updating likes count: ', updateError);
+                        return callback(updateError);
+                      }
+
+                      return callback(null, 'liked');
+                    }
+                  );
+                }
+              );
+            } else {
+              return callback(null, 'alreadyLiked');
+            }
           }
         );
       }
     }
   );
 };
+
 
 ClientModel.deleteComment = (user_id, comment_id, story_id, callback) => {
   // Check if the comment_id, user_id, and story_id match or if parent_comment_id equals comment_id
@@ -751,7 +780,7 @@ ClientModel.flagComment = (user_id, comment_id, story_id, callback) => {
 };
 
 
-ClientModel.unlikeComment = (user_id, comment_id, callback) => {
+ClientModel.unlikeComment = (user_id, comment_id, story_id, callback) => {
   // Check if the comment_id exists in user_story_comments
   dbConn.query(
     'SELECT * FROM user_story_comments WHERE comment_id = ?',
@@ -766,23 +795,37 @@ ClientModel.unlikeComment = (user_id, comment_id, callback) => {
         // If no matching comment found, return an error
         return callback(new Error('Comment not found'));
       } else {
-        // Update the likes count in user_story_comments
+        // Delete the entry from user_liked_comments
         dbConn.query(
-          'UPDATE user_story_comments SET likes = likes - 1 WHERE comment_id = ?',
-          [comment_id],
-          (updateError) => {
-            if (updateError) {
-              console.error('Error updating likes count: ', updateError);
-              return callback(updateError);
+          'DELETE FROM user_liked_comments WHERE user_id = ? AND comment_id = ? AND story_id = ?',
+          [user_id, comment_id, story_id],
+          (deleteError) => {
+            if (deleteError) {
+              console.error('Error deleting like: ', deleteError);
+              return callback(deleteError);
             }
 
-            return callback(null, 'unliked');
+            // Update the likes count in user_story_comments
+            dbConn.query(
+              'UPDATE user_story_comments SET likes = likes - 1 WHERE comment_id = ?',
+              [comment_id],
+              (updateError) => {
+                if (updateError) {
+                  console.error('Error updating likes count: ', updateError);
+                  return callback(updateError);
+                }
+
+                return callback(null, 'unliked');
+              }
+            );
           }
         );
       }
     }
   );
 };
+
+
 
 
 module.exports = ClientModel;

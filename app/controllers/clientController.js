@@ -392,19 +392,19 @@ clientController.getAllComments = (req, res) => {
 };
 
 clientController.likeComment = (req, res) => {
-  const { user_id, comment_id } = req.body;
+  const { user_id, comment_id, story_id } = req.body;
 
-  if (!user_id || !comment_id) {
+  if (!user_id || !comment_id || !story_id) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  ClientModel.likeComment(user_id, comment_id, (error, result) => {
+  ClientModel.likeComment(user_id, comment_id, story_id, (error, result) => {
     if (error) {
       console.error('Error liking comment: ', error);
       return res.status(500).json({ message: 'Error liking comment' });
     }
 
-    if (result === 'alreadyExists') {
+    if (result === 'alreadyLiked') {
       return res.status(200).json({ message: 'User already likes this comment' });
     } else if (result === 'liked') {
       return res.status(200).json({ message: 'Comment Liked' });
@@ -457,24 +457,23 @@ clientController.flagComment = (req, res) => {
 };
 
 clientController.unlikeComment = (req, res) => {
-  const { user_id, comment_id } = req.body;
+  const { user_id, comment_id, story_id } = req.body;
 
-  if (!user_id || !comment_id) {
+  if (!user_id || !comment_id || !story_id) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  ClientModel.unlikeComment(user_id, comment_id, (error, result) => {
+  ClientModel.unlikeComment(user_id, comment_id, story_id, (error, result) => {
     if (error) {
-      console.error('Error liking comment: ', error);
-      return res.status(500).json({ message: 'Error liking comment' });
+      console.error('Error unliking comment: ', error);
+      return res.status(500).json({ message: 'Error unliking comment' });
     }
 
-    if (result === 'alreadyExists') {
-      return res.status(200).json({ message: 'User already likes this comment' });
-    } else if (result === 'unliked') {
+    if (result === 'unliked') {
       return res.status(200).json({ message: 'Comment unliked' });
     }
   });
 };
+
 
 module.exports = clientController;
