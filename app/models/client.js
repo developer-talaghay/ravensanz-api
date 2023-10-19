@@ -825,11 +825,11 @@ ClientModel.unlikeComment = (user_id, comment_id, story_id, callback) => {
   );
 };
 
-ClientModel.getUserLikedComment = (user_id, story_id, comment_id, callback) => {
-  // Define the SQL query to fetch liked comments by user_id, story_id, and comment_id
-  const sqlQuery = 'SELECT * FROM user_liked_comments WHERE user_id = ? AND story_id = ? AND comment_id = ?';
+ClientModel.getUserLikedComment = (user_id, story_id, callback) => {
+  // Define the SQL query to fetch liked comments by user_id, story_id
+  const sqlQuery = 'SELECT * FROM user_liked_comments WHERE user_id = ? AND story_id = ?';
 
-  dbConn.query(sqlQuery, [user_id, story_id, comment_id], (error, result) => {
+  dbConn.query(sqlQuery, [user_id, story_id], (error, result) => {
     if (error) {
       console.error('Error fetching liked comment: ', error);
       return callback(error, null);

@@ -476,13 +476,13 @@ clientController.unlikeComment = (req, res) => {
 };
 
 clientController.getLikedComment = (req, res) => {
-  const { user_id, story_id, comment_id } = req.body;
+  const { user_id, story_id} = req.body;
 
-  if (!user_id || !story_id || !comment_id) {
+  if (!user_id || !story_id ) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  ClientModel.getUserLikedComment(user_id, story_id, comment_id, (error, likedComment) => {
+  ClientModel.getUserLikedComment(user_id, story_id, (error, likedComment) => {
     if (error) {
       console.error('Error fetching liked comment: ', error);
       return res.status(500).json({ message: 'Error fetching liked comment' });
