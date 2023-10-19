@@ -1,4 +1,4 @@
-"use strict";
+// "use strict";
 // const mysql = require("mysql2");
 // const dotenv = require("dotenv").config();
 // //local mysql db connection
