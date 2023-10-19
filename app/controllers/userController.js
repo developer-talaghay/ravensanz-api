@@ -74,3 +74,34 @@ exports.checkEmail = (req, res) => {
     });
   };
   
+
+  exports.getAuthorUser = (req, res) => {
+    const author = req.query.author; // Assuming the author's username or name is provided in the query parameter
+  
+    UserDetailsModel.getAuthorUserDetailsByAuthor(author, (error, authorDetails) => {
+      if (error) {
+        console.error('Error retrieving user details: ', error);
+        return res.status(500).json({ message: 'Error retrieving user details' });
+      }
+  
+      if (authorDetails.length === 0) {
+        return res.status(404).json({ message: 'User details not found' });
+      }
+  
+      UserDetailsModel.getStoriesByAuthor(author, (error, stories) => {
+        if (error) {
+          console.error('Error retrieving stories: ', error);
+          return res.status(500).json({ message: 'Error retrieving stories' });
+        }
+  
+        const response = {
+          message: 'User details retrieved successfully',
+          authorDetails: authorDetails[0], // Assuming there is only one user with the provided username or name
+          stories: stories,
+        };
+  
+        return res.status(200).json(response);
+      });
+    });
+  };
+  

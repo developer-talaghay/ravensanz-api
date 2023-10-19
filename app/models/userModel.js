@@ -147,9 +147,36 @@ UserDetails.checkEmailExistence = (email, callback) => {
       }
     );
   };
-  
-  
-  
+
+  UserDetails.getAuthorUserDetailsByAuthor = (author, callback) => {
+    dbConn.query(
+      'SELECT * FROM ravensanz_users WHERE username = ? OR name = ?',
+      [author, author],
+      (error, result) => {
+        if (error) {
+          console.error('Error fetching user details: ', error);
+          return callback(error, null);
+        } else {
+          return callback(null, result);
+        }
+      }
+    );
+  };
+
+  UserDetails.getStoriesByAuthor = (author, callback) => {
+    dbConn.query(
+      'SELECT * FROM v_story_details WHERE author = ?',
+      [author],
+      (error, result) => {
+        if (error) {
+          console.error('Error fetching stories: ', error);
+          return callback(error, null);
+        } else {
+          return callback(null, result);
+        }
+      }
+    );
+  };
   
   
 
