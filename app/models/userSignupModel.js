@@ -77,14 +77,14 @@ User.updateUserStatus = (email, status, callback) => {
 
 User.deleteUser = (userId, callback) => {
   const deleteQueries = [
-    'DELETE FROM user_thenest WHERE user_id = ?',
-    'DELETE FROM user_last_read WHERE user_id = ?',
-    'DELETE FROM user_details WHERE user_id = ?',
-    'DELETE FROM user_likes WHERE user_id = ?',
+    'DELETE FROM user_liked_comments WHERE user_id = ?',
     'DELETE FROM user_story_comments WHERE user_id = ?',
+    'DELETE FROM user_likes WHERE user_id = ?',
     'DELETE FROM picture_table WHERE user_id = ?',
-    'DELETE FROM user WHERE id = ?',
-    'DELETE FROM user_liked_comments WHERE id = ?'
+    'DELETE FROM user_details WHERE user_id = ?',
+    'DELETE FROM user_last_read WHERE user_id = ?',
+    'DELETE FROM user_thenest WHERE user_id = ?',
+    'DELETE FROM user WHERE id = ?'
   ];
 
   dbConn.beginTransaction((err) => {
@@ -92,7 +92,7 @@ User.deleteUser = (userId, callback) => {
       return callback(err);
     }
 
-    const deletePromises = deleteQueries.map((query) => {
+    function executeQuery(query) {
       return new Promise((resolve, reject) => {
         dbConn.query(query, [userId], (error, result) => {
           if (error) {
@@ -104,10 +104,14 @@ User.deleteUser = (userId, callback) => {
           }
         });
       });
-    });
+    }
 
-    Promise.all(deletePromises)
-      .then(() => {
+    (async () => {
+      try {
+        for (const query of deleteQueries) {
+          await executeQuery(query);
+        }
+
         dbConn.commit((err) => {
           if (err) {
             dbConn.rollback(() => {
@@ -117,12 +121,12 @@ User.deleteUser = (userId, callback) => {
             callback(null, { affectedRows: 1 }); // Assume user deletion always succeeds
           }
         });
-      })
-      .catch((error) => {
+      } catch (error) {
         dbConn.rollback(() => {
           callback(error);
         });
-      });
+      }
+    })();
   });
 };
 
