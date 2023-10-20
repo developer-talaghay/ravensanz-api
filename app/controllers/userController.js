@@ -65,7 +65,12 @@ exports.checkEmail = (req, res) => {
         return res.status(500).json({ message: 'Error retrieving user details' });
       } else {
         if (result.length > 0) {
-          const userDetails = result[0]; // Assuming there is only one user with the given user_id
+          // Assuming there is only one user with the given user_id
+          const userDetails = result[0];
+  
+          // Convert the birth_date to the desired format
+          userDetails.birth_date = formatBirthDate(userDetails.birth_date);
+  
           return res.status(200).json({ message: 'User details retrieved successfully', data: userDetails });
         } else {
           return res.status(404).json({ message: 'User details not found' });
@@ -73,6 +78,16 @@ exports.checkEmail = (req, res) => {
       }
     });
   };
+  
+  // Helper function to format the birth_date
+  function formatBirthDate(birthDate) {
+    const date = new Date(birthDate);
+    const year = date.getUTCFullYear();
+    const month = `0${date.getUTCMonth() + 1}`.slice(-2);
+    const day = `0${date.getUTCDate()}`.slice(-2);
+    return `${year}-${month}-${day}`;
+  }
+  
   
 
   exports.getAuthorUser = (req, res) => {
