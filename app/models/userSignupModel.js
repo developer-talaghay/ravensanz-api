@@ -83,7 +83,8 @@ User.deleteUser = (userId, callback) => {
     'DELETE FROM user_likes WHERE user_id = ?',
     'DELETE FROM user_story_comments WHERE user_id = ?',
     'DELETE FROM picture_table WHERE user_id = ?',
-    'DELETE FROM user WHERE id = ?'
+    'DELETE FROM user WHERE id = ?',
+    'DELETE FROM user_liked_comments WHERE id = ?'
   ];
 
   dbConn.beginTransaction((err) => {
