@@ -54,7 +54,7 @@ ClientModel.getOngoingStories = (callback) => {
 
   ClientModel.getStoryDetailsById = (storyId, callback) => {
     // Get story details from v_story_details where isPublished = 1
-    dbConn.query("SELECT * FROM v_story_details WHERE id = ? AND isPublished = 1 AND isVIP = 0", [storyId], (error, storyDetails) => {
+    dbConn.query("SELECT * FROM v_story_details WHERE id = ? AND isPublished = 1", [storyId], (error, storyDetails) => {
       if (error) {
         console.error("Error retrieving story details by id: ", error);
         return callback(error, null);
