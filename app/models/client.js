@@ -960,4 +960,33 @@ ClientModel.getWingsCountByUserId = (user_id, callback) => {
   });
 };
 
+ClientModel.addWings = (user_id, full_name, wingsToAdd, callback) => {
+  // Check if the user exists
+  dbConn.query('SELECT wingsCount FROM user_details WHERE user_id = ? AND full_name = ?', [user_id, full_name], (error, results) => {
+    if (error) {
+      console.error('Error retrieving user wingsCount: ', error);
+      return callback(error, null);
+    }
+
+    if (results.length === 0) {
+      return callback({ message: 'User not found' }, null);
+    }
+
+    const currentWingsCount = results[0].wingsCount;
+
+    // Calculate the updated wingsCount
+    const updatedWingsCount = currentWingsCount + wingsToAdd;
+
+    // Update the user's wingsCount in the user_details table
+    dbConn.query('UPDATE user_details SET wingsCount = ? WHERE user_id = ? AND full_name = ?', [updatedWingsCount, user_id, full_name], (error, updateResult) => {
+      if (error) {
+        console.error('Error updating user wingsCount: ', error);
+        return callback(error, null);
+      }
+
+      return callback(null, { message: 'Wings added successfully' });
+    });
+  });
+};
+
 module.exports = ClientModel;

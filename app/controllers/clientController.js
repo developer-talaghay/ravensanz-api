@@ -546,5 +546,27 @@ clientController.getWingsByUser = (req, res) => {
   });
 };
 
+clientController.purchaseWings = (req, res) => {
+  const { user_id, full_name } = req.body;
+  const wingsToAdd = req.body.wings_topup;
+
+  if (!user_id || !full_name || wingsToAdd === undefined || wingsToAdd < 0) {
+    return res.status(400).json({ message: 'Missing or invalid required fields' });
+  }
+
+  ClientModel.addWings(user_id, full_name, wingsToAdd, (error, result) => {
+    if (error) {
+      console.error('Error adding wings: ', error);
+      return res.status(500).json({ message: 'Error adding wings' });
+    }
+
+    if (result && result.message === 'User not found') {
+      return res.status(404).json(result);
+    }
+
+    return res.status(200).json({ message: 'Wings added successfully' });
+  });
+};
+
 
 module.exports = clientController;
