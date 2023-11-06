@@ -52,4 +52,7 @@ router.delete("/stories/comments/unlike", clientController.unlikeComment);
 router.delete("/stories/comments/delete", clientController.deleteComment);
 router.post("/stories/comments/flag", clientController.flagComment);
 
+// user wings
+router.post("/stories/wings", clientController.purchaseStoryWithWings);
+
 module.exports = router;

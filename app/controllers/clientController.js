@@ -497,4 +497,33 @@ clientController.getLikedComment = (req, res) => {
 };
 
 
+
+// Purchase story with wings
+clientController.purchaseStoryWithWings = (req, res) => {
+  const { user_id, story_id, wingsRequired } = req.body;
+  const story_episodes = req.body.subTitle;
+
+  if (!user_id || !story_id || !story_episodes || !wingsRequired) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.purchaseStoryWithWings(user_id, story_id, story_episodes, wingsRequired, (error, result) => {
+    if (error) {
+      if (error.message === 'Insufficient wings. Please try again') {
+        return res.status(400).json(error);
+      } else if (error.message === 'User not found') {
+        return res.status(404).json(error);
+      } else if (error.message === 'Already bought. Thank you') {
+        return res.status(400).json(error);
+      } else {
+        console.error('Error purchasing story with wings: ', error);
+        return res.status(500).json({ message: 'Error purchasing story with wings' });
+      }
+    }
+
+    return res.status(200).json({ message: 'Successfully bought story. Enjoy reading', data: result });
+  });
+};
+
+
 module.exports = clientController;

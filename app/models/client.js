@@ -869,8 +869,76 @@ ClientModel.getUserLikedComment = (user_id, story_id, callback) => {
   });
 };
 
+// Purchase story with wings
+ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRequired, callback) => {
+  // Check if the user has already bought the story
+  dbConn.query(
+    'SELECT purchase_status FROM user_purchase WHERE user_id = ? AND story_id = ? AND story_episodes = ?',
+    [user_id, story_id, story_episodes],
+    (error, purchaseResults) => {
+      if (error) {
+        console.error('Error checking if the user has already bought the story: ', error);
+        return callback(error);
+      }
 
+      if (purchaseResults.length > 0 && purchaseResults[0].purchase_status === 1) {
+        // The user has already bought the story
+        return callback({ message: 'Already bought. Thank you' }, null);
+      }
 
+      // If the user hasn't bought the story, check if they have enough wings
+      dbConn.query('SELECT wingsCount FROM user_details WHERE user_id = ?', [user_id], (error, results) => {
+        if (error) {
+          console.error('Error retrieving user wingsCount: ', error);
+          return callback(error);
+        }
+
+        if (results.length === 0) {
+          return callback({ message: 'User not found' }, null);
+        }
+
+        const wingsCount = results[0].wingsCount;
+
+        // Check if the user has enough wings
+        if (wingsCount < wingsRequired) {
+          return callback({ message: 'Insufficient wings. Please try again' }, null);
+        }
+
+        // If the user has enough wings, subtract the wingsCount
+        const updatedWingsCount = wingsCount - wingsRequired;
+
+        // Update the user's wingsCount in the user_details table
+        dbConn.query('UPDATE user_details SET wingsCount = ? WHERE user_id = ?', [updatedWingsCount, user_id], (error, updateResult) => {
+          if (error) {
+            console.error('Error updating user wingsCount: ', error);
+            return callback(error);
+          }
+
+          if (updateResult.affectedRows === 0) {
+            return callback({ message: 'Failed to update wingsCount' }, null);
+          }
+
+          // Insert the purchase record
+          const purchaseData = {
+            user_id,
+            story_id,
+            story_episodes,
+            purchase_status: 1, // Set purchase_status to 1
+          };
+
+          dbConn.query('INSERT INTO user_purchase SET ?', purchaseData, (error, result) => {
+            if (error) {
+              console.error('Error inserting purchase record: ', error);
+              return callback(error, null);
+            }
+
+            return callback(null, result);
+          });
+        });
+      });
+    }
+  );
+};
 
 
 module.exports = ClientModel;
