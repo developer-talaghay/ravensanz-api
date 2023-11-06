@@ -940,5 +940,24 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
   );
 };
 
+ClientModel.getWingsCountByUserId = (user_id, callback) => {
+  // Define the SQL query to fetch wingsCount by user_id
+  const sqlQuery = 'SELECT wingsCount FROM user_details WHERE user_id = ?';
+
+  dbConn.query(sqlQuery, [user_id], (error, result) => {
+    if (error) {
+      console.error('Error fetching wingsCount by user_id: ', error);
+      return callback(error, null);
+    }
+
+    if (result.length === 0) {
+      return callback({ message: 'User not found' }, null);
+    }
+
+    const wingsCount = result[0].wingsCount;
+
+    return callback(null, wingsCount);
+  });
+};
 
 module.exports = ClientModel;

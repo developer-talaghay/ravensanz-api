@@ -54,5 +54,6 @@ router.post("/stories/comments/flag", clientController.flagComment);
 
 // user wings
 router.post("/stories/wings", clientController.purchaseStoryWithWings);
+router.get("/stories/getWings", clientController.getWingsByUser);
 
 module.exports = router;

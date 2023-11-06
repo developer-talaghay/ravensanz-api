@@ -525,5 +525,26 @@ clientController.purchaseStoryWithWings = (req, res) => {
   });
 };
 
+clientController.getWingsByUser = (req, res) => {
+  const { user_id } = req.query;
+
+  if (!user_id) {
+    return res.status(400).json({ message: 'Missing required field: user_id' });
+  }
+
+  // Call the model to fetch wingsCount by user_id
+  ClientModel.getWingsCountByUserId(user_id, (error, wingsCount) => {
+    if (error) {
+      console.error('Error fetching wingsCount by user_id: ', error);
+      return res.status(500).json({ message: 'Error fetching wingsCount by user_id' });
+    }
+
+    return res.status(200).json({
+      message: 'WingsCount retrieved by user_id',
+      wingsCount: wingsCount,
+    });
+  });
+};
+
 
 module.exports = clientController;
