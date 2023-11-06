@@ -52,13 +52,14 @@ clientController.getStoriesListOngoing = (req, res) => {
 
   clientController.getStoryDetailsById = (req, res) => {
     const storyId = req.query.story_id;
+    const userId = req.query.user_id;
 
     if (!storyId) {
         return res.status(400).json({ message: "Missing story_id parameter" });
     }
 
     // Call the model to get story details and related tags by storyId
-    ClientModel.getStoryDetailsById(storyId, (error, storyDetails) => {
+    ClientModel.getStoryDetailsById(storyId, userId, (error, storyDetails) => {
         if (error) {
             console.error("Error getting story details by storyId: ", error);
             return res.status(500).json({ message: "No Story Found" });

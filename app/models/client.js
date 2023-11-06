@@ -52,7 +52,10 @@ ClientModel.getOngoingStories = (callback) => {
     });
   };
 
-  ClientModel.getStoryDetailsById = (storyId, callback) => {
+
+  ClientModel.getStoryDetailsById = (storyId, userId, callback) => {
+    const response = {}; // Create an object to store the response data
+  
     // Get story details from v_story_details where isPublished = 1
     dbConn.query("SELECT * FROM v_story_details WHERE id = ? AND isPublished = 1", [storyId], (error, storyDetails) => {
       if (error) {
@@ -65,34 +68,61 @@ ClientModel.getOngoingStories = (callback) => {
         return callback("No story details found for the provided storyId", null);
       }
   
-      // Get related tags from story_tags
-      dbConn.query("SELECT name FROM story_tags WHERE storyId = ?", [storyId], (error, tagDetails) => {
-        if (error) {
-          console.error("Error retrieving tag details by storyId: ", error);
-          return callback(error, null);
-        }
+      // Add story details to the response object
+      response.storyDetails = storyDetails[0];
   
-        // Add tags only if storyDetails exist
-        storyDetails[0].tags = tagDetails.map(tag => tag.name);
-  
-        // Get published episode details from story_episodes
-        dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired, updatedAt FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
+      // If a userId is provided, get user purchase details for that user
+      if (userId) {
+        dbConn.query("SELECT user_id, story_id, story_episodes, purchase_status, created_at FROM user_purchase WHERE story_id = ? AND user_id = ?", [storyId, userId], (error, userPurchaseDetails) => {
           if (error) {
-            console.error("Error retrieving published episode details by id: ", error);
+            console.error("Error retrieving user purchase details by user_id and story_id: ", error);
             return callback(error, null);
           }
   
-          // Add array of episode details to the storyDetails object
-          storyDetails[0].episodes = episodeDetails;
+          // Create an array to store user purchase details
+          response.userPurchaseDetails = [];
   
-          return callback(null, storyDetails);
+          if (userPurchaseDetails.length > 0) {
+            userPurchaseDetails.forEach((purchase) => {
+              response.userPurchaseDetails.push({
+                user_id: purchase.user_id,
+                subTitle: purchase.story_episodes,
+                purchase_status: purchase.purchase_status,
+                updatedAt: purchase.created_at,
+              });
+            });
+          }
+  
+          // Get story episodes from story_episodes by storyId
+          dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
+            if (error) {
+              console.error("Error retrieving story episodes by storyId: ", error);
+              return callback(error, null);
+            }
+  
+            // Add story episodes to the response object as an array
+            response.episodes = episodeDetails;
+  
+            return callback(null, response);
+          });
         });
-      });
+      } else {
+        // If no userId provided, get story episodes from story_episodes by storyId
+        dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
+          if (error) {
+            console.error("Error retrieving story episodes by storyId: ", error);
+            return callback(error, null);
+          }
+  
+          // Add story episodes to the response object as an array
+          response.episodes = episodeDetails;
+  
+          return callback(null, response);
+        });
+      }
     });
   };
   
-  
-
 
   ClientModel.getRelatedStoriesByTag = (tagName, callback) => {
     const query = "SELECT * FROM v_story_tags WHERE tag_name LIKE '%" + tagName + "%' AND isPublished = 1 AND isVIP = 0";
