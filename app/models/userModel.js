@@ -150,7 +150,7 @@ UserDetails.checkEmailExistence = (email, callback) => {
 
   UserDetails.getAuthorUserDetailsByAuthor = (author, callback) => {
     dbConn.query(
-      'SELECT * FROM ravensanz_users WHERE username = ? OR name = ?',
+      'SELECT * FROM ravensanz_users WHERE display_name = ? OR full_name = ?',
       [author, author],
       (error, result) => {
         if (error) {
