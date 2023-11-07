@@ -53,89 +53,99 @@ ClientModel.getOngoingStories = (callback) => {
   };
 
 
-  ClientModel.getStoryDetailsById = (storyId, userId, callback) => {
-    const response = {}; // Create an object to store the response data
+// Model
+ClientModel.getStoryDetailsById = (storyId, userId, callback) => {
+  const response = {}; // Create an object to store the response data
 
-    // Get story details from v_story_details where isPublished = 1
-    dbConn.query("SELECT * FROM v_story_details WHERE id = ? AND isPublished = 1", [storyId], (error, storyDetails) => {
-        if (error) {
-            console.error("Error retrieving story details by id: ", error);
-            return callback(error, null);
-        }
+  // Get story details from v_story_details where isPublished = 1
+  dbConn.query("SELECT * FROM v_story_details WHERE id = ? AND isPublished = 1", [storyId], (error, storyDetails) => {
+      if (error) {
+          console.error("Error retrieving story details by id: ", error);
+          return callback(error, null);
+      }
 
-        if (storyDetails.length === 0) {
-            // No data found for the provided storyId
-            return callback("No story details found for the provided storyId", null);
-        }
+      if (storyDetails.length === 0) {
+          // No data found for the provided storyId
+          return callback("No story details found for the provided storyId", null);
+      }
 
-        // Add story details to the response object
-        response.storyDetails = storyDetails[0];
+      // Create the data object with story details
+      const data = {
+          id: storyDetails[0].id,
+          title: storyDetails[0].title,
+          overview: storyDetails[0].overview,
+          totalBookmarks: storyDetails[0].totalBookmarks,
+          totalViews: storyDetails[0].totalViews,
+          totalPublishedChapters: storyDetails[0].totalPublishedChapters,
+          totalLikers: storyDetails[0].totalLikers,
+          isCompleted: storyDetails[0].isCompleted,
+          isPublished: storyDetails[0].isPublished,
+          imageUrl: storyDetails[0].imageUrl,
+          isVIP: storyDetails[0].isVIP,
+          author: storyDetails[0].author,
+          tags: [],
+      };
 
-        // Get related tags from story_tags
-        dbConn.query("SELECT name FROM story_tags WHERE storyId = ?", [storyId], (error, tagDetails) => {
-            if (error) {
-                console.error("Error retrieving tag details by storyId: ", error);
-                return callback(error, null);
-            }
+      // Get related tags from story_tags
+      dbConn.query("SELECT name FROM story_tags WHERE storyId = ?", [storyId], (error, tagDetails) => {
+          if (error) {
+              console.error("Error retrieving tag details by storyId: ", error);
+              return callback(error, null);
+          }
 
-            // Add tags only if storyDetails exist
-            if (response.storyDetails) {
-                response.storyDetails.tags = tagDetails.map(tag => tag.name);
-            }
+          data.tags = tagDetails.map(tag => tag.name);
 
-            // If a userId is provided, get user purchase details for that user
-            if (userId) {
-                dbConn.query("SELECT user_id, story_id, story_episodes, purchase_status, created_at FROM user_purchase WHERE story_id = ? AND user_id = ?", [storyId, userId], (error, userPurchaseDetails) => {
-                    if (error) {
-                        console.error("Error retrieving user purchase details by user_id and story_id: ", error);
-                        return callback(error, null);
-                    }
+          // If a userId is provided, get user purchase details for that user
+          if (userId) {
+              dbConn.query("SELECT user_id, story_episodes, purchase_status, created_at FROM user_purchase WHERE story_id = ? AND user_id = ?", [storyId, userId], (error, userPurchaseDetails) => {
+                  if (error) {
+                      console.error("Error retrieving user purchase details by user_id and story_id: ", error);
+                      return callback(error, null);
+                  }
 
-                    // Create an array to store user purchase details
-                    response.userPurchaseDetails = [];
+                  data.userPurchaseDetails = userPurchaseDetails.map(purchase => ({
+                      user_id: purchase.user_id,
+                      subTitle: purchase.story_episodes,
+                      purchase_status: purchase.purchase_status,
+                      updatedAt: purchase.created_at,
+                  }));
 
-                    if (userPurchaseDetails.length > 0) {
-                        userPurchaseDetails.forEach((purchase) => {
-                            response.userPurchaseDetails.push({
-                                user_id: purchase.user_id,
-                                subTitle: purchase.story_episodes,
-                                purchase_status: purchase.purchase_status,
-                                updatedAt: purchase.created_at,
-                            });
-                        });
-                    }
+                  // Get story episodes from story_episodes by storyId
+                  dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
+                      if (error) {
+                          console.error("Error retrieving story episodes by storyId: ", error);
+                          return callback(error, null);
+                      }
 
-                    // Get story episodes from story_episodes by storyId
-                    dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
-                        if (error) {
-                            console.error("Error retrieving story episodes by storyId: ", error);
-                            return callback(error, null);
-                        }
+                      data.episodes = episodeDetails;
 
-                        // Add story episodes to the response object as an array
-                        response.episodes = episodeDetails;
+                      // Add data object to the response
+                      response.message = "Story details retrieved by storyId";
+                      response.data = [data];
 
-                        return callback(null, response);
-                    });
-                });
-            } else {
-                // If no userId provided, get story episodes from story_episodes by storyId
-                dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
-                    if (error) {
-                        console.error("Error retrieving story episodes by storyId: ", error);
-                        return callback(error, null);
-                    }
+                      return callback(null, response);
+                  });
+              });
+          } else {
+              // If no userId provided, get story episodes from story_episodes by storyId
+              dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
+                  if (error) {
+                      console.error("Error retrieving story episodes by storyId: ", error);
+                      return callback(error, null);
+                  }
 
-                    // Add story episodes to the response object as an array
-                    response.episodes = episodeDetails;
+                  data.episodes = episodeDetails;
 
-                    return callback(null, response);
-                });
-            }
-        });
-    });
+                  // Add data object to the response
+                  response.message = "Story details retrieved by storyId";
+                  response.data = [data];
+
+                  return callback(null, response);
+              });
+          }
+      });
+  });
 };
-
 
   ClientModel.getRelatedStoriesByTag = (tagName, callback) => {
     const query = "SELECT * FROM v_story_tags WHERE tag_name LIKE '%" + tagName + "%' AND isPublished = 1 AND isVIP = 0";
