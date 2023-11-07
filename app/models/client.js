@@ -221,20 +221,10 @@ ClientModel.insertStoryId = (userId, storyId, read, callback) => {
               console.error('Error updating existing record: ', updateError);
               return callback(updateError);
             }
-
-            // Update totalViews in story_lists
-            dbConn.query(
-              'UPDATE story_lists SET totalViews = totalViews + ? WHERE id = ?',
-              [read, storyId],
-              (updateTotalViewsError) => {
-                if (updateTotalViewsError) {
-                  console.error('Error updating totalViews: ', updateTotalViewsError);
-                  return callback(updateTotalViewsError);
-                }
-
-                return callback(null, 'Record updated successfully');
-              }
-            );
+        
+            // No need to update totalViews in story_lists
+        
+            return callback(null, 'Record updated successfully');
           }
         );
       }
