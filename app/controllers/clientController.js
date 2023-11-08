@@ -569,5 +569,48 @@ clientController.purchaseWings = (req, res) => {
   });
 };
 
+clientController.getStoryByPage = (req, res) => {
+  const storyId = req.query.story_id;
+  const storyEpisode = req.query.story_episode;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 1000; // Set a default limit of 100 words
+  const userId = req.query.user_id;
+
+  if (!storyId || !storyEpisode) {
+      return res.status(400).json({ message: 'Missing required parameters' });
+  }
+
+  // Call the model to get story episodes with pagination and user purchase details
+  ClientModel.getStoryByPage(storyId, storyEpisode, page, limit, userId, (error, episodeDetails) => {
+      if (error) {
+          console.error('Error getting story episodes by storyId and subTitle: ', error);
+          return res.status(500).json({ message: 'Error retrieving story episodes and user purchase details' });
+      }
+
+      return res.status(200).json(episodeDetails);
+  });
+};
+
+clientController.getStoryByPage2 = (req, res) => {
+  const storyId = req.query.story_id;
+  const userId = req.query.user_id;
+  const characterCount = req.query.character_count || 1000; // Default to 1000 characters if not specified
+
+  if (!storyId) {
+    return res.status(400).json({ message: "Missing story_id parameter" });
+  }
+
+  // Call the model to get story details and related data by storyId
+  ClientModel.getStoryByPage2(storyId, userId, characterCount, (error, storyDetails) => {
+    if (error) {
+      console.error("Error getting story details by storyId: ", error);
+      return res.status(500).json({ message: "No Story Found" });
+    }
+
+    return res.status(200).json(storyDetails);
+  });
+};
+
+
 
 module.exports = clientController;

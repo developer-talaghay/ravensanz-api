@@ -1002,4 +1002,217 @@ ClientModel.addWings = (user_id, full_name, wingsToAdd, callback) => {
   });
 };
 
+ClientModel.getStoryByPage = (storyId, storyEpisode, page, limit, userId, callback) => {
+  const response = {};
+
+  // Calculate the offset based on the page and limit
+  const offset = (page - 1) * limit;
+
+  dbConn.query(
+      'SELECT subTitle, storyLine FROM story_episodes WHERE storyId = ? AND subTitle = ?',
+      [storyId, storyEpisode],
+      (error, episodeDetails) => {
+          if (error) {
+              console.error('Error retrieving story episodes by storyId and subTitle: ', error);
+              return callback(error, null);
+          }
+
+          // Calculate the total number of words in the episode
+          const totalWords = episodeDetails[0].storyLine.split(/\s+/).length;
+
+          // Split the storyLine into pages based on the word count
+          const pages = [];
+          let currentPage = [];
+          let currentWordCount = 0;
+
+          for (const word of episodeDetails[0].storyLine.split(/\s+/)) {
+              if (currentWordCount + word.length <= limit) {
+                  currentPage.push(word);
+                  currentWordCount += word.length + 1; // Include the space
+              } else {
+                  pages.push(currentPage.join(' '));
+                  currentPage = [word];
+                  currentWordCount = word.length + 1;
+              }
+          }
+
+          if (currentPage.length > 0) {
+              pages.push(currentPage.join(' '));
+          }
+
+          // Get the specified page of content
+          const selectedPage = pages[Math.min(page - 1, pages.length - 1)];
+
+          // Add story episodes to the response object
+          response.message = 'Story episodes retrieved by storyId and subTitle with pagination';
+          response.data = [{ subTitle: episodeDetails[0].subTitle, storyLine: selectedPage }];
+
+          // Now, get user purchase details
+          dbConn.query(
+              'SELECT user_id, story_episodes, purchase_status, created_at FROM user_purchase WHERE story_id = ? AND user_id = ? AND story_episodes = ?',
+              [storyId, userId, storyEpisode],
+              (purchaseError, userPurchaseDetails) => {
+                  if (purchaseError) {
+                      console.error('Error retrieving user purchase details by user_id and story_id: ', purchaseError);
+                      return callback(purchaseError, null);
+                  }
+
+                  response.userPurchaseDetails = userPurchaseDetails.map(purchase => ({
+                      user_id: purchase.user_id,
+                      subTitle: purchase.story_episodes,
+                      purchase_status: purchase.purchase_status,
+                      updatedAt: purchase.created_at,
+                  }));
+
+                  return callback(null, response);
+              }
+          );
+      }
+  );
+};
+
+ClientModel.getStoryByPage2 = (storyId, userId, characterCount, callback) => {
+  const response = {};
+
+  // Get story details from v_story_details where isPublished = 1
+  dbConn.query("SELECT * FROM v_story_details WHERE id = ? AND isPublished = 1", [storyId], (error, storyDetails) => {
+    if (error) {
+      console.error("Error retrieving story details by id: ", error);
+      return callback(error, null);
+    }
+
+    if (storyDetails.length === 0) {
+      // No data found for the provided storyId
+      return callback("No story details found for the provided storyId", null);
+    }
+
+    // Create the data object with story details
+    const data = {
+      id: storyDetails[0].id,
+      title: storyDetails[0].title,
+      overview: storyDetails[0].overview,
+      totalBookmarks: storyDetails[0].totalBookmarks,
+      totalViews: storyDetails[0].totalViews,
+      totalPublishedChapters: storyDetails[0].totalPublishedChapters,
+      totalLikers: storyDetails[0].totalLikers,
+      isCompleted: storyDetails[0].isCompleted,
+      isPublished: storyDetails[0].isPublished,
+      imageUrl: storyDetails[0].imageUrl,
+      isVIP: storyDetails[0].isVIP,
+      author: storyDetails[0].author,
+      tags: [],
+      storyLine: [], // Create an array to store storyLine data
+    };
+
+    // Get related tags from story_tags
+    dbConn.query("SELECT name FROM story_tags WHERE storyId = ?", [storyId], (error, tagDetails) => {
+      if (error) {
+        console.error("Error retrieving tag details by storyId: ", error);
+        return callback(error, null);
+      }
+
+      data.tags = tagDetails.map(tag => tag.name);
+
+      // If a userId is provided, get user purchase details for that user
+      if (userId) {
+        dbConn.query("SELECT user_id, story_episodes, purchase_status, created_at FROM user_purchase WHERE story_id = ? AND user_id = ?", [storyId, userId], (error, userPurchaseDetails) => {
+          if (error) {
+            console.error("Error retrieving user purchase details by user_id and story_id: ", error);
+            return callback(error, null);
+          }
+
+          data.userPurchaseDetails = userPurchaseDetails.map(purchase => ({
+            user_id: purchase.user_id,
+            subTitle: purchase.story_episodes,
+            purchase_status: purchase.purchase_status,
+            updatedAt: purchase.created_at,
+          }));
+
+          // Get story episodes from story_episodes by storyId
+          dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
+            if (error) {
+              console.error("Error retrieving story episodes by storyId: ", error);
+              return callback(error, null);
+            }
+
+            // Organize storyLine into pages with character count limit
+            episodeDetails.forEach((episode) => {
+              const storyLine = episode.storyLine;
+              const storyPages = [];
+              let page = '';
+              let pageCount = 1;
+
+              for (let i = 0; i < storyLine.length; i++) {
+                page += storyLine[i];
+                if (page.length >= characterCount) {
+                  storyPages.push({ [`page${pageCount}`]: page });
+                  page = '';
+                  pageCount++;
+                }
+              }
+
+              if (page.length > 0) {
+                storyPages.push({ [`page${pageCount}`]: page });
+              }
+
+              data.storyLine.push({
+                subTitle: episode.subTitle,
+                storyLine: storyPages,
+              });
+            });
+
+            // Add data object to the response
+            response.message = "Story details retrieved by storyId";
+            response.data = [data];
+
+            return callback(null, data); // Return the data object
+          });
+        });
+      } else {
+        // If no userId provided, get story episodes from story_episodes by storyId
+        dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
+          if (error) {
+            console.error("Error retrieving story episodes by storyId: ", error);
+            return callback(error, null);
+          }
+
+          // Organize storyLine into pages with character count limit
+          episodeDetails.forEach((episode) => {
+            const storyLine = episode.storyLine;
+            const storyPages = [];
+            let page = '';
+            let pageCount = 1;
+
+            for (let i = 0; i < storyLine.length; i++) {
+              page += storyLine[i];
+              if (page.length >= characterCount) {
+                storyPages.push({ [`page${pageCount}`]: page });
+                page = '';
+                pageCount++;
+              }
+            }
+
+            if (page.length > 0) {
+              storyPages.push({ [`page${pageCount}`]: page });
+            }
+
+            data.storyLine.push({
+              subTitle: episode.subTitle,
+              storyLine: storyPages,
+            });
+          });
+
+          // Add data object to the response
+          response.message = "Story details retrieved by storyId";
+          response.data = [data];
+
+          return callback(null, data); // Return the data object
+        });
+      }
+    });
+  });
+};
+
+
+
 module.exports = ClientModel;
