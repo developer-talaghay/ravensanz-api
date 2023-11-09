@@ -84,6 +84,8 @@ User.deleteUser = (userId, callback) => {
     'DELETE FROM user_details WHERE user_id = ?',
     'DELETE FROM user_last_read WHERE user_id = ?',
     'DELETE FROM user_thenest WHERE user_id = ?',
+    'DELETE FROM user_purchase WHERE user_id = ?',
+    'DELETE FROM user_follows WHERE user_id = ?',
     'DELETE FROM user WHERE id = ?'
   ];
 
