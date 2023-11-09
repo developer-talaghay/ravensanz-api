@@ -35,27 +35,62 @@ userLoginController.checkEmail = (req, res) => {
           return res.status(500).send({ message: "Error retrieving user details" });
         }
 
-        // Generate a new token (JWT)
-        const token = jwt.sign({ email: email_add }, "your-secret-key", {
-          expiresIn: "7d", // Token expires in 7 days
-        });
+        // Set default values for fields if they are null
+        const defaultValues = {
+          full_name: "No name",
+          display_name: "No name",
+          birth_date: "1970-01-01",
+          country: "N/A",
+          phone_number: "##########",
+          isAdmin: "0",
+          isWriterVerified: "0",
+          isEmailVerified: "0",
+          writerApplicationStatus: "0",
+          imageId: "0",
+          wingsCount: 100,
+          isSubscriber: "0",
+          subscriptionExpirationDate: "1970-01-01",
+          isReadingModeOver18: "0",
+          writerBadge: "0",
+          readerBadge: "0",
+        };
 
-        // Update the token in the user table
-        UserModel.updateUserToken(user.id, token, (updateError) => {
-          if (updateError) {
-            console.error("Error updating user token: ", updateError);
-            return res.status(500).send({ message: "Error updating user token" });
-          }
+        // Combine user details with user object
+        const userWithDetails = { ...user, ...userDetails[0] };
 
-          // Remove sensitive data from the user object
-          const { password, token, ...userData } = user;
+        // Apply default values to the user object
+        const userWithDefaults = {
+          id: userWithDetails.user_id,
+          status: userWithDetails.status,
+          type: userWithDetails.type,
+          email_add: userWithDetails.email_add,
+          full_name: userWithDetails.full_name || defaultValues.full_name,
+          display_name: userWithDetails.display_name || defaultValues.display_name,
+          birth_date: userWithDetails.birth_date || defaultValues.birth_date,
+          country: userWithDetails.country || defaultValues.country,
+          phone_number: userWithDetails.phone_number || defaultValues.phone_number,
+          modified_at: userWithDetails.modified_at,
+          created_at: userWithDetails.created_at,
+          isAdmin: userWithDetails.isAdmin || defaultValues.isAdmin,
+          isWriterVerified: userWithDetails.isWriterVerified || defaultValues.isWriterVerified,
+          isEmailVerified: userWithDetails.isEmailVerified || defaultValues.isEmailVerified,
+          writerApplicationStatus: userWithDetails.writerApplicationStatus || defaultValues.writerApplicationStatus,
+          imageId: userWithDetails.imageId || defaultValues.imageId,
+          wingsCount: userWithDetails.wingsCount || defaultValues.wingsCount,
+          isSubscriber: userWithDetails.isSubscriber || defaultValues.isSubscriber,
+          subscriptionExpirationDate: userWithDetails.subscriptionExpirationDate || defaultValues.subscriptionExpirationDate,
+          isReadingModeOver18: userWithDetails.isReadingModeOver18 || defaultValues.isReadingModeOver18,
+          writerBadge: userWithDetails.writerBadge || defaultValues.writerBadge,
+          readerBadge: userWithDetails.readerBadge || defaultValues.readerBadge,
+        };
 
-          // Return user details and token in the response
-          res.status(200).json({
-            message: "Login successful",
-            token: token,
-            userDetails: userData, // Use the filtered userData object
-          });
+        // Remove unwanted part
+        const { password, token, ...userData } = userWithDefaults;
+
+        // Return user details and token in the response
+        res.status(200).json({
+          message: "User details retrieved successfully",
+          data: userData,
         });
       });
     });
