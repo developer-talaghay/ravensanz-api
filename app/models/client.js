@@ -1213,6 +1213,114 @@ ClientModel.getStoryByPage2 = (storyId, userId, characterCount, callback) => {
   });
 };
 
+// Define the followAuthor function in the ClientModel
+ClientModel.followAuthor = (userId, displayName, callback) => {
+  // Check if the user_id and display_name already exist in user_follows
+  dbConn.query(
+    'SELECT * FROM user_follows WHERE user_id = ? AND display_name = ?',
+    [userId, displayName],
+    (error, result) => {
+      if (error) {
+        console.error('Error checking for existing record: ', error);
+        return callback(error);
+      }
+
+      if (result.length > 0) {
+        // If a matching record is found, it means the user already follows the author
+        return callback(null, 'alreadyFollowed');
+      } else {
+        // If no matching record found, insert a new row into user_follows
+        dbConn.query(
+          'INSERT INTO user_follows (user_id, display_name) VALUES (?, ?)',
+          [userId, displayName],
+          (insertError) => {
+            if (insertError) {
+              console.error('Error inserting new record: ', insertError);
+              return callback(insertError);
+            }
+
+            // Update followCount in ravensanz_users
+            dbConn.query(
+              'UPDATE ravensanz_users SET followCount = followCount + 1 WHERE display_name = ?',
+              [displayName],
+              (updateError) => {
+                if (updateError) {
+                  console.error('Error updating followCount: ', updateError);
+                  return callback(updateError);
+                }
+
+                return callback(null, 'followed');
+              }
+            );
+          }
+        );
+      }
+    }
+  );
+};
+
+// Define the unfollowAuthor function in the ClientModel
+ClientModel.unfollowAuthor = (userId, displayName, callback) => {
+  // Check if the user_id and display_name already exist in user_follows
+  dbConn.query(
+    'SELECT * FROM user_follows WHERE user_id = ? AND display_name = ?',
+    [userId, displayName],
+    (error, result) => {
+      if (error) {
+        console.error('Error checking for existing record: ', error);
+        return callback(error);
+      }
+
+      if (result.length === 0) {
+        // If no matching record is found, it means the user is not following the author
+        return callback(null, 'notFollowing');
+      } else {
+        // If a matching record found, delete the row from user_follows
+        dbConn.query(
+          'DELETE FROM user_follows WHERE user_id = ? AND display_name = ?',
+          [userId, displayName],
+          (deleteError) => {
+            if (deleteError) {
+              console.error('Error deleting record: ', deleteError);
+              return callback(deleteError);
+            }
+
+            // Get the current followCount from ravensanz_users
+            dbConn.query(
+              'SELECT followCount FROM ravensanz_users WHERE display_name = ?',
+              [displayName],
+              (selectError, selectResult) => {
+                if (selectError) {
+                  console.error('Error selecting followCount: ', selectError);
+                  return callback(selectError);
+                }
+
+                if (selectResult.length === 0 || selectResult[0].followCount === 0) {
+                  // If followCount is 0, no need to update it
+                  return callback(null, 'unfollowed');
+                } else {
+                  // Update followCount in ravensanz_users (subtract 1)
+                  dbConn.query(
+                    'UPDATE ravensanz_users SET followCount = followCount - 1 WHERE display_name = ?',
+                    [displayName],
+                    (updateError) => {
+                      if (updateError) {
+                        console.error('Error updating followCount: ', updateError);
+                        return callback(updateError);
+                      }
+
+                      return callback(null, 'unfollowed');
+                    }
+                  );
+                }
+              }
+            );
+          }
+        );
+      }
+    }
+  );
+};
 
 
 module.exports = ClientModel;

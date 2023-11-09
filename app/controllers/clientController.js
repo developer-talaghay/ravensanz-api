@@ -611,6 +611,55 @@ clientController.getStoryByPage2 = (req, res) => {
   });
 };
 
+clientController.followAuthor = (req, res) => {
+  const { user_id, display_name } = req.body;
+
+  // Check if required fields are missing
+  if (!user_id || !display_name) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  // Call the followAuthor function in the ClientModel
+  ClientModel.followAuthor(user_id, display_name, (error, result) => {
+    if (error) {
+      console.error('Error following author: ', error);
+      return res.status(500).json({ message: 'Error following author' });
+    }
+
+    // Handle the result
+    if (result === 'alreadyFollowed') {
+      return res.status(200).json({ message: 'User already follows this author' });
+    } else if (result === 'followed') {
+      return res.status(200).json({ message: 'Author Followed' });
+    }
+  });
+};
+
+// Define the unfollowAuthor function
+clientController.unfollowAuthor = (req, res) => {
+  const { user_id, display_name } = req.body;
+
+  // Check if required fields are missing
+  if (!user_id || !display_name) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  // Call the unfollowAuthor function in the ClientModel
+  ClientModel.unfollowAuthor(user_id, display_name, (error, result) => {
+    if (error) {
+      console.error('Error unfollowing author: ', error);
+      return res.status(500).json({ message: 'Error unfollowing author' });
+    }
+
+    // Handle the result
+    if (result === 'notFollowing') {
+      return res.status(200).json({ message: 'User is not following this author' });
+    } else if (result === 'unfollowed') {
+      return res.status(200).json({ message: 'Author Unfollowed' });
+    }
+  });
+};
+
 
 
 module.exports = clientController;

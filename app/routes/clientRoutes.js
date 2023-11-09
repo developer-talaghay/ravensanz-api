@@ -61,4 +61,8 @@ router.post("/stories/wingstopup", clientController.purchaseWings);
 router.get("/stories/page", clientController.getStoryByPage);
 router.get("/stories/page2", clientController.getStoryByPage2);
 
+// user follows
+router.post("/stories/followauthor", clientController.followAuthor);
+router.post("/stories/unfollowauthor", clientController.unfollowAuthor);
+
 module.exports = router;
