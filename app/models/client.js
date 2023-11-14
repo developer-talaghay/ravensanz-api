@@ -1071,9 +1071,12 @@ ClientModel.getStoryByPage = (storyId, storyEpisode, page, limit, userId, callba
   );
 };
 
-ClientModel.getStoryByPage2 = (storyId, userId, characterCount, callback) => {
-  const response = {};
+// Function to strip HTML tags
+function stripHtmlTags(html) {
+  return html.replace(/<[^>]*>/g, '');
+}
 
+ClientModel.getStoryByPage2 = (storyId, userId, characterCount, callback) => {
   // Get story details from v_story_details where isPublished = 1
   dbConn.query("SELECT * FROM v_story_details WHERE id = ? AND isPublished = 1", [storyId], (error, storyDetails) => {
     if (error) {
@@ -1136,36 +1139,48 @@ ClientModel.getStoryByPage2 = (storyId, userId, characterCount, callback) => {
             }
 
             // Organize storyLine into pages with character count limit
-            episodeDetails.forEach((episode) => {
-              const storyLine = episode.storyLine;
+            for (let i = 0; i < episodeDetails.length; i++) {
+              const episode = episodeDetails[i];
               const storyPages = [];
-              let page = '';
+
+              // Ensure storyLine is an array
+              const storyLineArray = Array.isArray(episode.storyLine) ? episode.storyLine : [episode.storyLine];
+
+              // Apply stripHtmlTags to each element
+              const strippedContent = storyLineArray.map(stripHtmlTags);
+
+              let currentPage = '';
+              let currentCharacterCount = 0;
               let pageCount = 1;
 
-              for (let i = 0; i < storyLine.length; i++) {
-                page += storyLine[i];
-                if (page.length >= characterCount) {
-                  storyPages.push({ [`page${pageCount}`]: page });
-                  page = '';
-                  pageCount++;
+              for (let j = 0; j < strippedContent.length; j++) {
+                const words = strippedContent[j].split(/\s+/).filter(word => word.length > 0);
+
+                for (let k = 0; k < words.length; k++) {
+                  currentPage += words[k] + ' ';
+                  currentCharacterCount += words[k].length + 1; // Add 1 for the space
+
+                  if (currentCharacterCount >= characterCount) {
+                    storyPages.push({ [`page${pageCount}`]: currentPage.trim() });
+                    currentPage = '';
+                    currentCharacterCount = 0;
+                    pageCount++;
+                  }
                 }
               }
 
-              if (page.length > 0) {
-                storyPages.push({ [`page${pageCount}`]: page });
+              if (currentPage.length > 0) {
+                storyPages.push({ [`page${pageCount}`]: currentPage.trim() });
               }
 
               data.storyLine.push({
                 subTitle: episode.subTitle,
                 storyLine: storyPages,
               });
-            });
+            }
 
-            // Add data object to the response
-            response.message = "Story details retrieved by storyId";
-            response.data = [data];
-
-            return callback(null, data); // Return the data object
+            // Return the data object
+            return callback(null, data);
           });
         });
       } else {
@@ -1177,41 +1192,54 @@ ClientModel.getStoryByPage2 = (storyId, userId, characterCount, callback) => {
           }
 
           // Organize storyLine into pages with character count limit
-          episodeDetails.forEach((episode) => {
-            const storyLine = episode.storyLine;
+          for (let i = 0; i < episodeDetails.length; i++) {
+            const episode = episodeDetails[i];
             const storyPages = [];
-            let page = '';
+
+            // Ensure storyLine is an array
+            const storyLineArray = Array.isArray(episode.storyLine) ? episode.storyLine : [episode.storyLine];
+
+            // Apply stripHtmlTags to each element
+            const strippedContent = storyLineArray.map(stripHtmlTags);
+
+            let currentPage = '';
+            let currentCharacterCount = 0;
             let pageCount = 1;
 
-            for (let i = 0; i < storyLine.length; i++) {
-              page += storyLine[i];
-              if (page.length >= characterCount) {
-                storyPages.push({ [`page${pageCount}`]: page });
-                page = '';
-                pageCount++;
+            for (let j = 0; j < strippedContent.length; j++) {
+              const words = strippedContent[j].split(/\s+/).filter(word => word.length > 0);
+
+              for (let k = 0; k < words.length; k++) {
+                currentPage += words[k] + ' ';
+                currentCharacterCount += words[k].length + 1; // Add 1 for the space
+
+                if (currentCharacterCount >= characterCount) {
+                  storyPages.push({ [`page${pageCount}`]: currentPage.trim() });
+                  currentPage = '';
+                  currentCharacterCount = 0;
+                  pageCount++;
+                }
               }
             }
 
-            if (page.length > 0) {
-              storyPages.push({ [`page${pageCount}`]: page });
+            if (currentPage.length > 0) {
+              storyPages.push({ [`page${pageCount}`]: currentPage.trim() });
             }
 
             data.storyLine.push({
               subTitle: episode.subTitle,
               storyLine: storyPages,
             });
-          });
+          }
 
-          // Add data object to the response
-          response.message = "Story details retrieved by storyId";
-          response.data = [data];
-
-          return callback(null, data); // Return the data object
+          // Return the data object
+          return callback(null, data);
         });
       }
     });
   });
 };
+
 
 // Define the followAuthor function in the ClientModel
 ClientModel.followAuthor = (userId, displayName, callback) => {
