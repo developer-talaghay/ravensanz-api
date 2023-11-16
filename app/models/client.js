@@ -1,4 +1,5 @@
 const dbConn = require("../config/db.config");
+const cheerio = require('cheerio');
 
 const ClientModel = {};
 
@@ -503,49 +504,22 @@ ClientModel.getLikedStories = (userId, callback) => {
   );
 };
 
-ClientModel.commentStory = (userId, storyId, comment, replyToValue, callback) => {
-  // Determine the path for the new comment
-  let path;
-
-  if (replyToValue === 0) {
-    path = "/";
-    insertComment(null); // Pass null for parent_comment_id for top-level comments
-  } else {
-    // Fetch the path of the parent comment
-    dbConn.query(
-      'SELECT path FROM user_story_comments WHERE comment_id = ?',
-      [replyToValue],
-      (error, result) => {
-        if (error) {
-          console.error('Error retrieving parent comment path: ', error);
-          return callback(error);
-        }
-
-        if (result.length === 0) {
-          return callback(new Error('Parent comment not found'));
-        }
-
-        const parentPath = result[0].path;
-        path = parentPath + replyToValue + '/';
-        insertComment(replyToValue); // Pass replyToValue as parent_comment_id
-      }
-    );
-  }
-
+// model
+ClientModel.commentStory = (userId, storyId, comment, callback) => {
   // Function to insert the new comment
   function insertComment(parentCommentId) {
     dbConn.query(
-      'INSERT INTO user_story_comments (user_id, story_id, comment, path, parent_comment_id) VALUES (?, ?, ?, ?, ?)',
-      [userId, storyId, comment, path, parentCommentId],
+      'INSERT INTO user_story_comments (user_id, story_id, comment, parent_comment_id) VALUES (?, ?, ?, ?)',
+      [userId, storyId, comment, parentCommentId],
       (error, result) => {
         if (error) {
           console.error('Error inserting comment: ', error);
           return callback(error);
         }
 
-        const comment_id = result.insertId; // Get the inserted comment's ID
-        const created_at = new Date(); // Current date and time
-        const modified_at = new Date(); // Initially, created_at and modified_at are the same
+        const comment_id = result.insertId;
+        const created_at = new Date();
+        const modified_at = new Date();
 
         const insertedComment = {
           comment_id,
@@ -554,16 +528,44 @@ ClientModel.commentStory = (userId, storyId, comment, replyToValue, callback) =>
           comment,
           created_at,
           modified_at,
-          path, // Include the path in the response
         };
 
         return callback(null, insertedComment);
       }
     );
   }
+
+  // Call the insertComment function for top-level comments
+  insertComment(null);
 };
 
+ClientModel.replyCommentStory = (userId, storyId, comment, parentCommentId, callback) => {
+  dbConn.query(
+    'INSERT INTO user_story_comments (user_id, story_id, comment, parent_comment_id) VALUES (?, ?, ?, ?)',
+    [userId, storyId, comment, parentCommentId],
+    (error, result) => {
+      if (error) {
+        console.error('Error replying to comment: ', error);
+        return callback(error);
+      }
 
+      const comment_id = result.insertId;
+      const created_at = new Date();
+      const modified_at = new Date();
+
+      const insertedComment = {
+        comment_id,
+        user_id: userId,
+        parentCommentId,
+        comment,
+        created_at,
+        modified_at,
+      };
+
+      return callback(null, insertedComment);
+    }
+  );
+};
 
 
 ClientModel.updateComment = (userId, storyId, comment, commentId, callback) => {
@@ -1240,6 +1242,153 @@ ClientModel.getStoryByPage2 = (storyId, userId, characterCount, callback) => {
   });
 };
 
+ClientModel.getStoryByPage3 = (storyId, userId, characterCount, callback) => {
+  const response = {};
+
+  // Get story details from v_story_details where isPublished = 1
+  dbConn.query("SELECT * FROM v_story_details WHERE id = ? AND isPublished = 1", [storyId], (error, storyDetails) => {
+    if (error) {
+      console.error("Error retrieving story details by id: ", error);
+      return callback(error, null);
+    }
+
+    if (storyDetails.length === 0) {
+      // No data found for the provided storyId
+      return callback("No story details found for the provided storyId", null);
+    }
+
+    // Create the data object with story details
+    const data = {
+      id: storyDetails[0].id,
+      title: storyDetails[0].title,
+      overview: storyDetails[0].overview,
+      totalBookmarks: storyDetails[0].totalBookmarks,
+      totalViews: storyDetails[0].totalViews,
+      totalPublishedChapters: storyDetails[0].totalPublishedChapters,
+      totalLikers: storyDetails[0].totalLikers,
+      isCompleted: storyDetails[0].isCompleted,
+      isPublished: storyDetails[0].isPublished,
+      imageUrl: storyDetails[0].imageUrl,
+      isVIP: storyDetails[0].isVIP,
+      author: storyDetails[0].author,
+      tags: [],
+      storyLine: [], // Create an array to store storyLine data
+    };
+
+    // Get related tags from story_tags
+    dbConn.query("SELECT name FROM story_tags WHERE storyId = ?", [storyId], (error, tagDetails) => {
+      if (error) {
+        console.error("Error retrieving tag details by storyId: ", error);
+        return callback(error, null);
+      }
+
+      data.tags = tagDetails.map(tag => tag.name);
+
+      // If a userId is provided, get user purchase details for that user
+      if (userId) {
+        dbConn.query("SELECT user_id, story_episodes, purchase_status, created_at FROM user_purchase WHERE story_id = ? AND user_id = ?", [storyId, userId], (error, userPurchaseDetails) => {
+          if (error) {
+            console.error("Error retrieving user purchase details by user_id and story_id: ", error);
+            return callback(error, null);
+          }
+
+          data.userPurchaseDetails = userPurchaseDetails.map(purchase => ({
+            user_id: purchase.user_id,
+            subTitle: purchase.story_episodes,
+            purchase_status: purchase.purchase_status,
+            updatedAt: purchase.created_at,
+          }));
+
+          // Get story episodes from story_episodes by storyId
+          dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
+            if (error) {
+              console.error("Error retrieving story episodes by storyId: ", error);
+              return callback(error, null);
+            }
+
+            // Organize storyLine into pages with character count limit
+            episodeDetails.forEach((episode) => {
+              const storyLine = episode.storyLine;
+              const storyPages = [];
+              let page = '';
+              let pageCount = 1;
+
+              for (let i = 0; i < storyLine.length; i++) {
+                const $ = cheerio.load(storyLine[i], { xmlMode: true });
+
+                page += $.html(); // Extract HTML content
+
+                if (page.length >= characterCount) {
+                  storyPages.push({ [`page${pageCount}`]: page });
+                  page = '';
+                  pageCount++;
+                }
+              }
+
+              if (page.length > 0) {
+                storyPages.push({ [`page${pageCount}`]: page });
+              }
+
+              data.storyLine.push({
+                subTitle: episode.subTitle,
+                storyLine: storyPages,
+              });
+            });
+
+            // Add data object to the response
+            response.message = "Story details retrieved by storyId";
+            response.data = [data];
+
+            return callback(null, data); // Return the data object
+          });
+        });
+      } else {
+        // If no userId provided, get story episodes from story_episodes by storyId
+        dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
+          if (error) {
+            console.error("Error retrieving story episodes by storyId: ", error);
+            return callback(error, null);
+          }
+
+          // Organize storyLine into pages with character count limit
+          episodeDetails.forEach((episode) => {
+            const storyLine = episode.storyLine;
+            const storyPages = [];
+            let page = '';
+            let pageCount = 1;
+
+            for (let i = 0; i < storyLine.length; i++) {
+              const $ = cheerio.load(storyLine[i], { xmlMode: true });
+
+              page += $.html(); // Extract HTML content
+
+              if (page.length >= characterCount) {
+                storyPages.push({ [`page${pageCount}`]: page });
+                page = '';
+                pageCount++;
+              }
+            }
+
+            if (page.length > 0) {
+              storyPages.push({ [`page${pageCount}`]: page });
+            }
+
+            data.storyLine.push({
+              subTitle: episode.subTitle,
+              storyLine: storyPages,
+            });
+          });
+
+          // Add data object to the response
+          response.message = "Story details retrieved by storyId";
+          response.data = [data];
+
+          return callback(null, data); // Return the data object
+        });
+      }
+    });
+  });
+};
 
 // Define the followAuthor function in the ClientModel
 ClientModel.followAuthor = (userId, displayName, callback) => {

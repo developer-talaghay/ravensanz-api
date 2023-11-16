@@ -325,16 +325,13 @@ clientController.getLikedStories = (req, res) => {
 
 
 clientController.commentStory = (req, res) => {
-  const { user_id, story_id, comment, reply_to } = req.body;
-
-  // Set reply_to to 0 if it is empty
-  const replyToValue = reply_to || 0;
+  const { user_id, story_id, comment } = req.body;
 
   if (!user_id || !story_id || !comment) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  ClientModel.commentStory(user_id, story_id, comment, replyToValue, (error, insertedComment) => {
+  ClientModel.commentStory(user_id, story_id, comment, (error, insertedComment) => {
     if (error) {
       console.error('Error commenting on story: ', error);
       return res.status(500).json({ message: 'Error commenting on story' });
@@ -342,6 +339,27 @@ clientController.commentStory = (req, res) => {
 
     return res.status(200).json({
       status: 'Comment Posted',
+      data: insertedComment,
+    });
+  });
+};
+
+clientController.replyCommentStory = (req, res) => {
+  const { user_id, story_id, comment } = req.body;
+  const parent_comment_id = req.body.reply_to;
+
+  if (!user_id || !story_id || !comment || parent_comment_id === undefined) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.replyCommentStory(user_id, story_id, comment, parent_comment_id, (error, insertedComment) => {
+    if (error) {
+      console.error('Error replying to comment: ', error);
+      return res.status(500).json({ message: 'Error replying to comment' });
+    }
+
+    return res.status(200).json({
+      status: 'Reply Posted',
       data: insertedComment,
     });
   });

@@ -44,6 +44,7 @@ router.get("/stories/liked", clientController.getLikedStories);
 
 //user interaction comments
 router.post("/stories/comments", clientController.commentStory);
+router.post("/stories/replycomment", clientController.replyCommentStory);
 router.put("/stories/comments/update", clientController.updateCommentStory);
 router.get("/stories/comments/get", clientController.getAllComments);
 router.post("/stories/comments/like", clientController.likeComment);
