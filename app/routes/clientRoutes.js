@@ -65,5 +65,7 @@ router.get("/stories/page2", clientController.getStoryByPage2);
 // user follows
 router.post("/stories/followauthor", clientController.followAuthor);
 router.post("/stories/unfollowauthor", clientController.unfollowAuthor);
+router.get("/stories/following", clientController.viewFollows);
+// router.get("/stories/followers", clientController.viewFollows);
 
 module.exports = router;

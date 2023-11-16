@@ -678,6 +678,27 @@ clientController.unfollowAuthor = (req, res) => {
   });
 };
 
+clientController.viewFollows = (req, res) => {
+  const { user_id } = req.query; // Use req.query to get data from the query parameters
+
+  if (!user_id) {
+    return res.status(400).json({ message: 'Missing user_id in request query' });
+  }
+
+  ClientModel.getFollowedUsers(user_id, (error, followedUsers) => {
+    if (error) {
+      console.error('Error getting followed users: ', error);
+      return res.status(500).json({ message: 'Error retrieving followed users' });
+    }
+
+    if (!followedUsers || followedUsers.length === 0) {
+      // Handle the case when there are no follows
+      return res.status(200).json({ message: 'No Follows Yet', data: [] });
+    }
+
+    return res.status(200).json({ message: 'Followed authors retrieved successfully', data: followedUsers });
+  });
+};
 
 
 module.exports = clientController;

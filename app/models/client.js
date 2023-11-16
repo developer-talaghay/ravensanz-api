@@ -1499,5 +1499,23 @@ ClientModel.unfollowAuthor = (userId, displayName, callback) => {
   );
 };
 
+ClientModel.getFollowedUsers = (userId, callback) => {
+  // Query to retrieve followed users for a user from user_follows
+  dbConn.query(
+    'SELECT * FROM user_follows WHERE user_id = ?',
+    [userId],
+    (error, followedUsers) => {
+      if (error) {
+        console.error('Error retrieving followed users for user: ', error);
+        return callback(error, null);
+      }
+
+      // Return the followed users
+      return callback(null, followedUsers);
+    }
+  );
+};
+
+
 
 module.exports = ClientModel;
