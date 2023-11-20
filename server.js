@@ -37,7 +37,7 @@ app.use(cors());
 
 // Initialize Firebase Admin SDK
 const admin = require('firebase-admin');
-const serviceAccount = require('./firebase/ravensanz-10b88-firebase-adminsdk-x8ks2-81041e36c9.json'); // Update with your credentials
+const serviceAccount = require('./firebase/ravensanz-10b88-firebase-adminsdk-x8ks2-979e958a37.json'); // Update with your credentials
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -56,6 +56,8 @@ const theNestRoute = require("./app/routes/theNestRoutes");
 // Import the new route for Google signup
 const googleSignupRoute = require('./app/routes/googleAuthentication');
 
+const pushNotifRoute = require('./app/routes/pushNotificationRoutes');
+
 app.use('/api/v1/signup', userSignupRoute);
 app.use('/api/v1/login', userLoginRoute);
 app.use('/api/v1', userResetPasswordRoute);
@@ -68,6 +70,9 @@ app.use('/api/v1/thenest', theNestRoute);
 // app.use('/auth/google', googleAuthRoute);
 // Use the new route for Google signup
 app.use('/api/v1/google/signup', googleSignupRoute);
+
+app.use('/api/v1/push', pushNotifRoute);
+
 
 function isLoggedIn(req,res,next){
   req.user ? next() : res.sendStatus(401)

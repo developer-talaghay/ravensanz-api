@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const userLoginController = {};
 
 userLoginController.checkEmail = (req, res) => {
-  const { email_add, password } = req.body;
+  const { email_add, password, device_token } = req.body;
 
   UserModel.getByEmail(email_add, async (error, user) => {
     if (error) {
@@ -83,6 +83,18 @@ userLoginController.checkEmail = (req, res) => {
           writerBadge: userWithDetails.writerBadge || defaultValues.writerBadge,
           readerBadge: userWithDetails.readerBadge || defaultValues.readerBadge,
         };
+
+        // Update device_token in the database
+        if (device_token) {
+          UserModel.updateUserToken(email_add, device_token, (error) => {
+            if (error) {
+              console.error("Error updating device token: ", error);
+              // Handle the error response if needed
+            } else {
+              console.log("Device token updated successfully");
+            }
+          });
+        }
 
         // Remove unwanted part
         const { password, token, ...userData } = userWithDefaults;
