@@ -27,6 +27,7 @@ const dbConn = mysql.createConnection({
   user: 'root',
   password: 'asdqwe123',
   database: 'ravensanz_db',
+  charset: 'utf8mb4',
   connectTimeout: 10000 // Timeout in milliseconds
 });
 

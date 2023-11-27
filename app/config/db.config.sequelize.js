@@ -7,6 +7,9 @@ const sequelize = new Sequelize({
   password: 'asdqwe123',
   database: 'ravensanz_db',
   dialect: 'mysql',
+  dialectOptions: {
+    charset: 'utf8mb4', // Set the character set
+  },
   connectTimeout: 10000, // Timeout in milliseconds
   logging: console.log, // Enable logging
 });
