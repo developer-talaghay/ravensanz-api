@@ -241,7 +241,7 @@ ClientModel.insertStoryId = (userId, storyId, read, callback) => {
   dbConn.query(
     'SELECT ulr.*, vsi.* FROM user_last_read ulr ' +
     'LEFT JOIN v_story_images vsi ON ulr.story_id = vsi.story_id ' +
-    'WHERE ulr.user_id = ? AND isPublished = 1 AND isVIP = 0 ' +
+    'WHERE ulr.user_id = ? AND isPublished = 1' +
     'ORDER BY ulr.modified_at DESC ' +
     'LIMIT 100',
     [userId],
