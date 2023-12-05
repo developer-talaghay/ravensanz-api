@@ -42,11 +42,26 @@ UserModel.getUserDetailsByUserId = (userId, callback) => {
 
 UserModel.updateUserToken = (userId, token, callback) => {
   dbConn.query(
-    "UPDATE user SET token = ? WHERE id = ?",
+    "UPDATE user SET device_token = ? WHERE email_add = ?",
     [token, userId],
     (error, result) => {
       if (error) {
         console.error("Error updating user token: ", error);
+        return callback(error);
+      }
+
+      return callback(null);
+    }
+  );
+};
+
+UserModel.updateDeviceToken = (userId, deviceToken, callback) => {
+  dbConn.query(
+    "UPDATE user SET device_token = ? WHERE id = ?",
+    [deviceToken, userId],
+    (error, result) => {
+      if (error) {
+        console.error("Error updating user device token: ", error);
         return callback(error);
       }
 

@@ -44,11 +44,28 @@ router.get("/stories/liked", clientController.getLikedStories);
 
 //user interaction comments
 router.post("/stories/comments", clientController.commentStory);
+router.post("/stories/replycomment", clientController.replyCommentStory);
 router.put("/stories/comments/update", clientController.updateCommentStory);
 router.get("/stories/comments/get", clientController.getAllComments);
 router.post("/stories/comments/like", clientController.likeComment);
-router.post("/stories/comments/unlike", clientController.unlikeComment);
+router.get("/stories/comments/getlike", clientController.getLikedComment);
+router.delete("/stories/comments/unlike", clientController.unlikeComment);
 router.delete("/stories/comments/delete", clientController.deleteComment);
 router.post("/stories/comments/flag", clientController.flagComment);
+
+// user wings
+router.post("/stories/wings", clientController.purchaseStoryWithWings);
+router.get("/stories/getWings", clientController.getWingsByUser);
+router.post("/stories/wingstopup", clientController.purchaseWings);
+
+//Story Chapters Pagination
+router.get("/stories/page", clientController.getStoryByPage);
+router.get("/stories/page2", clientController.getStoryByPage2);
+
+// user follows
+router.post("/stories/followauthor", clientController.followAuthor);
+router.post("/stories/unfollowauthor", clientController.unfollowAuthor);
+router.get("/stories/following", clientController.viewFollows);
+// router.get("/stories/followers", clientController.viewFollows);
 
 module.exports = router;

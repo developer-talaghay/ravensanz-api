@@ -50,22 +50,24 @@ clientController.getStoriesListOngoing = (req, res) => {
     });
   };
 
-  clientController.getStoryDetailsById = (req, res) => {
-    const storyId = req.query.story_id;
+// Controller
+clientController.getStoryDetailsById = (req, res) => {
+  const storyId = req.query.story_id;
+  const userId = req.query.user_id;
 
-    if (!storyId) {
-        return res.status(400).json({ message: "Missing story_id parameter" });
-    }
+  if (!storyId) {
+      return res.status(400).json({ message: "Missing story_id parameter" });
+  }
 
-    // Call the model to get story details and related tags by storyId
-    ClientModel.getStoryDetailsById(storyId, (error, storyDetails) => {
-        if (error) {
-            console.error("Error getting story details by storyId: ", error);
-            return res.status(500).json({ message: "No Story Found" });
-        }
+  // Call the model to get story details and related data by storyId
+  ClientModel.getStoryDetailsById(storyId, userId, (error, storyDetails) => {
+      if (error) {
+          console.error("Error getting story details by storyId: ", error);
+          return res.status(500).json({ message: "No Story Found" });
+      }
 
-        return res.status(200).json({ message: "Story details retrieved by storyId", data: storyDetails });
-    });
+      return res.status(200).json(storyDetails);
+  });
 };
 
   clientController.getRelatedStoryLists = (req, res) => {
@@ -323,16 +325,13 @@ clientController.getLikedStories = (req, res) => {
 
 
 clientController.commentStory = (req, res) => {
-  const { user_id, story_id, comment, reply_to } = req.body;
-
-  // Set reply_to to 0 if it is empty
-  const replyToValue = reply_to || 0;
+  const { user_id, story_id, comment } = req.body;
 
   if (!user_id || !story_id || !comment) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  ClientModel.commentStory(user_id, story_id, comment, replyToValue, (error, insertedComment) => {
+  ClientModel.commentStory(user_id, story_id, comment, (error, insertedComment) => {
     if (error) {
       console.error('Error commenting on story: ', error);
       return res.status(500).json({ message: 'Error commenting on story' });
@@ -340,6 +339,27 @@ clientController.commentStory = (req, res) => {
 
     return res.status(200).json({
       status: 'Comment Posted',
+      data: insertedComment,
+    });
+  });
+};
+
+clientController.replyCommentStory = (req, res) => {
+  const { user_id, story_id, comment } = req.body;
+  const parent_comment_id = req.body.reply_to;
+
+  if (!user_id || !story_id || !comment || parent_comment_id === undefined) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.replyCommentStory(user_id, story_id, comment, parent_comment_id, (error, insertedComment) => {
+    if (error) {
+      console.error('Error replying to comment: ', error);
+      return res.status(500).json({ message: 'Error replying to comment' });
+    }
+
+    return res.status(200).json({
+      status: 'Reply Posted',
       data: insertedComment,
     });
   });
@@ -392,19 +412,19 @@ clientController.getAllComments = (req, res) => {
 };
 
 clientController.likeComment = (req, res) => {
-  const { user_id, comment_id } = req.body;
+  const { user_id, comment_id, story_id } = req.body;
 
-  if (!user_id || !comment_id) {
+  if (!user_id || !comment_id || !story_id) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  ClientModel.likeComment(user_id, comment_id, (error, result) => {
+  ClientModel.likeComment(user_id, comment_id, story_id, (error, result) => {
     if (error) {
       console.error('Error liking comment: ', error);
       return res.status(500).json({ message: 'Error liking comment' });
     }
 
-    if (result === 'alreadyExists') {
+    if (result === 'alreadyLiked') {
       return res.status(200).json({ message: 'User already likes this comment' });
     } else if (result === 'liked') {
       return res.status(200).json({ message: 'Comment Liked' });
@@ -457,24 +477,228 @@ clientController.flagComment = (req, res) => {
 };
 
 clientController.unlikeComment = (req, res) => {
-  const { user_id, comment_id } = req.body;
+  const { user_id, comment_id, story_id } = req.body;
 
-  if (!user_id || !comment_id) {
+  if (!user_id || !comment_id || !story_id) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  ClientModel.unlikeComment(user_id, comment_id, (error, result) => {
+  ClientModel.unlikeComment(user_id, comment_id, story_id, (error, result) => {
     if (error) {
-      console.error('Error liking comment: ', error);
-      return res.status(500).json({ message: 'Error liking comment' });
+      console.error('Error unliking comment: ', error);
+      return res.status(500).json({ message: 'Error unliking comment' });
     }
 
-    if (result === 'alreadyExists') {
-      return res.status(200).json({ message: 'User already likes this comment' });
-    } else if (result === 'unliked') {
+    if (result === 'unliked') {
       return res.status(200).json({ message: 'Comment unliked' });
     }
   });
 };
+
+clientController.getLikedComment = (req, res) => {
+  const { user_id, story_id} = req.body;
+
+  if (!user_id || !story_id ) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.getUserLikedComment(user_id, story_id, (error, likedComment) => {
+    if (error) {
+      console.error('Error fetching liked comment: ', error);
+      return res.status(500).json({ message: 'Error fetching liked comment' });
+    }
+
+    return res.status(200).json({
+      message: 'Liked comment retrieved',
+      data: likedComment,
+    });
+  });
+};
+
+
+
+// Purchase story with wings
+clientController.purchaseStoryWithWings = (req, res) => {
+  const { user_id, story_id, wingsRequired } = req.body;
+  const story_episodes = req.body.subTitle;
+
+  if (!user_id || !story_id || !story_episodes || !wingsRequired) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.purchaseStoryWithWings(user_id, story_id, story_episodes, wingsRequired, (error, result) => {
+    if (error) {
+      if (error.message === 'Insufficient wings. Please try again') {
+        return res.status(400).json(error);
+      } else if (error.message === 'User not found') {
+        return res.status(404).json(error);
+      } else if (error.message === 'Already bought. Thank you') {
+        return res.status(400).json(error);
+      } else {
+        console.error('Error purchasing story with wings: ', error);
+        return res.status(500).json({ message: 'Error purchasing story with wings' });
+      }
+    }
+
+    return res.status(200).json({ message: 'Successfully bought story. Enjoy reading', data: result });
+  });
+};
+
+clientController.getWingsByUser = (req, res) => {
+  const { user_id } = req.query;
+
+  if (!user_id) {
+    return res.status(400).json({ message: 'Missing required field: user_id' });
+  }
+
+  // Call the model to fetch wingsCount by user_id
+  ClientModel.getWingsCountByUserId(user_id, (error, wingsCount) => {
+    if (error) {
+      console.error('Error fetching wingsCount by user_id: ', error);
+      return res.status(500).json({ message: 'Error fetching wingsCount by user_id' });
+    }
+
+    return res.status(200).json({
+      message: 'WingsCount retrieved by user_id',
+      wingsCount: wingsCount,
+    });
+  });
+};
+
+clientController.purchaseWings = (req, res) => {
+  const { user_id, full_name } = req.body;
+  const wingsToAdd = req.body.wings_topup;
+
+  if (!user_id || !full_name || wingsToAdd === undefined || wingsToAdd < 0) {
+    return res.status(400).json({ message: 'Missing or invalid required fields' });
+  }
+
+  ClientModel.addWings(user_id, full_name, wingsToAdd, (error, result) => {
+    if (error) {
+      console.error('Error adding wings: ', error);
+      return res.status(500).json({ message: 'Error adding wings' });
+    }
+
+    if (result && result.message === 'User not found') {
+      return res.status(404).json(result);
+    }
+
+    return res.status(200).json({ message: 'Wings added successfully' });
+  });
+};
+
+clientController.getStoryByPage = (req, res) => {
+  const storyId = req.query.story_id;
+  const storyEpisode = req.query.story_episode;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 1000; // Set a default limit of 100 words
+  const userId = req.query.user_id;
+
+  if (!storyId || !storyEpisode) {
+      return res.status(400).json({ message: 'Missing required parameters' });
+  }
+
+  // Call the model to get story episodes with pagination and user purchase details
+  ClientModel.getStoryByPage(storyId, storyEpisode, page, limit, userId, (error, episodeDetails) => {
+      if (error) {
+          console.error('Error getting story episodes by storyId and subTitle: ', error);
+          return res.status(500).json({ message: 'Error retrieving story episodes and user purchase details' });
+      }
+
+      return res.status(200).json(episodeDetails);
+  });
+};
+
+clientController.getStoryByPage2 = (req, res) => {
+  const storyId = req.query.story_id;
+  const userId = req.query.user_id;
+  const characterCount = req.query.character_count || 1000; // Default to 1000 characters if not specified
+
+  if (!storyId) {
+    return res.status(400).json({ message: "Missing story_id parameter" });
+  }
+
+  // Call the model to get story details and related data by storyId
+  ClientModel.getStoryByPage2(storyId, userId, characterCount, (error, storyDetails) => {
+    if (error) {
+      console.error("Error getting story details by storyId: ", error);
+      return res.status(500).json({ message: "No Story Found" });
+    }
+
+    return res.status(200).json(storyDetails);
+  });
+};
+
+clientController.followAuthor = (req, res) => {
+  const { user_id, display_name } = req.body;
+
+  // Check if required fields are missing
+  if (!user_id || !display_name) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  // Call the followAuthor function in the ClientModel
+  ClientModel.followAuthor(user_id, display_name, (error, result) => {
+    if (error) {
+      console.error('Error following author: ', error);
+      return res.status(500).json({ message: 'Error following author' });
+    }
+
+    // Handle the result
+    if (result === 'alreadyFollowed') {
+      return res.status(200).json({ message: 'User already follows this author' });
+    } else if (result === 'followed') {
+      return res.status(200).json({ message: 'Author Followed' });
+    }
+  });
+};
+
+// Define the unfollowAuthor function
+clientController.unfollowAuthor = (req, res) => {
+  const { user_id, display_name } = req.body;
+
+  // Check if required fields are missing
+  if (!user_id || !display_name) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  // Call the unfollowAuthor function in the ClientModel
+  ClientModel.unfollowAuthor(user_id, display_name, (error, result) => {
+    if (error) {
+      console.error('Error unfollowing author: ', error);
+      return res.status(500).json({ message: 'Error unfollowing author' });
+    }
+
+    // Handle the result
+    if (result === 'notFollowing') {
+      return res.status(200).json({ message: 'User is not following this author' });
+    } else if (result === 'unfollowed') {
+      return res.status(200).json({ message: 'Author Unfollowed' });
+    }
+  });
+};
+
+clientController.viewFollows = (req, res) => {
+  const { user_id } = req.query; // Use req.query to get data from the query parameters
+
+  if (!user_id) {
+    return res.status(400).json({ message: 'Missing user_id in request query' });
+  }
+
+  ClientModel.getFollowedUsers(user_id, (error, followedUsers) => {
+    if (error) {
+      console.error('Error getting followed users: ', error);
+      return res.status(500).json({ message: 'Error retrieving followed users' });
+    }
+
+    if (!followedUsers || followedUsers.length === 0) {
+      // Handle the case when there are no follows
+      return res.status(200).json({ message: 'No Follows Yet', data: [] });
+    }
+
+    return res.status(200).json({ message: 'Followed authors retrieved successfully', data: followedUsers });
+  });
+};
+
 
 module.exports = clientController;

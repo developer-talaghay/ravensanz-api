@@ -205,7 +205,7 @@ TheNestModel.getMyStoryList = (userId, callback) => {
     TheNestModel.getRecommendedStories = (userId, callback) => {
       // Retrieve data from v_matching_tag_name, selecting only one row for each unique storyId
       dbConn.query(
-        'SELECT MAX(user_id) as user_id, MAX(story_id) as story_id, storyId, MAX(tag_name) as tag_name, story_title, story_imageId, isVip, MAX(isPublished) as isPublished, imageId, url, author FROM v_matching_tag_name WHERE user_id = ? AND isPublished = 1 GROUP BY storyId',
+        'SELECT MAX(user_id) as user_id, MAX(story_id) as story_id, storyId, MAX(tag_name) as tag_name, story_title, story_imageId, isVip, MAX(isPublished) as isPublished, imageId, url, author, updatedAt FROM v_matching_tag_name WHERE user_id = ? AND isPublished = 1 GROUP BY storyId',
         [userId],
         (error, recommendedStories) => {
           if (error) {
