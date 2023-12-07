@@ -81,7 +81,7 @@ function sendVerificationEmail(email, token) {
   });
 
   // const verificationLink = `http://localhost:8000/verify/${token}`;
-  const verificationLink = `http://3.145.100.103:8000/verify/${token}`;
+  const verificationLink = `http://3.136.15.249:8000/verify/${token}`;
   const mailOptions = {
     from: "Raven Sanz Accounts <noreply@gmail.com>",
     to: email,
