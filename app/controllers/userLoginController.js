@@ -47,17 +47,21 @@ userLoginController.checkEmail = (req, res) => {
           isEmailVerified: "0",
           writerApplicationStatus: "0",
           imageId: "0",
-          wingsCount: 100,
+          wingsCount: 0,
           isSubscriber: "0",
           subscriptionExpirationDate: "1970-01-01",
           isReadingModeOver18: "0",
           writerBadge: "0",
           readerBadge: "0",
         };
-
+        
+        // Check if userDetails is not null and has at least one element
+        const userDetailsArray = userDetails || [];
+        const userDetailsItem = userDetailsArray[0] || {};
+        
         // Combine user details with user object
-        const userWithDetails = { ...user, ...userDetails[0] };
-
+        const userWithDetails = { ...user, ...userDetailsItem };
+        
         // Apply default values to the user object
         const userWithDefaults = {
           id: userWithDetails.user_id,
@@ -83,7 +87,29 @@ userLoginController.checkEmail = (req, res) => {
           writerBadge: userWithDetails.writerBadge || defaultValues.writerBadge,
           readerBadge: userWithDetails.readerBadge || defaultValues.readerBadge,
         };
-
+        
+        // If userDetails is null or empty, set all properties to default values
+        if (!userDetails || userDetails.length === 0) {
+          userWithDefaults.full_name = defaultValues.full_name;
+          userWithDefaults.display_name = defaultValues.display_name;
+          userWithDefaults.birth_date = defaultValues.birth_date;
+          userWithDefaults.country = defaultValues.display_name;
+          userWithDefaults.phone_number = defaultValues.phone_number;
+          userWithDefaults.modified_at = defaultValues.modified_at;
+          userWithDefaults.created_at = defaultValues.created_at;
+          userWithDefaults.isAdmin = defaultValues.isAdmin;
+          userWithDefaults.isWriterVerified = defaultValues.isWriterVerified;
+          userWithDefaults.isEmailVerified = defaultValues.isEmailVerified;
+          userWithDefaults.writerApplicationStatus = defaultValues.writerApplicationStatus;
+          userWithDefaults.imageId = defaultValues.imageId;
+          userWithDefaults.wingsCount = defaultValues.wingsCount;
+          userWithDefaults.isSubscriber = defaultValues.isSubscriber;
+          userWithDefaults.subscriptionExpirationDate = defaultValues.subscriptionExpirationDate;
+          userWithDefaults.isReadingModeOver18 = defaultValues.isReadingModeOver18;
+          userWithDefaults.writerBadge = defaultValues.writerBadge;
+          userWithDefaults.readerBadge = defaultValues.readerBadge;
+          // ... (similar lines for other properties)
+        }
         // Update device_token in the database
         if (device_token) {
           UserModel.updateUserToken(email_add, device_token, (error) => {
