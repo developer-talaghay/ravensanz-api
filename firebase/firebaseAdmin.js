@@ -1,7 +1,10 @@
-var admin = require("firebase-admin");
+const admin = require("firebase-admin");
 
-var serviceAccount = require("./ravensanz-10b88-firebase-adminsdk-x8ks2-979e958a37.json");
+const serviceAccount = require("./rs-stories-15f7e-firebase-adminsdk-hju21-fb35854838.json");
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
+
 });
+
+module.exports = admin;
