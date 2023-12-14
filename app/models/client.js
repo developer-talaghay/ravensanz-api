@@ -1597,6 +1597,4 @@ ClientModel.updateSubscriberStatus = (user_id, isSubscriber, callback) => {
 };
 
 
-
-
 module.exports = ClientModel;
