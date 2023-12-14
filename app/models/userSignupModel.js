@@ -44,7 +44,132 @@ const User = {};
 //   );
 // };
 
+// const insertUserDetails = (userId, userDetails, callback) => {
+//   dbConn.query(
+//     "INSERT INTO user_details (user_id, full_name, display_name, birth_date, country, phone_number, modified_at, created_at, isAdmin, isWriterVerified, isEmailVerified, writerApplicationStatus, imageId, wingsCount, isSubscriber, subscriptionExpirationDate, isReadingModeOver18, writerBadge, readerBadge) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+//     [
+//       userId,
+//       userDetails.full_name,
+//       userDetails.display_name,
+//       userDetails.birth_date,
+//       userDetails.country,
+//       userDetails.phone_number,
+//       userDetails.modified_at,
+//       userDetails.created_at,
+//       userDetails.isAdmin,
+//       userDetails.isWriterVerified,
+//       userDetails.isEmailVerified,
+//       userDetails.writerApplicationStatus,
+//       userDetails.imageId,
+//       userDetails.wingsCount,
+//       userDetails.isSubscriber,
+//       userDetails.subscriptionExpirationDate,
+//       userDetails.isReadingModeOver18,
+//       userDetails.writerBadge,
+//       userDetails.readerBadge,
+//     ],
+//     (error, result) => {
+//       if (error) {
+//         console.error("Error inserting user details into database: ", error);
+//         return callback(error);
+//       } else {
+//         return callback(null);
+//       }
+//     }
+//   );
+// };
+
+// User.create = (newUser, callback) => {
+//   // Check if the email address already exists in the user table
+//   dbConn.query(
+//     "SELECT * FROM user WHERE email_add = ?",
+//     [newUser.email_add],
+//     (error, userResult) => {
+//       if (error) {
+//         console.error("Error checking email address existence: ", error);
+//         return callback(error, null);
+//       } else if (userResult.length > 0) {
+//         // Email address already exists in the user table
+//         return callback("Email address already exists", null);
+//       } else {
+//         // Check if the email address exists in the ravensanz_users table
+//         dbConn.query(
+//           "SELECT * FROM ravensanz_users WHERE email_add = ?",
+//           [newUser.email_add],
+//           (error, ravensanzResult) => {
+//             if (error) {
+//               console.error("Error checking email address in ravensanz_users: ", error);
+//               return callback(error, null);
+//             } else if (ravensanzResult.length > 0) {
+//               const userDetails = ravensanzResult[0];
+
+//               // Insert the user into the user table
+//               const saltRounds = 10;
+//               const password = newUser.password.toString();
+//               bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
+//                 if (err) {
+//                   console.error("Error hashing password: ", err);
+//                   return callback(err, null);
+//                 } else {
+//                   dbConn.query(
+//                     "INSERT INTO user (email_add, password, status) VALUES (?, ?, ?)",
+//                     [newUser.email_add, hashedPassword, "pending"],
+//                     (error, finalUserResult) => {
+//                       if (error) {
+//                         console.error("Error inserting user into database: ", error);
+//                         return callback(error, null);
+//                       } else {
+//                         const userId = finalUserResult.insertId; // Access the insertId from the finalUserResult
+//                         console.log(userId);
+
+//                         insertUserDetails(userId, userDetails, (error) => {
+//                           if (error) {
+//                             console.error("Error copying data to user_details: ", error);
+//                             return callback(error, null);
+//                           } else {
+//                             return callback(null, finalUserResult);
+//                           }
+//                         });
+//                       }
+//                     }
+//                   );
+//                 }
+//               });
+//             } else {
+//               // Email address doesn't exist in ravensanz_users table, proceed to insert into user table
+//               const saltRounds = 10;
+//               const password = newUser.password.toString();
+//               bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
+//                 if (err) {
+//                   console.error("Error hashing password: ", err);
+//                   return callback(err, null);
+//                 } else {
+//                   dbConn.query(
+//                     "INSERT INTO user (email_add, password, status) VALUES (?, ?, ?)",
+//                     [newUser.email_add, hashedPassword, "pending"],
+//                     (error, finalUserResult) => {
+//                       if (error) {
+//                         console.error("Error inserting user into database: ", error);
+//                         return callback(error, null);
+//                       } else {
+//                         return callback(null, finalUserResult);
+//                       }
+//                     }
+//                   );
+//                 }
+//               });
+//             }
+//           }
+//         );
+//       }
+//     }
+//   );
+// };
+
 const insertUserDetails = (userId, userDetails, callback) => {
+  // Insert default values if userDetails is not provided
+  userDetails = userDetails || getDefaultUserDetails();
+
   dbConn.query(
     "INSERT INTO user_details (user_id, full_name, display_name, birth_date, country, phone_number, modified_at, created_at, isAdmin, isWriterVerified, isEmailVerified, writerApplicationStatus, imageId, wingsCount, isSubscriber, subscriptionExpirationDate, isReadingModeOver18, writerBadge, readerBadge) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
@@ -77,6 +202,27 @@ const insertUserDetails = (userId, userDetails, callback) => {
       }
     }
   );
+};
+
+const getDefaultUserDetails = () => {
+  return {
+    "full_name": "No name",
+    "display_name": "No name",
+    "birth_date": "1970-01-01",
+    "country": "No name",
+    "phone_number": "##########",
+    "isAdmin": "0",
+    "isWriterVerified": "0",
+    "isEmailVerified": "0",
+    "writerApplicationStatus": "0",
+    "imageId": "0",
+    "wingsCount": 0,
+    "isSubscriber": "0",
+    "subscriptionExpirationDate": "1970-01-01",
+    "isReadingModeOver18": "0",
+    "writerBadge": "0",
+    "readerBadge": "0",
+  };
 };
 
 User.create = (newUser, callback) => {
@@ -152,7 +298,15 @@ User.create = (newUser, callback) => {
                         console.error("Error inserting user into database: ", error);
                         return callback(error, null);
                       } else {
-                        return callback(null, finalUserResult);
+                        // Insert default values into user_details
+                        insertUserDetails(finalUserResult.insertId, null, (error) => {
+                          if (error) {
+                            console.error("Error inserting default data into user_details: ", error);
+                            return callback(error, null);
+                          } else {
+                            return callback(null, finalUserResult);
+                          }
+                        });
                       }
                     }
                   );
@@ -165,7 +319,6 @@ User.create = (newUser, callback) => {
     }
   );
 };
-
 
 
 User.updateUserStatusAndToken = (email, status, token, callback) => {

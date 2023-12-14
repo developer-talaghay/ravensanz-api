@@ -1571,6 +1571,32 @@ ClientModel.getFollowedUsers = (userId, callback) => {
   );
 };
 
+// Add the following code to your ClientModel.js file
+
+ClientModel.updateSubscriberStatus = (user_id, isSubscriber, callback) => {
+  // Ensure isSubscriber is either 0 or 1
+  if (![0, 1].includes(isSubscriber)) {
+    return callback({ message: 'Invalid value for isSubscriber. It should be either 0 or 1' }, null);
+  }
+
+  // Define the SQL query to update isSubscriber by user_id
+  const sqlQuery = 'UPDATE user_details SET isSubscriber = ? WHERE user_id = ?';
+
+  dbConn.query(sqlQuery, [isSubscriber, user_id], (error, result) => {
+    if (error) {
+      console.error('Error updating isSubscriber: ', error);
+      return callback(error, null);
+    }
+
+    if (result.affectedRows === 0) {
+      return callback({ message: 'User not found' }, null);
+    }
+
+    return callback(null, { message: 'isSubscriber updated successfully' });
+  });
+};
+
+
 
 
 module.exports = ClientModel;

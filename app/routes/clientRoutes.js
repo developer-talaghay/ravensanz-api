@@ -58,6 +58,9 @@ router.post("/stories/wings", clientController.purchaseStoryWithWings);
 router.get("/stories/getWings", clientController.getWingsByUser);
 router.post("/stories/wingstopup", clientController.purchaseWings);
 
+//user subcribe update
+router.post("/user/subscribe", clientController.subscribeUser);
+
 //Story Chapters Pagination
 router.get("/stories/page", clientController.getStoryByPage);
 router.get("/stories/page2", clientController.getStoryByPage2);
