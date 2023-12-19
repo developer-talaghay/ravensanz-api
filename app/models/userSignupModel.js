@@ -205,6 +205,9 @@ const insertUserDetails = (userId, userDetails, callback) => {
 };
 
 const getDefaultUserDetails = () => {
+  const currentDate = new Date();
+  const defaultExpirationDate = new Date(currentDate.setDate(currentDate.getDate() + 3)).toISOString().split('T')[0];
+
   return {
     "full_name": "No name",
     "display_name": "No name",
@@ -217,13 +220,14 @@ const getDefaultUserDetails = () => {
     "writerApplicationStatus": "0",
     "imageId": "0",
     "wingsCount": 0,
-    "isSubscriber": "0",
-    "subscriptionExpirationDate": "1970-01-01",
+    "isSubscriber": "1",
+    "subscriptionExpirationDate": defaultExpirationDate,
     "isReadingModeOver18": "0",
     "writerBadge": "0",
     "readerBadge": "0",
   };
 };
+
 
 User.create = (newUser, callback) => {
   // Check if the email address already exists in the user table
