@@ -1573,18 +1573,18 @@ ClientModel.getFollowedUsers = (userId, callback) => {
 
 // Add the following code to your ClientModel.js file
 
-ClientModel.updateSubscriberStatus = (user_id, isSubscriber, callback) => {
+ClientModel.updateSubscriberStatus = (user_id, isSubscriber, subscriptionExpirationDate, callback) => {
   // Ensure isSubscriber is either 0 or 1
   if (![0, 1].includes(isSubscriber)) {
     return callback({ message: 'Invalid value for isSubscriber. It should be either 0 or 1' }, null);
   }
 
-  // Define the SQL query to update isSubscriber by user_id
-  const sqlQuery = 'UPDATE user_details SET isSubscriber = ? WHERE user_id = ?';
+  // Define the SQL query to update isSubscriber and subscriptionExpirationDate by user_id
+  const sqlQuery = 'UPDATE user_details SET isSubscriber = ?, subscriptionExpirationDate = ? WHERE user_id = ?';
 
-  dbConn.query(sqlQuery, [isSubscriber, user_id], (error, result) => {
+  dbConn.query(sqlQuery, [isSubscriber, subscriptionExpirationDate, user_id], (error, result) => {
     if (error) {
-      console.error('Error updating isSubscriber: ', error);
+      console.error('Error updating isSubscriber and subscriptionExpirationDate: ', error);
       return callback(error, null);
     }
 
@@ -1592,9 +1592,8 @@ ClientModel.updateSubscriberStatus = (user_id, isSubscriber, callback) => {
       return callback({ message: 'User not found' }, null);
     }
 
-    return callback(null, { message: 'isSubscriber updated successfully' });
+    return callback(null, { message: 'Subscription details updated successfully' });
   });
 };
-
 
 module.exports = ClientModel;
