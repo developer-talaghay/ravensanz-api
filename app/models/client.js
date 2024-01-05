@@ -614,7 +614,7 @@ ClientModel.getAllCommentsByStoryId = (storyId, callback) => {
     // Update the url value to the default if it's NULL
     for (const comment of filteredComments) {
       if (comment.url === null) {
-        comment.url = 'http://18.117.252.199:8000/images/default_ic.png';
+        comment.url = 'http://3.136.15.249:8000/images/default_ic.png';
       }
       if (comment.display_name === null) {
         comment.display_name = 'Anonymous';
@@ -975,34 +975,89 @@ ClientModel.getWingsCountByUserId = (user_id, callback) => {
   });
 };
 
+// ClientModel.addWings = (user_id, full_name, wingsToAdd, callback) => {
+//   // Check if the user exists
+//   dbConn.query('SELECT wingsCount FROM user_details WHERE user_id = ? AND full_name = ?', [user_id, full_name], (error, results) => {
+//     if (error) {
+//       console.error('Error retrieving user wingsCount: ', error);
+//       return callback(error, null);
+//     }
+
+//     if (results.length === 0) {
+//       return callback({ message: 'User not found' }, null);
+//     }
+
+//     const currentWingsCount = results[0].wingsCount;
+
+//     // Calculate the updated wingsCount
+//     const updatedWingsCount = currentWingsCount + wingsToAdd;
+
+//     // Update the user's wingsCount in the user_details table
+//     dbConn.query('UPDATE user_details SET wingsCount = ? WHERE user_id = ? AND full_name = ?', [updatedWingsCount, user_id, full_name], (error, updateResult) => {
+//       if (error) {
+//         console.error('Error updating user wingsCount: ', error);
+//         return callback(error, null);
+//       }
+
+//       return callback(null, { message: 'Wings added successfully' });
+//     });
+//   });
+// };
+
 ClientModel.addWings = (user_id, full_name, wingsToAdd, callback) => {
-  // Check if the user exists
-  dbConn.query('SELECT wingsCount FROM user_details WHERE user_id = ? AND full_name = ?', [user_id, full_name], (error, results) => {
+  // Check if the user exists in user_details table
+  dbConn.query('SELECT wingsCount FROM user_details WHERE user_id = ? AND full_name = ?', [user_id, full_name], (error, userDetailsResults) => {
     if (error) {
-      console.error('Error retrieving user wingsCount: ', error);
+      console.error('Error retrieving user wingsCount from user_details: ', error);
       return callback(error, null);
     }
 
-    if (results.length === 0) {
-      return callback({ message: 'User not found' }, null);
+    if (userDetailsResults.length > 0) {
+      // User found in user_details table
+      const currentWingsCountUserDetails = userDetailsResults[0].wingsCount;
+      const updatedWingsCountUserDetails = currentWingsCountUserDetails + wingsToAdd;
+
+      // Update the user's wingsCount in user_details table
+      dbConn.query('UPDATE user_details SET wingsCount = ? WHERE user_id = ? AND full_name = ?', [updatedWingsCountUserDetails, user_id, full_name], (error, updateResultUserDetails) => {
+        if (error) {
+          console.error('Error updating user wingsCount in user_details: ', error);
+          return callback(error, null);
+        }
+
+        return callback(null, { message: 'Wings added successfully in user_details table' });
+      });
+    } else {
+      // User not found in user_details table, check in ravensanz_users table
+      dbConn.query('SELECT wingsCount FROM ravensanz_users WHERE id = ? AND full_name = ?', [user_id, full_name], (error, ravensanzUsersResults) => {
+        if (error) {
+          console.error('Error retrieving user wingsCount from ravensanz_users: ', error);
+          return callback(error, null);
+        }
+
+        if (ravensanzUsersResults.length > 0) {
+          // User found in ravensanz_users table
+          const currentWingsCountRavensanzUsers = ravensanzUsersResults[0].wingsCount;
+          const updatedWingsCountRavensanzUsers = currentWingsCountRavensanzUsers + wingsToAdd;
+
+          // Update the user's wingsCount in ravensanz_users table
+          dbConn.query('UPDATE ravensanz_users SET wingsCount = ? WHERE id = ? AND full_name = ?', [updatedWingsCountRavensanzUsers, user_id, full_name], (error, updateResultRavensanzUsers) => {
+            if (error) {
+              console.error('Error updating user wingsCount in ravensanz_users: ', error);
+              return callback(error, null);
+            }
+
+            return callback(null, { message: 'Wings added successfully in ravensanz_users table' });
+          });
+        } else {
+          // User not found in ravensanz_users table either
+          return callback({ message: 'User not found in user_details or ravensanz_users' }, null);
+        }
+      });
     }
-
-    const currentWingsCount = results[0].wingsCount;
-
-    // Calculate the updated wingsCount
-    const updatedWingsCount = currentWingsCount + wingsToAdd;
-
-    // Update the user's wingsCount in the user_details table
-    dbConn.query('UPDATE user_details SET wingsCount = ? WHERE user_id = ? AND full_name = ?', [updatedWingsCount, user_id, full_name], (error, updateResult) => {
-      if (error) {
-        console.error('Error updating user wingsCount: ', error);
-        return callback(error, null);
-      }
-
-      return callback(null, { message: 'Wings added successfully' });
-    });
   });
 };
+
+
 
 ClientModel.getStoryByPage = (storyId, storyEpisode, page, limit, userId, callback) => {
   const response = {};
@@ -1516,6 +1571,29 @@ ClientModel.getFollowedUsers = (userId, callback) => {
   );
 };
 
+// Add the following code to your ClientModel.js file
 
+ClientModel.updateSubscriberStatus = (user_id, isSubscriber, subscriptionExpirationDate, callback) => {
+  // Ensure isSubscriber is either 0 or 1
+  if (![0, 1].includes(isSubscriber)) {
+    return callback({ message: 'Invalid value for isSubscriber. It should be either 0 or 1' }, null);
+  }
+
+  // Define the SQL query to update isSubscriber and subscriptionExpirationDate by user_id
+  const sqlQuery = 'UPDATE user_details SET isSubscriber = ?, subscriptionExpirationDate = ? WHERE user_id = ?';
+
+  dbConn.query(sqlQuery, [isSubscriber, subscriptionExpirationDate, user_id], (error, result) => {
+    if (error) {
+      console.error('Error updating isSubscriber and subscriptionExpirationDate: ', error);
+      return callback(error, null);
+    }
+
+    if (result.affectedRows === 0) {
+      return callback({ message: 'User not found' }, null);
+    }
+
+    return callback(null, { message: 'Subscription details updated successfully' });
+  });
+};
 
 module.exports = ClientModel;

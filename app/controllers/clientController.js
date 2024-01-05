@@ -700,5 +700,27 @@ clientController.viewFollows = (req, res) => {
   });
 };
 
+// Add the following code to your clientController.js file
+
+clientController.subscribeUser = (req, res) => {
+  const { user_id, isSubscriber, subscriptionExpirationDate } = req.body;
+
+  // Validate input
+  if (!user_id || isSubscriber === undefined || subscriptionExpirationDate === undefined) {
+    return res.status(400).json({ message: 'Missing required fields: user_id, isSubscriber, and subscriptionExpirationDate' });
+  }
+
+  // Call the model to update isSubscriber and subscriptionExpirationDate by user_id
+  ClientModel.updateSubscriberStatus(user_id, isSubscriber, subscriptionExpirationDate, (error, result) => {
+    if (error) {
+      console.error('Error updating subscription details: ', error);
+      return res.status(500).json({ message: 'Error updating subscription details' });
+    }
+
+    return res.status(200).json(result);
+  });
+};
+
+
 
 module.exports = clientController;

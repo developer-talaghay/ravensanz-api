@@ -62,6 +62,7 @@ exports.uploadPicture = (req, res) => {
   });
 };
 
+//ec2-3-136-15-249.us-east-2.compute.amazonaws.com
 
 exports.getPictureByUserId = (req, res) => {
   const { user_id } = req.query;
@@ -69,13 +70,13 @@ exports.getPictureByUserId = (req, res) => {
   PictureUploadModel.findOne(user_id, (err, picture) => {
     if (err) {
       console.error(err);
-      return res.status(200).json({ url: 'http://18.117.252.199:8000/images/default_ic.png' });
+      return res.status(200).json({ url: 'http://3.136.15.249:8000/images/default_ic.png' });
     }
 
     if (!picture) {
       console.error(`Picture not found for user_id: ${user_id}`);
       // Return the default picture URL if no picture is found
-      return res.status(200).json({ url: 'http://18.117.252.199:8000/images/default_ic.png' });
+      return res.status(200).json({ url: 'http://3.136.15.249:8000/images/default_ic.png' });
     }
 
     const { picture_directory } = picture;
@@ -87,7 +88,7 @@ exports.getPictureByUserId = (req, res) => {
 
     // Construct the URL to the picture
     // const pictureURL = `http://localhost:8000/images/${path.basename(picture_directory)}`;
-     const pictureURL = `http://18.117.252.199:8000/images/${path.basename(picture_directory)}`;
+     const pictureURL = `http://3.136.15.249:8000/images/${path.basename(picture_directory)}`;
     res.status(200).json({ url: pictureURL });
   });
 };

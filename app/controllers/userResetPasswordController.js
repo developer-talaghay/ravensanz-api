@@ -92,7 +92,7 @@ exports.forgotPassword = (req, res) => {
 
       // Replace this link with your specific URL
       // const resetLink = `http://localhost:8000/api/v1/resetpassword/${token}`;
-      const resetLink = `http://18.117.252.199:8000/api/v1/resetpassword/${token}`; 
+      const resetLink = `http://3.136.15.249:8000/api/v1/resetpassword/${token}`; 
 
       if (!data.email_verified) {
         // Create a transport object to send the email

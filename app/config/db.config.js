@@ -3,7 +3,7 @@
 // const dotenv = require("dotenv").config();
 // //local mysql db connection
 // const dbConn = mysql.createConnection({
-//   host: 'ec2-18-117-252-199.us-east-2.compute.amazonaws.com',
+//   host: 'ec2-3-136-15-249.us-east-2.compute.amazonaws.com',
 //   user: 'ravensanz_user',
 //   password: 'asdqwE12#',
 //   database: 'ravensanz_db',

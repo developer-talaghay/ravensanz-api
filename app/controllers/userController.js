@@ -62,6 +62,9 @@ function formatUserDetails(userDetails) {
     return null;
   }
 
+  const currentDate = new Date();
+  const defaultExpirationDate = new Date(currentDate.setDate(currentDate.getDate() + 3)).toISOString().split('T')[0];
+
   return {
     id: userDetails.id || null,
     status: userDetails.status || "false",
@@ -80,13 +83,14 @@ function formatUserDetails(userDetails) {
     writerApplicationStatus: userDetails.writerApplicationStatus || 0,
     imageId: userDetails.imageId || 0,
     wingsCount: userDetails.wingsCount || 0,
-    isSubscriber: userDetails.isSubscriber || 0,
-    subscriptionExpirationDate: userDetails.subscriptionExpirationDate || "1970-01-01",
+    isSubscriber: userDetails.isSubscriber || 1,
+    subscriptionExpirationDate: userDetails.subscriptionExpirationDate || defaultExpirationDate,
     isReadingModeOver18: userDetails.isReadingModeOver18 || 0,
     writerBadge: userDetails.writerBadge || 0,
     readerBadge: userDetails.readerBadge || 0,
   };
 }
+
 
 exports.getUser = (req, res) => {
   const user_id = req.query.id; // Assuming the user_id is provided in the query parameter
