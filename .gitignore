@@ -27,3 +27,9 @@ dist/
 
 # MySQL dump files
 *.sql
+
+
+/profile_picture
+
+firebase/rs-stories-15f7e-firebase-adminsdk-hju21-fb35854838.json
+firebase/ravensanz-10b88-firebase-adminsdk-x8ks2-979e958a37.json

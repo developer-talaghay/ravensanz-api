@@ -21,17 +21,51 @@ UserModel.getByEmail = (email, callback) => {
   );
 };
 
-UserModel.getUserDetails = (userId, callback) => {
+UserModel.getUserDetailsByUserId = (userId, callback) => {
   dbConn.query(
     "SELECT * FROM user_details WHERE user_id = ?",
     [userId],
     (error, result) => {
       if (error) {
         console.error("Error retrieving user details: ", error);
-        return callback(error, null);
+        return callback(error, null); // Fix: Added the callback with the error
       }
 
-      return callback(null, result);
+      if (result.length > 0) {
+        return callback(null, result); // Fix: Return the query result
+      } else {
+        return callback(null, null);
+      }
+    }
+  );
+};
+
+UserModel.updateUserToken = (userId, token, callback) => {
+  dbConn.query(
+    "UPDATE user SET device_token = ? WHERE email_add = ?",
+    [token, userId],
+    (error, result) => {
+      if (error) {
+        console.error("Error updating user token: ", error);
+        return callback(error);
+      }
+
+      return callback(null);
+    }
+  );
+};
+
+UserModel.updateDeviceToken = (userId, deviceToken, callback) => {
+  dbConn.query(
+    "UPDATE user SET device_token = ? WHERE id = ?",
+    [deviceToken, userId],
+    (error, result) => {
+      if (error) {
+        console.error("Error updating user device token: ", error);
+        return callback(error);
+      }
+
+      return callback(null);
     }
   );
 };

@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "502750801337",
+    "project_id": "ravensanz-10b88",
+    "storage_bucket": "ravensanz-10b88.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:502750801337:android:e89ff83853887329569a68",
+        "android_client_info": {
+          "package_name": "com.example.ravensanz_android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "502750801337-8f0lmtmai7kbpht6hqnvkffqesva2kr9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ravensanz_android",
+            "certificate_hash": "015695019d1bdb8ec666dfaa219493e600c79d4d"
+          }
+        },
+        {
+          "client_id": "502750801337-cm2pnk9cuf0un694hhbbm3mqfssk1qiv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsinrDtDc_2fccoU7qsbB1kHHs9l7Bk1s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "502750801337-cm2pnk9cuf0un694hhbbm3mqfssk1qiv.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "502750801337-q0nv8rpepjn91sijcb6jfvo2m8hj7b8m.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.talaghay.ios.ravensanz-ios"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
