@@ -96,6 +96,14 @@ StoryEpisodeModel.updateStoryEpisodes = (idValue, storyIdValue, subTitleValue, s
     });
 };
 
-
+StoryEpisodeModel.deleteStoryEpisodeById = (id, callback) => {
+    dbConn.query("DELETE FROM story_episodes WHERE id = ?", [id], (error, result) => {
+        if (error) {
+            console.error("Error deleting story episode by id: ", error);
+            return callback(error);
+        }
+        return callback(null, result.affectedRows > 0); // Indicate success if rows were affected
+    });
+};
 
 module.exports = StoryEpisodeModel;

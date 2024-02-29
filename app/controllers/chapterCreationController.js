@@ -97,6 +97,25 @@ chapterCreationController.updateStoryEpisodes = (req, res) => {
     });
 };
 
+chapterCreationController.deleteStoryEpisodes = (req, res) => {
+    const episodeId = req.query.id; // Assuming the id is provided as a query parameter
+
+    if (!episodeId) {
+        return res.status(400).json({ message: "Missing id parameter" });
+    }
+
+    // Call the model to delete the story episode by id
+    StoryEpisodeModel.deleteStoryEpisodeById(episodeId, (error, success) => {
+        if (error) {
+            console.error("Error deleting story episode: ", error);
+            return res.status(500).json({ message: "Error deleting story episode" });
+        }
+        if (!success) {
+            return res.status(404).json({ message: "No episode found with the provided id" });
+        }
+        return res.status(200).json({ message: "Story episode deleted successfully" });
+    });
+};
 
 
 
