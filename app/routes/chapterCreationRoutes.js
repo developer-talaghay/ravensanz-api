@@ -5,5 +5,6 @@ const chapterCreationController = require('../controllers/chapterCreationControl
 // Admin Story Chapter Creation
 router.get("/story", chapterCreationController.getStoryEpisodes);
 router.post("/story/chapter", chapterCreationController.createStoryEpisodes);
+// router.put("/story/chapter/update", chapterCreationController.putStoryEpisodes);
 
 module.exports = router;
