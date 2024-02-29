@@ -73,6 +73,11 @@ app.use('/api/v1/google/signup', googleSignupRoute);
 
 app.use('/api/v1/push', pushNotifRoute);
 
+// admin side
+const chapterCreation = require('./app/routes/chapterCreationRoutes');
+
+app.use('/api/v1/admin/stories', chapterCreation);
+
 
 function isLoggedIn(req,res,next){
   req.user ? next() : res.sendStatus(401)

@@ -129,7 +129,7 @@ module.exports = router;
 
 
 
-// //routes/story.js
+//routes/story.js
 // const express = require('express');
 // const router = express.Router();
 // const { fetchAndInsertStory, fetchDataAndInsertIntoDatabase } = require('../controllers/storyController');
