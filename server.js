@@ -36,11 +36,11 @@ app.use(cors());
 // firebase
 
 // Initialize Firebase Admin SDK
-const admin = require('firebase-admin');
-const serviceAccount = require('./firebase/ravensanz-10b88-firebase-adminsdk-x8ks2-979e958a37.json'); // Update with your credentials
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// const admin = require('firebase-admin');
+// const serviceAccount = require('./firebase/ravensanz-10b88-firebase-adminsdk-x8ks2-979e958a37.json'); // Update with your credentials
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+// });
 
 // Routes
 const userSignupRoute = require('./app/routes/userSignupRoutes');
