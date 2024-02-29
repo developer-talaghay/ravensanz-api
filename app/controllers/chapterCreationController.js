@@ -5,7 +5,7 @@ const formidable = require('formidable');
 const chapterCreationController = {};
 
 chapterCreationController.getStoryEpisodes = (req, res) => {
-    const storyId = req.query.story_id;
+    const storyId = req.query.storyId;
 
     if (!storyId) {
         return res.status(400).json({ message: "Missing story_id parameter" });
@@ -35,15 +35,15 @@ chapterCreationController.createStoryEpisodes = (req, res) => {
         }
 
         // Extract data from parsed fields
-        const { userId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, storyId } = fields;
+        const { userId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, storyId, totalWords } = fields;
 
         // Check if any required field is missing
-        if (!userId || !subTitle || !storyLine || !status || !wingsRequired || !storyId) {
+        if (!userId || !subTitle || !storyLine || !status || !wingsRequired || !storyId || !totalWords) {
             return res.status(400).json({ message: "Missing required fields in request body" });
         }
 
         // Call the model method to create story episodes
-        StoryEpisodeModel.createStoryEpisodes(userId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, storyId, (error, result) => {
+        StoryEpisodeModel.createStoryEpisodes(userId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, storyId, totalWords, (error, result) => {
             if (error) {
                 if (error.message === "User with the provided userId does not exist" || error.message === "Story with the provided storyId does not exist") {
                     return res.status(404).json({ message: error.message });
@@ -55,6 +55,48 @@ chapterCreationController.createStoryEpisodes = (req, res) => {
         });
     });
 };
+
+
+// Controller method to update story episodes
+chapterCreationController.updateStoryEpisodes = (req, res) => {
+    // Create a new instance of Formidable
+    const form = new formidable.IncomingForm();
+
+    // Parse the incoming request containing form data
+    form.parse(req, (err, fields) => {
+        if (err) {
+            return res.status(400).json({ message: "Error parsing form data" });
+        }
+        
+        // Extract data from parsed fields
+        const {subTitle, storyLine, totalWords, isVIP, writerNote, status, publishedDate, wingsRequired } = fields;
+
+        // Ensure single values instead of arrays
+        const idValue = req.query.id;
+        const storyIdValue = req.query.storyId;
+        const subTitleValue = subTitle[0];
+        const storyLineValue = storyLine[0];
+        const totalWordsValue = totalWords[0];
+        const isVIPValue = isVIP[0];
+        const writerNoteValue = writerNote[0];
+        const statusValue = status[0];
+        const publishedDateValue = publishedDate[0];
+        const wingsRequiredValue = wingsRequired[0];
+
+        // Call the model method to update story episodes
+        StoryEpisodeModel.updateStoryEpisodes(idValue, storyIdValue, subTitleValue, storyLineValue, totalWordsValue, isVIPValue, writerNoteValue, statusValue, publishedDateValue, wingsRequiredValue, (error, result) => {
+            if (error) {
+                if (error.message === "Episode with the provided ID and storyID does not exist") {
+                    return res.status(404).json({ message: error.message });
+                } else {
+                    return res.status(500).json({ message: "Internal server error" });
+                }
+            }
+            return res.status(200).json({ message: "Story episode updated successfully" });
+        });
+    });
+};
+
 
 
 

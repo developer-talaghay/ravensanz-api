@@ -14,7 +14,7 @@ StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, callback) => {
 };
 
 // Model method to create story episodes
-StoryEpisodeModel.createStoryEpisodes = (userId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, storyId, callback) => {
+StoryEpisodeModel.createStoryEpisodes = (userId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, storyId, totalWords, callback) => {
     // Check if userId exists in ravensanz_users table
     const ravensanzQuery = 'SELECT * FROM ravensanz_users WHERE id = ?';
     dbConn.query(ravensanzQuery, [userId], (error, ravensanzResults) => {
@@ -43,8 +43,9 @@ StoryEpisodeModel.createStoryEpisodes = (userId, subTitle, storyLine, isVIP, wri
 
                     // If storyId exists, insert data into story_episodes table
                     if (storyResults.length > 0) {
-                        const insertQuery = 'INSERT INTO story_episodes (userId, storyId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-                        dbConn.query(insertQuery, [userId, storyId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired], (error, result) => {
+                        const createdAt = new Date().toISOString().slice(0, 19).replace('T', ' '); // Get current date time
+                        const insertQuery = 'INSERT INTO story_episodes (userId, storyId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, totalWords, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+                        dbConn.query(insertQuery, [userId, storyId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, totalWords, createdAt], (error, result) => {
                             if (error) {
                                 console.error("Error inserting story episode: ", error);
                                 return callback(error, null);
@@ -61,6 +62,40 @@ StoryEpisodeModel.createStoryEpisodes = (userId, subTitle, storyLine, isVIP, wri
         });
     });
 };
+
+
+// Model method to update story episodes
+StoryEpisodeModel.updateStoryEpisodes = (idValue, storyIdValue, subTitleValue, storyLineValue, totalWordsValue, isVIPValue, writerNoteValue, statusValue, publishedDateValue, wingsRequiredValue, callback) => {
+    // Check if storyId exists in story_episodes table
+    const storyQuery = 'SELECT * FROM story_episodes WHERE id = ? AND storyId = ?';
+    dbConn.query(storyQuery, [idValue, storyIdValue], (error, storyResults) => {
+        if (error) {
+            console.error("Error checking episode existence in story_episodes table: ", error);
+            return callback(error, null);
+        }
+
+        // If episode exists, update the data
+        if (storyResults.length > 0) {
+            // Form the update query
+            const updateQuery = 'UPDATE story_episodes SET subTitle = ?, storyLine = ?, totalWords = ?, isVIP = ?, writerNote = ?, status = ?, publishedDate = ?, wingsRequired = ?, updatedAt = ? WHERE id = ? AND storyId = ?';
+
+            // Get current date and time
+            const updatedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+            // Execute the update query
+            dbConn.query(updateQuery, [subTitleValue, storyLineValue, totalWordsValue, isVIPValue, writerNoteValue, statusValue, publishedDateValue, wingsRequiredValue, updatedAt, idValue, storyIdValue], (error, result) => {
+                if (error) {
+                    console.error("Error updating story episode: ", error);
+                    return callback(error, null);
+                }
+                return callback(null, { message: "Story episode updated successfully" });
+            });
+        } else {
+            return callback({ message: "Episode with the provided ID and storyID does not exist" }, null);
+        }
+    });
+};
+
 
 
 module.exports = StoryEpisodeModel;
