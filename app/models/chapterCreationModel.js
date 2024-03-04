@@ -4,7 +4,7 @@ const dbConn = require('../config/db.config');
 const StoryEpisodeModel = {};
 
 StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, callback) => {
-    dbConn.query("SELECT * FROM story_episodes WHERE storyId = ?", [storyId], (error, episodes) => {
+    dbConn.query("SELECT id, storyId, userId, number, subTitle, totalWords, isVIP, writerNote, status, publishedDate, adminNote, wingsRequired, likes, createdAt, updatedAt FROM story_episodes WHERE storyId = ?", [storyId], (error, episodes) => {
         if (error) {
             console.error("Error retrieving story episodes by storyId: ", error);
             return callback(error, null);
@@ -12,6 +12,7 @@ StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, callback) => {
         return callback(null, episodes);
     });
 };
+
 
 // Model method to create story episodes
 StoryEpisodeModel.createStoryEpisodes = (userId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, storyId, totalWords, callback) => {
