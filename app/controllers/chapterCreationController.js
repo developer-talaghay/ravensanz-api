@@ -21,6 +21,24 @@ chapterCreationController.getStoryEpisodes = (req, res) => {
     });
 };
 
+chapterCreationController.getChapterById = (req, res) => {
+    const chapterId = req.params.chapterId; // Change req.query to req.params
+
+    if (!chapterId) {
+        return res.status(400).json({ message: "Missing chapterId parameter" });
+    }
+
+    // Call the model to get story episode by chapterId
+    StoryEpisodeModel.getStoryEpisodeByEpisodeId(chapterId, (error, episode) => { // Change to getStoryEpisodeByEpisodeId
+        if (error) {
+            console.error("Error getting story episode by chapterId: ", error);
+            return res.status(500).json({ message: "Error getting story episode" });
+        }
+        return res.status(200).json({ message: "Story episode retrieved", data: episode }); // Change episodes to episode
+    });
+};
+
+
 
 
 // Controller method to create story episodes

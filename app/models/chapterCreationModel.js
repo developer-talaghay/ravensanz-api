@@ -13,6 +13,17 @@ StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, callback) => {
     });
 };
 
+StoryEpisodeModel.getStoryEpisodeByEpisodeId = (episodeId, callback) => { // Change function name
+    dbConn.query("SELECT * FROM story_episodes WHERE id = ? LIMIT 1", [episodeId], (error, episode) => {
+        if (error) {
+            console.error("Error retrieving story episode by episodeId: ", error);
+            return callback(error, null);
+        }
+        return callback(null, episode); // Change episodes to episode
+    });
+};
+
+
 
 // Model method to create story episodes
 StoryEpisodeModel.createStoryEpisodes = (userId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, storyId, totalWords, callback) => {
