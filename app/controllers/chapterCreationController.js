@@ -93,7 +93,7 @@ chapterCreationController.updateStoryEpisodes = (req, res) => {
         const idValue = req.query.id;
         const storyIdValue = req.query.storyId;
         const subTitleValue = subTitle[0];
-        const storyLineValue = storyLine[0];
+        const storyLineValue = decodeURIComponent(storyLine[0]);
         const totalWordsValue = totalWords[0];
         const isVIPValue = isVIP[0];
         const writerNoteValue = writerNote[0];
