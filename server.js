@@ -47,7 +47,7 @@ const userSignupRoute = require('./app/routes/userSignupRoutes');
 const userLoginRoute = require('./app/routes/userLoginRoutes');
 const userResetPasswordRoute = require('./app/routes/userResetPasswordRoutes');
 const userVerificationRoute = require("./app/routes/userVerificationRoute");
-const storyRoute = require("./app/routes/story");
+// const storyRoute = require("./app/routes/story");
 const clientRoute = require("./app/routes/clientRoutes");
 const userRoute = require("./app/routes/userRoutes");
 const uploadPictureRoute = require("./app/routes/uploadRoutes");
@@ -62,7 +62,7 @@ app.use('/api/v1/signup', userSignupRoute);
 app.use('/api/v1/login', userLoginRoute);
 app.use('/api/v1', userResetPasswordRoute);
 app.use('/',userVerificationRoute)
-app.use('/api/v1/story', storyRoute);
+// app.use('/api/v1/story', storyRoute);
 app.use('/api/v1/client', clientRoute);
 app.use('/api/v1/user/details', userRoute);
 app.use('/api/v1/upload', uploadPictureRoute);

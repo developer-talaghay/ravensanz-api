@@ -394,6 +394,7 @@ clientController.getAllComments = (req, res) => {
   const { story_id } = req.query;
 
   if (!story_id) {
+    console.error('Missing required field: story_id');
     return res.status(400).json({ message: 'Missing required field: story_id' });
   }
 
@@ -404,12 +405,14 @@ clientController.getAllComments = (req, res) => {
       return res.status(500).json({ message: 'Error fetching comments by story_id' });
     }
 
+    console.log('Comments retrieved by story_id:', comments);
     return res.status(200).json({
       message: 'Comments retrieved by story_id',
       data: comments,
     });
   });
 };
+
 
 clientController.likeComment = (req, res) => {
   const { user_id, comment_id, story_id } = req.body;
