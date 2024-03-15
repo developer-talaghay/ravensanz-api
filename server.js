@@ -57,6 +57,7 @@ const theNestRoute = require("./app/routes/theNestRoutes");
 const googleSignupRoute = require('./app/routes/googleAuthentication');
 
 const pushNotifRoute = require('./app/routes/pushNotificationRoutes');
+const inAppNotif = require('./app/routes/inAppNotifRoutes');
 
 app.use('/api/v1/signup', userSignupRoute);
 app.use('/api/v1/login', userLoginRoute);
@@ -72,6 +73,7 @@ app.use('/api/v1/thenest', theNestRoute);
 app.use('/api/v1/google/signup', googleSignupRoute);
 
 app.use('/api/v1/push', pushNotifRoute);
+app.use('/api/v1/notifications', inAppNotif);
 
 // admin side
 const chapterCreation = require('./app/routes/chapterCreationRoutes');
