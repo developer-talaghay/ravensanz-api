@@ -8,4 +8,6 @@ router.post("/story/chapter", chapterCreationController.createStoryEpisodes);
 router.put("/story/chapter/update", chapterCreationController.updateStoryEpisodes);
 router.delete("/story/chapter/delete", chapterCreationController.deleteStoryEpisodes);
 
+router.get("/story/chapters", chapterCreationController.getPublishedEpisodeCount);
+
 module.exports = router;
