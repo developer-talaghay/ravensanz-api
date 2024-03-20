@@ -88,7 +88,7 @@ chapterCreationController.createStoryEpisodes = (req, res) => {
             return res.status(400).json({ message: "Missing required fields in request body" });
         }
 
-        StoryEpisodeModel.createStoryEpisodes(userId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, storyId, totalWords, (error, result) => {
+        StoryEpisodeModel.createStoryEpisodes(userId, subTitle, decodeURIComponent(storyLine), isVIP, writerNote, status, wingsRequired, storyId, totalWords, (error, result) => {
             if (error) {
                 if (error.message === "User with the provided userId does not exist" || error.message === "Story with the provided storyId does not exist") {
                     return res.status(404).json({ message: error.message });
