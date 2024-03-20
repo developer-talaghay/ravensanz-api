@@ -1004,9 +1004,9 @@ ClientModel.getWingsCountByUserId = (user_id, callback) => {
 //   });
 // };
 
-ClientModel.addWings = (user_id, full_name, wingsToAdd, callback) => {
+ClientModel.addWings = (user_id, wingsToAdd, callback) => {
   // Check if the user exists in user_details table
-  dbConn.query('SELECT wingsCount FROM user_details WHERE user_id = ? AND full_name = ?', [user_id, full_name], (error, userDetailsResults) => {
+  dbConn.query('SELECT wingsCount FROM user_details WHERE user_id = ?', [user_id], (error, userDetailsResults) => {
     if (error) {
       console.error('Error retrieving user wingsCount from user_details: ', error);
       return callback(error, null);
@@ -1018,7 +1018,7 @@ ClientModel.addWings = (user_id, full_name, wingsToAdd, callback) => {
       const updatedWingsCountUserDetails = currentWingsCountUserDetails + wingsToAdd;
 
       // Update the user's wingsCount in user_details table
-      dbConn.query('UPDATE user_details SET wingsCount = ? WHERE user_id = ? AND full_name = ?', [updatedWingsCountUserDetails, user_id, full_name], (error, updateResultUserDetails) => {
+      dbConn.query('UPDATE user_details SET wingsCount = ? WHERE user_id = ?', [updatedWingsCountUserDetails, user_id], (error, updateResultUserDetails) => {
         if (error) {
           console.error('Error updating user wingsCount in user_details: ', error);
           return callback(error, null);
@@ -1028,7 +1028,7 @@ ClientModel.addWings = (user_id, full_name, wingsToAdd, callback) => {
       });
     } else {
       // User not found in user_details table, check in ravensanz_users table
-      dbConn.query('SELECT wingsCount FROM ravensanz_users WHERE id = ? AND full_name = ?', [user_id, full_name], (error, ravensanzUsersResults) => {
+      dbConn.query('SELECT wingsCount FROM ravensanz_users WHERE id = ?', [user_id], (error, ravensanzUsersResults) => {
         if (error) {
           console.error('Error retrieving user wingsCount from ravensanz_users: ', error);
           return callback(error, null);

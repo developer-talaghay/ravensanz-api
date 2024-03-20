@@ -394,6 +394,7 @@ clientController.getAllComments = (req, res) => {
   const { story_id } = req.query;
 
   if (!story_id) {
+    console.error('Missing required field: story_id');
     return res.status(400).json({ message: 'Missing required field: story_id' });
   }
 
@@ -404,12 +405,14 @@ clientController.getAllComments = (req, res) => {
       return res.status(500).json({ message: 'Error fetching comments by story_id' });
     }
 
+    console.log('Comments retrieved by story_id:', comments);
     return res.status(200).json({
       message: 'Comments retrieved by story_id',
       data: comments,
     });
   });
 };
+
 
 clientController.likeComment = (req, res) => {
   const { user_id, comment_id, story_id } = req.body;
@@ -566,14 +569,16 @@ clientController.getWingsByUser = (req, res) => {
 };
 
 clientController.purchaseWings = (req, res) => {
-  const { user_id, full_name } = req.body;
+  const { user_id } = req.body;
   const wingsToAdd = req.body.wings_topup;
 
-  if (!user_id || !full_name || wingsToAdd === undefined || wingsToAdd < 0) {
+  console.log("user_id", user_id, "wing to add", wingsToAdd)
+
+  if (!user_id || wingsToAdd === undefined || wingsToAdd < 0) {
     return res.status(400).json({ message: 'Missing or invalid required fields' });
   }
 
-  ClientModel.addWings(user_id, full_name, wingsToAdd, (error, result) => {
+  ClientModel.addWings(user_id, wingsToAdd, (error, result) => {
     if (error) {
       console.error('Error adding wings: ', error);
       return res.status(500).json({ message: 'Error adding wings' });
@@ -582,7 +587,7 @@ clientController.purchaseWings = (req, res) => {
     if (result && result.message === 'User not found') {
       return res.status(404).json(result);
     }
-
+    console.log('Wings added successfully');
     return res.status(200).json({ message: 'Wings added successfully' });
   });
 };

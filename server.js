@@ -36,18 +36,18 @@ app.use(cors());
 // firebase
 
 // Initialize Firebase Admin SDK
-const admin = require('firebase-admin');
-const serviceAccount = require('./firebase/ravensanz-10b88-firebase-adminsdk-x8ks2-979e958a37.json'); // Update with your credentials
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// const admin = require('firebase-admin');
+// const serviceAccount = require('./firebase/ravensanz-10b88-firebase-adminsdk-x8ks2-979e958a37.json'); // Update with your credentials
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+// });
 
 // Routes
 const userSignupRoute = require('./app/routes/userSignupRoutes');
 const userLoginRoute = require('./app/routes/userLoginRoutes');
 const userResetPasswordRoute = require('./app/routes/userResetPasswordRoutes');
 const userVerificationRoute = require("./app/routes/userVerificationRoute");
-const storyRoute = require("./app/routes/story");
+// const storyRoute = require("./app/routes/story");
 const clientRoute = require("./app/routes/clientRoutes");
 const userRoute = require("./app/routes/userRoutes");
 const uploadPictureRoute = require("./app/routes/uploadRoutes");
@@ -57,12 +57,13 @@ const theNestRoute = require("./app/routes/theNestRoutes");
 const googleSignupRoute = require('./app/routes/googleAuthentication');
 
 const pushNotifRoute = require('./app/routes/pushNotificationRoutes');
+const inAppNotif = require('./app/routes/inAppNotifRoutes');
 
 app.use('/api/v1/signup', userSignupRoute);
 app.use('/api/v1/login', userLoginRoute);
 app.use('/api/v1', userResetPasswordRoute);
 app.use('/',userVerificationRoute)
-app.use('/api/v1/story', storyRoute);
+// app.use('/api/v1/story', storyRoute);
 app.use('/api/v1/client', clientRoute);
 app.use('/api/v1/user/details', userRoute);
 app.use('/api/v1/upload', uploadPictureRoute);
@@ -72,6 +73,12 @@ app.use('/api/v1/thenest', theNestRoute);
 app.use('/api/v1/google/signup', googleSignupRoute);
 
 app.use('/api/v1/push', pushNotifRoute);
+app.use('/api/v1/notifications', inAppNotif);
+
+// admin side
+const chapterCreation = require('./app/routes/chapterCreationRoutes');
+
+app.use('/api/v1/admin/stories', chapterCreation);
 
 
 function isLoggedIn(req,res,next){

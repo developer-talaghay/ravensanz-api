@@ -8,8 +8,8 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: "robertchristian.rosales@gmail.com",
-    pass: "lxkepxxjeixoymtu",
+    user: "developer.talaghay@gmail.com",
+    pass: "xniloghigxhxwqgy",
   }
 });
 
@@ -76,7 +76,7 @@ function sendVerificationEmail(email, token) {
     secure: false,
     auth: {
       user: "developer.talaghay@gmail.com",
-      pass: "tcqslwipuknbeocc",
+      pass: "xniloghigxhxwqgy",
     },
   });
 
