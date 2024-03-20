@@ -110,33 +110,28 @@ chapterCreationController.createStoryEpisodes = (req, res) => {
 };
 
 
-// Controller method to update story episodes
+
 chapterCreationController.updateStoryEpisodes = (req, res) => {
-    // Create a new instance of Formidable
     const form = new formidable.IncomingForm();
 
-    // Parse the incoming request containing form data
     form.parse(req, (err, fields) => {
         if (err) {
             return res.status(400).json({ message: "Error parsing form data" });
         }
         
-        // Extract data from parsed fields
-        const {subTitle, storyLine, totalWords, isVIP, writerNote, status, publishedDate, wingsRequired } = fields;
+        const { subTitle, storyLine, totalWords, isVIP, writerNote, status, publishedDate, wingsRequired } = fields;
 
-        // Ensure single values instead of arrays
         const idValue = req.query.id;
         const storyIdValue = req.query.storyId;
-        const subTitleValue = subTitle[0];
-        const storyLineValue = decodeURIComponent(storyLine[0]);
-        const totalWordsValue = totalWords[0];
-        const isVIPValue = isVIP[0];
-        const writerNoteValue = writerNote[0];
-        const statusValue = status[0];
-        const publishedDateValue = publishedDate[0];
-        const wingsRequiredValue = wingsRequired[0];
+        const subTitleValue = subTitle;
+        const storyLineValue = decodeURIComponent(storyLine);
+        const totalWordsValue = totalWords;
+        const isVIPValue = isVIP;
+        const writerNoteValue = writerNote;
+        const statusValue = status;
+        const publishedDateValue = publishedDate;
+        const wingsRequiredValue = wingsRequired;
 
-        // Call the model method to update story episodes
         StoryEpisodeModel.updateStoryEpisodes(idValue, storyIdValue, subTitleValue, storyLineValue, totalWordsValue, isVIPValue, writerNoteValue, statusValue, publishedDateValue, wingsRequiredValue, (error, result) => {
             if (error) {
                 if (error.message === "Episode with the provided ID and storyID does not exist") {
