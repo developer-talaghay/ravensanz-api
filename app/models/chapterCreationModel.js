@@ -4,7 +4,7 @@ const dbConn = require('../config/db.config');
 const StoryEpisodeModel = {};
 
 StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, callback) => {
-    dbConn.query("SELECT * FROM story_episodes WHERE storyId = ?", [storyId], (error, episodes) => {
+    dbConn.query("SELECT id, storyId, userId, number, subTitle, totalWords, isVIP, writerNote, status, publishedDate, adminNote, wingsRequired, likes, createdAt, updatedAt FROM story_episodes WHERE storyId = ?", [storyId], (error, episodes) => {
         if (error) {
             console.error("Error retrieving story episodes by storyId: ", error);
             return callback(error, null);
@@ -13,6 +13,7 @@ StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, callback) => {
     });
 };
 
+<<<<<<< HEAD
 // // Model method to create story episodes
 // StoryEpisodeModel.createStoryEpisodes = (userId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, storyId, totalWords, callback) => {
 //     // Check if userId exists in ravensanz_users table
@@ -63,6 +64,21 @@ StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, callback) => {
 //     });
 // };
 
+=======
+StoryEpisodeModel.getStoryEpisodeByEpisodeId = (episodeId, callback) => { // Change function name
+    dbConn.query("SELECT * FROM story_episodes WHERE id = ? LIMIT 1", [episodeId], (error, episode) => {
+        if (error) {
+            console.error("Error retrieving story episode by episodeId: ", error);
+            return callback(error, null);
+        }
+        return callback(null, episode); // Change episodes to episode
+    });
+};
+
+
+
+// Model method to create story episodes
+>>>>>>> feature/admin-delete-episode
 StoryEpisodeModel.createStoryEpisodes = (userId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, storyId, totalWords, callback) => {
     const ravensanzQuery = 'SELECT * FROM ravensanz_users WHERE id = ?';
     dbConn.query(ravensanzQuery, [userId], (error, ravensanzResults) => {
