@@ -13,7 +13,6 @@ StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, callback) => {
     });
 };
 
-<<<<<<< HEAD
 // // Model method to create story episodes
 // StoryEpisodeModel.createStoryEpisodes = (userId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, storyId, totalWords, callback) => {
 //     // Check if userId exists in ravensanz_users table
@@ -64,7 +63,6 @@ StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, callback) => {
 //     });
 // };
 
-=======
 StoryEpisodeModel.getStoryEpisodeByEpisodeId = (episodeId, callback) => { // Change function name
     dbConn.query("SELECT * FROM story_episodes WHERE id = ? LIMIT 1", [episodeId], (error, episode) => {
         if (error) {
@@ -78,7 +76,6 @@ StoryEpisodeModel.getStoryEpisodeByEpisodeId = (episodeId, callback) => { // Cha
 
 
 // Model method to create story episodes
->>>>>>> feature/admin-delete-episode
 StoryEpisodeModel.createStoryEpisodes = (userId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, storyId, totalWords, callback) => {
     const ravensanzQuery = 'SELECT * FROM ravensanz_users WHERE id = ?';
     dbConn.query(ravensanzQuery, [userId], (error, ravensanzResults) => {
