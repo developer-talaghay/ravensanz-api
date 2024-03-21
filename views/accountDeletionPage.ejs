@@ -1,0 +1,373 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+  <title>Login</title>
+  <style>
+    body {
+      font-family: "Helvetica Neue", sans-serif;
+      background-color: #61dafb;
+      font-size: 20px;
+    }
+    .centered {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .box {
+      width: 450px;
+      height: auto;
+      background-color: aliceblue;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .form-control {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    form {
+      width: 100%;
+    }
+    p {
+      font-size: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head> 
+<body>
+  <div class='centered'>
+    <div class='box'>
+      <h3>Welcome, <span id="email"></span></h3>
+      <p>We are sorry for you to leave, please give us your comments or feedback on why you are going to delete your account.</p>
+      <form action="/api/v1/account/deleteuser/" method="delete" onSubmit="return checkCredentials()">
+        <div class='mb-3'> 
+          <label for="feedback"><strong>Feedback</strong></label>
+          <textarea name="feedback" id="feedback" rows="4" class='form-control rounded-0' required></textarea><br>
+          <label for="feedback"><stong>Deleting your account would mean:</strong></label>
+          <ul>
+            <li>Deleting your data such as name, birth date, number, full name</li>
+            <li>Deleting your subscription</li>
+            <li>Deleting the number of wings you bought (balance remaining)</li>
+            <li>No refunds or returns</li>
+          </ul>
+        </div>
+        <button type='submit' class='btn btn-success rounded-0'>Delete my Account</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="error-message" style="display: none; color: red;">
+    Invalid email or password. Please try again.
+  </div>
+
+  <script>
+    // Function to retrieve email from cookies
+    function getEmailFromCookie() {
+      var email = document.cookie.replace(/(?:(?:^|.*;\s*)user\s*=\s*([^;]*).*$)|^.*$/, "$1");
+      return email ? JSON.parse(email).email_add : null;
+    }
+  
+    // Update email field with retrieved email
+    document.getElementById("email").textContent = getEmailFromCookie();
+  
+    function checkCredentials() {
+      var feedback = document.getElementById("feedback").value;
+      if (!feedback) {
+        document.getElementById("error-message").style.display = "block";
+        return false;
+      } else {
+        return true;
+      }
+    }
+  </script>
+</body> 
+</html> -->
+
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+  <title>Login</title>
+  <style>
+    body {
+      font-family: "Helvetica Neue", sans-serif;
+      background-color: #61dafb;
+      font-size: 20px;
+    }
+    .centered {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .box {
+      width: 450px;
+      height: auto;
+      background-color: aliceblue;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .form-control {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    form {
+      width: 100%;
+    }
+    p {
+      font-size: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head> 
+<body>
+  <div class='centered'>
+    <div class='box'>
+      <h3>Welcome, <span id="email"></span></h3>
+      <p>We are sorry for you to leave, please give us your comments or feedback on why you are going to delete your account.</p>
+      <form id="deleteForm" method="POST" onSubmit="return deleteAccount()">
+        <div class='mb-3'> 
+          <label for="feedback"><strong>Feedback</strong></label>
+          <textarea name="feedback" id="feedback" rows="4" class='form-control rounded-0' required></textarea><br>
+          <label for="feedback"><strong>Deleting your account would mean:</strong></label>
+          <ul>
+            <li>Deleting your data such as name, birth date, number, full name</li>
+            <li>Deleting your subscription</li>
+            <li>Deleting the number of wings you bought (balance remaining)</li>
+            <li>No refunds or returns</li>
+          </ul>
+        </div>
+        <button type='submit' class='btn btn-success rounded-0'>Delete my Account</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="error-message" style="display: none; color: red;">
+    Invalid email or password. Please try again.
+  </div>
+
+  <script>
+    // Function to retrieve email from cookies
+    function getEmailFromCookie() {
+      var email = document.cookie.replace(/(?:(?:^|.*;\s*)user\s*=\s*([^;]*).*$)|^.*$/, "$1");
+      return email ? JSON.parse(decodeURIComponent(email)).email_add : null;
+    }
+  
+    // Update email field with retrieved email
+    document.getElementById("email").textContent = getEmailFromCookie();
+  
+    // Function to prepare data and submit the form
+    function deleteAccount() {
+      var feedback = document.getElementById("feedback").value;
+      if (!feedback) {
+        document.getElementById("error-message").style.display = "block";
+        return false;
+      }
+  
+      var userData = JSON.stringify({
+        id: JSON.parse(decodeURIComponent(document.cookie)).id,
+        email_add: getEmailFromCookie(),
+        feedback: feedback
+      });
+  
+      fetch("/api/v1/account/deleteuser/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: userData
+      })
+      .then(response => response.json())
+      .then(data => handleResponse(data))
+      .catch(error => console.error("Error:", error));
+      
+      return false; // Prevent default form submission
+    }
+  
+    // Function to handle response from the server
+    function handleResponse(response) {
+      var message = response.message;
+      if (message === "User and related data deleted successfully") {
+        alert("Account Successfully Deleted");
+        window.close(); // Close the tab
+      } else {
+        alert(message); // Show the message received from the server
+      }
+    }
+  </script>
+  
+</body> 
+</html> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete User Feedback Form</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", sans-serif;
+            background-color: #61dafb;
+            font-size: 20px;
+        }
+        .centered {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .box {
+            width: 450px;
+            height: auto;
+            background-color: aliceblue;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .form-control {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        form {
+            width: 100%;
+        }
+        p {
+            font-size: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="centered">
+        <div class="box">
+            <h3>Welcome, <span id="email"></span></h3>
+            <label for="feedback">We are sorry for you to leave, please give us your comments or feedback on why you are going to delete your account.</label>
+            <form id="deleteUserForm">
+                <label for="feedback">Feedback:</label><br>
+                <textarea id="feedback" name="feedback" rows="4" cols="50" class="form-control"></textarea><br>
+                <label for="feedback"><strong>Deleting your account would mean:</strong></label>
+                <ul>
+                    <li>Deleting your data such as name, birth date, number, full name</li>
+                    <li>Deleting your subscription</li>
+                    <li>Deleting the number of wings you bought (balance remaining)</li>
+                    <li>No refunds or returns</li>
+                </ul><br>
+                <p>For more information please email, rs@ravensanz.ca</p>
+                <input type="submit" value="Submit Feedback" class="form-control">
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Function to retrieve cookie value by name
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get email from cookie
+            const userCookie = getCookie('user');
+            let email = '';
+
+            if (userCookie) {
+                const userData = JSON.parse(userCookie);
+                email = userData.email_add;
+            }
+
+            // Update email span with the retrieved email
+            document.getElementById('email').textContent = email;
+        });
+
+        // Function to handle form submission
+        document.getElementById('deleteUserForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Get id and email_add from cookies
+            const userCookie = getCookie('user');
+            let id, email_add;
+
+            if (userCookie) {
+                const userData = JSON.parse(userCookie);
+                id = userData.id;
+                email_add = userData.email_add;
+            }
+
+            console.log('ID:', id);
+            console.log('Email:', email_add);
+
+            // Get feedback from textarea
+            const feedback = document.getElementById('feedback').value;
+            console.log('Feedback:', feedback);
+
+            // Construct request body
+            const requestBody = {
+                id: id,
+                email_add: email_add,
+                feedback: feedback
+            };
+
+            console.log('Request Body:', requestBody);
+
+            // Send POST request to API endpoint
+            fetch('/api/v1/account/deleteuser/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            })
+            .then(response => {
+                console.log('Response:', response);
+                if (response.ok) {
+                    alert('Feedback submitted successfully!');
+                } else {
+                    response.json().then(data => {
+                        console.log('Error Data:', data);
+                        alert('Error: ' + data.error);
+                    }).catch(error => {
+                        console.error('Error parsing JSON:', error);
+                        alert('Error submitting feedback. Please try again.');
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                alert('Error submitting feedback. Please try again.');
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
