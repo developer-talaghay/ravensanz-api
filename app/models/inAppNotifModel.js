@@ -174,4 +174,16 @@ InAppNotificationModel.deleteNotification = (notif_id, callback) => {
   };
 
 
+  InAppNotificationModel.deleteAllNotificationsByUserId = (user_id, callback) => {
+    const sqlQuery = 'DELETE FROM in_app_notifications WHERE user_id = ?';
+    dbConn.query(sqlQuery, [user_id], (error, result) => {
+        if (error) {
+            console.error('Error deleting notifications: ', error);
+            return callback(error, null);
+        }
+
+        return callback(null, result);
+    });
+};
+
 module.exports = InAppNotificationModel;

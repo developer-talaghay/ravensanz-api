@@ -162,6 +162,26 @@ inAppNotifController.deleteNotification = (req, res) => {
       return res.status(200).json({ message: 'Notification deleted successfully' });
     });
   };
+
+
+  inAppNotifController.deleteAllNotificationsByUserId = (req, res) => {
+    const { user_id } = req.query;
+
+    // Check if user_id is provided
+    if (typeof user_id === 'undefined') {
+        return res.status(400).json({ message: 'Missing required field: user_id' });
+    }
+
+    // Call the model to delete all notifications by user_id
+    InAppNotificationModel.deleteAllNotificationsByUserId(user_id, (error, result) => {
+        if (error) {
+            console.error('Error deleting notifications: ', error);
+            return res.status(500).json({ message: 'Error deleting notifications' });
+        }
+
+        return res.status(200).json({ message: 'Notifications deleted successfully' });
+    });
+};
   
 
 module.exports = inAppNotifController;

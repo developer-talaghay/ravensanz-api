@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+  <title>Ravensanz Login</title>
+  <style>
+    body {
+      font-family: "Helvetica Neue", sans-serif;
+      background-color: #61dafb;
+      font-size: 20px;
+    }
+    .centered {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .box {
+      width: 450px;
+      height: auto;
+      background-color: aliceblue;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .form-control {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    form {
+      width: 100%;
+    }
+    p {
+      font-size: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head> 
+<body>
+  <div class='centered'>
+    <div class='box'>
+      <h4>Ravensanz Accounts</h4>
+      <h3>Let us know who you are</h3>
+      <form id="loginForm" method="post" onSubmit="return checkCredentials()">
+        <div class='mb-3'> 
+          <label for="email_add"><strong>Email Address</strong></label>
+          <input type="email" name="email_add" id="email_add" placeholder='Enter Email Address' class='form-control rounded-0' required /><br>
+        </div>
+        <div class='mb-3'> 
+          <label for="password"><strong>Password</strong></label>
+          <input type="password" name="password" id="password" placeholder='Enter Password' class='form-control rounded-0' required /><br>
+        </div>
+        <button type='submit' class='btn btn-success rounded-0'>Login</button>
+      </form>
+      <p>For more information please email, rs@ravensanz.ca</p>
+    </div>
+  </div>
+
+  <div id="error-message" style="display: none; color: red;">
+    Invalid email or password. Please try again.
+  </div>
+
+  <script>
+    function setCookie(name, value, days) {
+      var expires = "";
+      if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    }
+  
+    function getCookie(name) {
+      var nameEQ = name + "=";
+      var ca = document.cookie.split(';');
+      for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
+  
+    function checkCredentials() {
+      var email = document.getElementById("email_add").value;
+      var password = document.getElementById("password").value;
+      if (!email || !password) {
+        document.getElementById("error-message").style.display = "block";
+        return false;
+      } else {
+        return true;
+      }
+    }
+  
+    // Function to handle form submission
+    document.getElementById("loginForm").addEventListener("submit", function(event) {
+      event.preventDefault(); // Prevent default form submission
+  
+      var email = document.getElementById("email_add").value;
+      var password = document.getElementById("password").value;
+      var requestBody = {
+        email_add: email,
+        password: password
+      };
+  
+      fetch("/api/v1/account/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestBody)
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(data => {
+            if (data.message === "User not found") {
+              alert("Check email/password");
+            } else {
+              throw new Error("Login failed"); // Throw an error for other failures
+            }
+          });
+        }
+        return response.json(); // Parse JSON response
+      })
+      .then(data => {
+        // Check if the response contains the "Logged in successfully" message
+        if (data.message === "Logged in successfully") {
+          console.log(data); // Log the response
+          // Save response data in cookies
+          setCookie("user", JSON.stringify(data.user), 1); // Save user data for 1 day
+          window.location.href = "/api/v1/account/page"; // Redirect on success
+        } else {
+          throw new Error("Unexpected response"); // Throw an error for unexpected response
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    });
+  </script>
+
+  
+  
+</body> 
+</html>
+
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+  <title>Login</title>
+  <style>
+    body {
+      font-family: "Helvetica Neue", sans-serif;
+      background-color: #61dafb;
+      font-size: 20px;
+    }
+    .centered {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .box {
+      width: 450px;
+      height: auto;
+      background-color: aliceblue;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .form-control {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    form {
+      width: 100%;
+    }
+    p {
+      font-size: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head> 
+<body>
+  <div class='centered'>
+    <div class='box'>
+      <h2>Login</h2>
+      <form action="/api/v1/account/login" method="post" onSubmit="return checkCredentials()">
+        <div class='mb-3'> 
+          <label for="email_add"><strong>Email Address</strong></label>
+          <input type="email" name="email_add" id="email_add" placeholder='Enter Email Address' class='form-control rounded-0' required /><br>
+        </div>
+        <div class='mb-3'> 
+          <label for="password"><strong>Password</strong></label>
+          <input type="password" name="password" id="password" placeholder='Enter Password' class='form-control rounded-0' required /><br>
+        </div>
+        <button type='submit' class='btn btn-success rounded-0'>Login</button>
+      </form>
+      <p>If you don't have an account, please <a href="/register">register</a>.</p>
+    </div>
+  </div>
+
+  <div id="error-message" style="display: none; color: red;">
+    Invalid email or password. Please try again.
+  </div>
+
+  <script>
+    function checkCredentials() {
+      var email = document.getElementById("email_add").value;
+      var password = document.getElementById("password").value;
+      if (!email || !password) {
+        document.getElementById("error-message").style.display = "block";
+        return false;
+      } else {
+        return true;
+      }
+    }
+  </script>
+</body> 
+</html> -->
