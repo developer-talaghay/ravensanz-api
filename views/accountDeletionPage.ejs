@@ -347,8 +347,11 @@
             })
             .then(response => {
                 console.log('Response:', response);
-                if (response.ok) {
-                    alert('Feedback submitted successfully!');
+                alert('Feedback submitted successfully!');
+        const confirmClose = confirm('Feedback submitted successfully! Do you want to close this tab?');
+        if (confirmClose) {
+            // This is a user-initiated action, so closing is allowed
+            window.close();
                 } else {
                     response.json().then(data => {
                         console.log('Error Data:', data);
