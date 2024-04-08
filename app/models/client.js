@@ -112,7 +112,7 @@ ClientModel.getStoryDetailsById = (storyId, userId, callback) => {
                   }));
 
                   // Get story episodes from story_episodes by storyId
-                  dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
+                  dbConn.query("SELECT id, subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
                       if (error) {
                           console.error("Error retrieving story episodes by storyId: ", error);
                           return callback(error, null);
@@ -129,7 +129,7 @@ ClientModel.getStoryDetailsById = (storyId, userId, callback) => {
               });
           } else {
               // If no userId provided, get story episodes from story_episodes by storyId
-              dbConn.query("SELECT subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
+              dbConn.query("SELECT id, subTitle, storyLine, isVIP, status, wingsRequired FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, episodeDetails) => {
                   if (error) {
                       console.error("Error retrieving story episodes by storyId: ", error);
                       return callback(error, null);
@@ -232,6 +232,99 @@ ClientModel.insertStoryId = (userId, storyId, read, callback) => {
     }
   );
 };
+
+
+
+
+
+
+
+
+
+
+
+ClientModel.insertEpisodesModel = (userId, episodeId, storyId, callback) => {
+  // Check if user_id exists in the user table
+  dbConn.query(
+    'SELECT id FROM user WHERE id = ?',
+    [userId],
+    (selectError, userResult) => {
+      if (selectError) {
+        console.error('Error checking user existence: ', selectError);
+        return callback(selectError);
+      }
+
+      if (userResult.length === 0) {
+        return callback(new Error('User does not exist'));
+      }
+
+      // Check if episode_id exists in the story_episodes table for the given story_id
+      dbConn.query(
+        'SELECT id FROM story_episodes WHERE id = ? AND storyId = ?',
+        [episodeId, storyId],
+        (episodeError, episodeResult) => {
+          if (episodeError) {
+            console.error('Error checking episode existence: ', episodeError);
+            return callback(episodeError);
+          }
+
+          if (episodeResult.length === 0) {
+            return callback(new Error('Episode does not exist for the given story'));
+          }
+
+          // If user and episode exist, proceed with insertion/update
+          dbConn.query(
+            'INSERT INTO story_episodes_views (user_id, episode_id, story_id) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE user_id = VALUES(user_id)',
+            [userId, episodeId, storyId],
+            (insertError, result) => {
+              if (insertError) {
+                console.error('Error inserting new record: ', insertError);
+                return callback(insertError);
+              }
+
+              // Update totalViews in story_lists
+              dbConn.query(
+                'UPDATE story_lists SET totalViews = totalViews + 1 WHERE id = ?',
+                [storyId],
+                (updateError) => {
+                  if (updateError) {
+                    console.error('Error updating totalViews: ', updateError);
+                    return callback(updateError);
+                  }
+
+                  return callback(null, 'Record inserted/updated successfully');
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  );
+};
+
+
+
+ClientModel.getEpisodeViewsByUserModel = (userId, callback) => {
+  // Get data from story_episodes_views for the given user_id
+  dbConn.query(
+    'SELECT * FROM story_episodes_views WHERE user_id = ?',
+    [userId],
+    (error, result) => {
+      if (error) {
+        console.error('Error fetching data: ', error);
+        return callback(error, null);
+      }
+
+      return callback(null, result);
+    }
+  );
+};
+
+
+
+
+
 
 
 

@@ -24,6 +24,10 @@ router.get("/stories/newarrivals", clientController.getStoriesNewArrivals);
 router.post("/stories/continue", clientController.insertStoryId);
 router.get("/stories/continue/id", clientController.getStoryDetails);
 
+// story_episodes views
+router.post("/stories/episodes", clientController.insertEpisodes);
+router.get("/stories/episodes/id", clientController.getEpisodeViewsByUser);
+
 // Story Search
 router.get("/stories/search", clientController.searchByTitleOrAuthor);
 

@@ -133,6 +133,63 @@ clientController.insertStoryId = (req, res) => {
     return res.status(200).json({ message: 'Story ID inserted successfully' });
   });
 };
+
+
+
+
+
+
+
+clientController.insertEpisodes = (req, res) => {
+  const { user_id, episode_id } = req.body;
+  const {story_id} = req.query;
+
+  if (!user_id || !episode_id || !story_id) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.insertEpisodesModel(user_id, episode_id, story_id, (error, result) => {
+    if (error) {
+      if (error.message === 'User does not exist' || error.message === 'Episode does not exist for the given story') {
+        return res.status(400).json({ message: error.message });
+      }
+      console.error('Error inserting record: ', error);
+      return res.status(500).json({ message: 'Error inserting record' });
+    }
+
+    return res.status(200).json({ message: 'Record inserted/updated successfully' });
+  });
+};
+
+
+
+
+
+
+clientController.getEpisodeViewsByUser = (req, res) => {
+  const { user_id } = req.query; // Using req.query to get user_id
+
+  if (!user_id) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  ClientModel.getEpisodeViewsByUserModel(user_id, (error, data) => {
+    if (error) {
+      console.error('Error fetching data: ', error);
+      return res.status(500).json({ message: 'Error fetching data' });
+    }
+
+    return res.status(200).json({ message: 'Data retrieved successfully', data });
+  });
+};
+
+
+
+
+
+
+
+
   
 
 clientController.getStoryDetails = (req, res) => {
