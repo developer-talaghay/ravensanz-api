@@ -14,6 +14,17 @@ ClientModel.getStoryImages = (callback) => {
   });
 };
 
+ClientModel.getStoryImagesByAuthor = (authorId,callback) => {
+  dbConn.query("SELECT * FROM v_story_images WHERE author_id = ?", [authorId], (error, result) => {
+    if (error) {
+      console.error("Error retrieving story images: ", error);
+      return callback(error, null);
+    }
+
+    return callback(null, result);
+  });
+};
+
 ClientModel.getOngoingStories = (callback) => {
     dbConn.query(
       "SELECT * FROM v_story_images WHERE status = 'Ongoing' AND isPublished = 1 AND isVIP = 0",
