@@ -3,16 +3,29 @@ const ClientModel = require('../models/client');
 const clientController = {};
 
 clientController.getStoriesList = (req, res) => {
-  // Call the model to get story images
-  ClientModel.getStoryImages((error, storyImages) => {
-    if (error) {
-      console.error("Error getting story images: ", error);
-      return res.status(500).json({ message: "Error getting story images" });
-    }
 
-    return res.status(200).json({ message: "Story images retrieved", data: storyImages });
-  });
+  const authorId = req.query.authorId;
+  if (!authorId) {
+    ClientModel.getStoryImages((error, storyImages) => {
+      if (error) {
+        console.error("Error getting story images: ", error);
+        return res.status(500).json({ message: "Error getting story images" });
+      }
+  
+      return res.status(200).json({ message: "Story images retrieved", data: storyImages });
+    });
+  }else{
+    ClientModel.getStoryImagesByAuthor(authorId,(error, storyImages) => {
+      if (error) {
+        console.error("Error getting story images: ", error);
+        return res.status(500).json({ message: "Error getting story images" });
+      }
+  
+      return res.status(200).json({ message: "Story images retrieved", data: storyImages });
+    });
+  }
 };
+
 
 clientController.getStoriesListOngoing = (req, res) => {
     // Call the model to get ongoing stories
