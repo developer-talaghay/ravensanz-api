@@ -1,35 +1,30 @@
 // adminController.js
 const AdminModel = require("../models/adminModel");
+const formidable = require('formidable');
 
 const adminController = {};
 
 adminController.createStory = (req, res) => {
-  // Extract story details from request body
-  const newStoryDetails = {
-    userId: req.body.userId,
-    title: req.body.title,
-    blurb: req.body.blurb,
-    language: req.body.language,
-    genre: req.body.genre,
-    status: req.body.status
-  };
+    const form = new formidable.IncomingForm();
+    form.parse(req, (err, fields) => {
+        if (err) {
+            return res.status(400).json({ message: "Error parsing form data" });
+        }
 
-  // Validate required fields
-  if (!newStoryDetails.userId || !newStoryDetails.title || !newStoryDetails.blurb || !newStoryDetails.language || !newStoryDetails.genre || !newStoryDetails.status) {
-    return res.status(400).json({ message: "Missing required fields" });
-  }
+        const { userId, title, blurb, language, genre, status} = fields;
 
-  AdminModel.createStory(newStoryDetails, (error, result) => {
-    if (error) {
-      console.error("Error creating story: ", error);
-      return res.status(500).json({ message: "Error creating story" });
-    }
-    console.log("Story created successfully");
-    res.status(201).json({
-      message: "Story created successfully",
-      data: result
+        if (!userId || !title || !blurb || !language || !genre || !status) {
+            return res.status(400).json({ message: "Missing required fields in request body" });
+        }
+
+        AdminModel.createStory(userId, title, blurb, language, genre, status, (error, result) => {
+            if (error) {
+                return res.status(500).json({ message: "Internal server error" });
+            } else {
+                return res.status(201).json({ message: "Story created successfully", episodeId: result.episodeId });
+            }
+        });
     });
-  });
 };
 
 module.exports = adminController;
