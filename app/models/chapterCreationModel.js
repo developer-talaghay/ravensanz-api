@@ -92,7 +92,7 @@ StoryEpisodeModel.createStoryEpisodes = (userId, subTitle, storyLine, isVIP, wri
             }
 
             if (ravensanzResults.length > 0 || userResults.length > 0) {
-                const storyQuery = 'SELECT * FROM story_episodes WHERE storyId = ?';
+                const storyQuery = 'SELECT * FROM story_lists WHERE id = ?';
                 dbConn.query(storyQuery, [storyId], (error, storyResults) => {
                     if (error) {
                         console.error("Error checking storyId existence in story_episodes table: ", error);

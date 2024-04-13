@@ -77,11 +77,14 @@ app.use('/api/v1/push', pushNotifRoute);
 app.use('/api/v1/notifications', inAppNotif);
 app.use('/api/v1/account', accountDeletion);
 
+
 // admin side
 const chapterCreation = require('./app/routes/chapterCreationRoutes');
 
 app.use('/api/v1/admin/stories', chapterCreation);
 
+const adminRoute = require('./app/routes/adminRoutes');
+app.use('/api/v1/admin', adminRoute);
 
 function isLoggedIn(req,res,next){
   req.user ? next() : res.sendStatus(401)
