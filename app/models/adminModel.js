@@ -73,4 +73,42 @@ AdminModel.createStory = (
   });
 };
 
+// In adminModel.js
+AdminModel.deleteStory = (id, callback) => {
+    // SQL query to check for any links in story_tags, story_episodes_views, and story_comments
+    const checkLinksSql = `
+        SELECT EXISTS (
+            SELECT 1 FROM story_tags WHERE storyId = ?
+            UNION ALL
+            SELECT 1 FROM story_episodes_views WHERE story_id = ?
+            UNION ALL
+            SELECT 1 FROM story_episodes WHERE storyId = ?
+        ) AS linkedExists;
+    `;
+
+    // Execute the query to check for linked records
+    dbConn.query(checkLinksSql, [id, id, id], (error, results) => {
+        if (error) {
+            console.error("Error checking for linked data: ", error);
+            return callback(error, null);
+        }
+
+        // Check if any linked records exist
+        if (results[0].linkedExists) {
+            return callback(null, { message: "Cannot delete story as there are linked records in other tables." });
+        } else {
+            // If no linked records, proceed with deletion
+            const deleteSql = `DELETE FROM story_lists WHERE id = ?`;
+            dbConn.query(deleteSql, [id], (error, result) => {
+                if (error) {
+                    console.error("Error deleting story: ", error);
+                    return callback(error, null);
+                }
+                return callback(null, result);
+            });
+        }
+    });
+};
+
+
 module.exports = AdminModel;
