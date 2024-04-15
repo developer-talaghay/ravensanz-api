@@ -3,6 +3,9 @@ const router = express.Router();
 const adminController = require('../controllers/adminController');
 
 // Routes
+
+router.post("/login", adminController.login);
+
 router.get("/story", adminController.getStories);
 router.post("/story", adminController.createStory);
 router.delete("/story", adminController.deleteStory);

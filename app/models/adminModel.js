@@ -4,6 +4,44 @@ const { v4: uuidv4 } = require("uuid");
 
 const AdminModel = {};
 
+AdminModel.getByEmail = (email, callback) => {
+  dbConn.query(
+    "SELECT * FROM ravensanz_users WHERE email_add = ?",
+    [email],
+    (error, result) => {
+      if (error) {
+        console.error("Error retrieving user by email: ", error);
+        return callback(error, null);
+      }
+
+      if (result.length > 0) {
+        return callback(null, result[0]);
+      } else {
+        return callback(null, null);
+      }
+    }
+  );
+};
+
+AdminModel.getUserDetailsByUserId = (userId, callback) => {
+  dbConn.query(
+    "SELECT * FROM ravensanz_users WHERE id = ?",
+    [userId],
+    (error, result) => {
+      if (error) {
+        console.error("Error retrieving user details: ", error);
+        return callback(error, null); // Fix: Added the callback with the error
+      }
+
+      if (result.length > 0) {
+        return callback(null, result); // Fix: Return the query result
+      } else {
+        return callback(null, null);
+      }
+    }
+  );
+};
+
 // adminModel.js
 AdminModel.getStories = ({ authorId, searchQuery, isPublished }, callback) => {
   let sql = `SELECT * FROM v_admin_story_images`;
