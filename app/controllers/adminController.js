@@ -65,7 +65,7 @@ adminController.login = (req, res) => {
           
           // Apply default values to the user object
           const userWithDefaults = {
-            id: userWithDetails.user_id,
+            id: userWithDetails.id,
             status: userWithDetails.status,
             type: userWithDetails.type,
             email_add: userWithDetails.email_add,
