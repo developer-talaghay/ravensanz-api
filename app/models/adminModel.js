@@ -73,6 +73,19 @@ AdminModel.createStory = (
   });
 };
 
+AdminModel.updateStory = (id, storyDetails, callback) => {
+  const { userId, title, blurb, language, genre, status } = storyDetails;
+  const sql = `UPDATE story_lists SET userId = ?, title = ?, blurb = ?, language = ?, genre = ?, status = ? WHERE id = ?`;
+
+  dbConn.query(sql, [userId, title, blurb, language, genre, status, id], (error, result) => {
+      if (error) {
+          console.error("Error updating story: ", error);
+          return callback(error, null);
+      }
+      return callback(null, result);
+  });
+};
+
 // In adminModel.js
 AdminModel.deleteStory = (id, callback) => {
     // SQL query to check for any links in story_tags, story_episodes_views, and story_comments

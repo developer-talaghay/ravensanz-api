@@ -53,5 +53,32 @@ adminController.deleteStory = (req, res) => {
     });
 };
 
+adminController.updateStory = (req, res) => {
+    const storyId = req.params.id;
+    const form = new formidable.IncomingForm();
+    form.parse(req, (err, fields) => {
+        if (err) {
+            return res.status(400).json({ message: "Error parsing form data" });
+        }
+
+        const decodedFields = {};
+        Object.keys(fields).forEach(key => {
+            decodedFields[key] = querystring.unescape(fields[key]).trim();
+        });
+
+        if (!decodedFields.userId || !decodedFields.title || !decodedFields.blurb || !decodedFields.language || !decodedFields.genre || !decodedFields.status) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        AdminModel.updateStory(storyId, decodedFields, (error, result) => {
+            if (error) {
+                return res.status(500).json({ message: "Internal server error" });
+            } else {
+                return res.status(200).json({ message: "Story updated successfully" });
+            }
+        });
+    });
+};
+
 
 module.exports = adminController;
