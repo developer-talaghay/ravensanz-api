@@ -133,6 +133,28 @@ adminController.getStories = (req, res) => {
     });
 };
 
+adminController.getGenres = (req, res) => {
+    const { searchQuery } = req.query;
+
+    AdminModel.getGenre({ searchQuery }, (error, results) => {
+        if (error) {
+            return res.status(500).json({ message: "Internal server error" });
+        }
+        res.json(results);
+    });
+};
+
+adminController.getAuthors = (req, res) => {
+    const { authorId, fullName, emailAdress, displayName} = req.query;
+
+    AdminModel.getAuthor({ authorId, fullName, emailAdress, displayName }, (error, results) => {
+        if (error) {
+            return res.status(500).json({ message: "Internal server error" });
+        }
+        res.json(results);
+    });
+};
+
 
 adminController.createStory = (req, res) => {
     const form = new formidable.IncomingForm();

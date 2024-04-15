@@ -49,31 +49,97 @@ AdminModel.getStories = ({ authorId, searchQuery, isPublished }, callback) => {
   let params = [];
 
   if (authorId) {
-      conditions.push(`author_id = ?`);
-      params.push(authorId);
+    conditions.push(`author_id = ?`);
+    params.push(authorId);
   }
   if (searchQuery) {
-      conditions.push(`title LIKE ?`);
-      params.push(`%${searchQuery}%`);
+    conditions.push(`title LIKE ?`);
+    params.push(`%${searchQuery}%`);
   }
   if (isPublished !== undefined) {
-      conditions.push(`isPublished = ?`);
-      params.push(isPublished);
+    conditions.push(`isPublished = ?`);
+    params.push(isPublished);
   }
 
   if (conditions.length) {
-      sql += ` WHERE ` + conditions.join(' AND ');
+    sql += ` WHERE ` + conditions.join(" AND ");
   }
 
   dbConn.query(sql, params, (error, results) => {
-      if (error) {
-          console.error("Error fetching stories: ", error);
-          return callback(error, null);
-      }
-      return callback(null, results);
+    if (error) {
+      console.error("Error fetching stories: ", error);
+      return callback(error, null);
+    }
+    return callback(null, results);
   });
 };
 
+AdminModel.getGenre = ({ searchQuery }, callback) => {
+  let sql = `SELECT * FROM story_genre`;
+  let conditions = [];
+  let params = [];
+
+  if (searchQuery) {
+    conditions.push(`name LIKE ?`);
+    params.push(`%${searchQuery}%`);
+  }
+
+  if (conditions.length) {
+    sql += ` WHERE ` + conditions.join(" AND ");
+  }
+
+  dbConn.query(sql, params, (error, results) => {
+    if (error) {
+      console.error("Error fetching genre: ", error);
+      return callback(error, null);
+    }
+    return callback(null, results);
+  });
+};
+
+AdminModel.getAuthor = (
+  { authorId, fullName, emailAdress, displayName },
+  callback
+) => {
+  let sql = `SELECT * FROM ravensanz_users`;
+  let conditions = [];
+  let params = [];
+
+  if (authorId) {
+    conditions.push(`id = ?`);
+    params.push(authorId);
+  }
+
+  if (fullName) {
+    conditions.push(`full_name LIKE ?`);
+    params.push(`%${fullName}%`);
+  }
+
+  if (emailAdress) {
+    conditions.push(`email_add LIKE ?`);
+    params.push(`%${emailAdress}%`);
+  }
+
+  if (displayName) {
+    conditions.push(`display_name LIKE ?`);
+    params.push(`%${displayName}%`);
+  }
+
+  conditions.push(`isWriterVerified = ?`);
+  params.push(1);
+
+  if (conditions.length) {
+    sql += ` WHERE ` + conditions.join(" AND ");
+  }
+
+  dbConn.query(sql, params, (error, results) => {
+    if (error) {
+      console.error("Error fetching genre: ", error);
+      return callback(error, null);
+    }
+    return callback(null, results);
+  });
+};
 
 AdminModel.createStory = (
   userId,
@@ -122,19 +188,23 @@ AdminModel.updateStory = (id, storyDetails, callback) => {
   const { userId, title, blurb, language, genre, status } = storyDetails;
   const sql = `UPDATE story_lists SET userId = ?, title = ?, blurb = ?, language = ?, genre = ?, status = ? WHERE id = ?`;
 
-  dbConn.query(sql, [userId, title, blurb, language, genre, status, id], (error, result) => {
+  dbConn.query(
+    sql,
+    [userId, title, blurb, language, genre, status, id],
+    (error, result) => {
       if (error) {
-          console.error("Error updating story: ", error);
-          return callback(error, null);
+        console.error("Error updating story: ", error);
+        return callback(error, null);
       }
       return callback(null, result);
-  });
+    }
+  );
 };
 
 // In adminModel.js
 AdminModel.deleteStory = (id, callback) => {
-    // SQL query to check for any links in story_tags, story_episodes_views, and story_comments
-    const checkLinksSql = `
+  // SQL query to check for any links in story_tags, story_episodes_views, and story_comments
+  const checkLinksSql = `
         SELECT EXISTS (
             SELECT 1 FROM story_tags WHERE storyId = ?
             UNION ALL
@@ -144,29 +214,31 @@ AdminModel.deleteStory = (id, callback) => {
         ) AS linkedExists;
     `;
 
-    // Execute the query to check for linked records
-    dbConn.query(checkLinksSql, [id, id, id], (error, results) => {
+  // Execute the query to check for linked records
+  dbConn.query(checkLinksSql, [id, id, id], (error, results) => {
+    if (error) {
+      console.error("Error checking for linked data: ", error);
+      return callback(error, null);
+    }
+
+    // Check if any linked records exist
+    if (results[0].linkedExists) {
+      return callback(null, {
+        message:
+          "Cannot delete story as there are linked records in other tables.",
+      });
+    } else {
+      // If no linked records, proceed with deletion
+      const deleteSql = `DELETE FROM story_lists WHERE id = ?`;
+      dbConn.query(deleteSql, [id], (error, result) => {
         if (error) {
-            console.error("Error checking for linked data: ", error);
-            return callback(error, null);
+          console.error("Error deleting story: ", error);
+          return callback(error, null);
         }
-
-        // Check if any linked records exist
-        if (results[0].linkedExists) {
-            return callback(null, { message: "Cannot delete story as there are linked records in other tables." });
-        } else {
-            // If no linked records, proceed with deletion
-            const deleteSql = `DELETE FROM story_lists WHERE id = ?`;
-            dbConn.query(deleteSql, [id], (error, result) => {
-                if (error) {
-                    console.error("Error deleting story: ", error);
-                    return callback(error, null);
-                }
-                return callback(null, result);
-            });
-        }
-    });
+        return callback(null, result);
+      });
+    }
+  });
 };
-
 
 module.exports = AdminModel;

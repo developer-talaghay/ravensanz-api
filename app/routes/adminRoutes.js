@@ -5,6 +5,8 @@ const adminController = require('../controllers/adminController');
 // Routes
 
 router.post("/login", adminController.login);
+router.get("/genre", adminController.getGenres);
+router.get("/author", adminController.getAuthors);
 
 router.get("/story", adminController.getStories);
 router.post("/story", adminController.createStory);
