@@ -4,6 +4,19 @@ const formidable = require('formidable');
 const adminController = {};
 const querystring = require('querystring');  // Add this if not already imported
 
+// adminController.js
+adminController.getStories = (req, res) => {
+    const { authorId, searchQuery, isPublished } = req.query;
+
+    AdminModel.getStories({ authorId, searchQuery, isPublished }, (error, results) => {
+        if (error) {
+            return res.status(500).json({ message: "Internal server error" });
+        }
+        res.json(results);
+    });
+};
+
+
 adminController.createStory = (req, res) => {
     const form = new formidable.IncomingForm();
     form.parse(req, (err, fields) => {

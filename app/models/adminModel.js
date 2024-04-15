@@ -4,31 +4,38 @@ const { v4: uuidv4 } = require("uuid");
 
 const AdminModel = {};
 
-AdminModel.createStory = (storyDetails, callback) => {
-  const id = uuidv4();
-  const sql = `INSERT INTO story_lists (id, userId, title, blurb, language, genre, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`;
+// adminModel.js
+AdminModel.getStories = ({ authorId, searchQuery, isPublished }, callback) => {
+  let sql = `SELECT * FROM v_admin_story_images`;
+  let conditions = [];
+  let params = [];
 
-  // Insert the generated UUID along with other story details into the database
-  dbConn.query(
-    sql,
-    [
-      id,
-      storyDetails.userId,
-      storyDetails.title,
-      storyDetails.blurb,
-      storyDetails.language,
-      storyDetails.genre,
-      storyDetails.status,
-    ],
-    (error, result) => {
+  if (authorId) {
+      conditions.push(`author_id = ?`);
+      params.push(authorId);
+  }
+  if (searchQuery) {
+      conditions.push(`title LIKE ?`);
+      params.push(`%${searchQuery}%`);
+  }
+  if (isPublished !== undefined) {
+      conditions.push(`isPublished = ?`);
+      params.push(isPublished);
+  }
+
+  if (conditions.length) {
+      sql += ` WHERE ` + conditions.join(' AND ');
+  }
+
+  dbConn.query(sql, params, (error, results) => {
       if (error) {
-        console.error("Error creating story: ", error);
-        return callback(error, null);
+          console.error("Error fetching stories: ", error);
+          return callback(error, null);
       }
-      return callback(null, result);
-    }
-  );
+      return callback(null, results);
+  });
 };
+
 
 AdminModel.createStory = (
   userId,
