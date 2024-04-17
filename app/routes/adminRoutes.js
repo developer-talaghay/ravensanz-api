@@ -13,5 +13,6 @@ router.post("/story", adminController.createStory);
 router.delete("/story", adminController.deleteStory);
 router.patch("/story/:id", adminController.updateStory);
 
+router.post("/uploadBookCover", adminController.uploadBookCover);
 
 module.exports = router;

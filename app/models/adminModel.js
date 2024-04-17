@@ -241,4 +241,16 @@ AdminModel.deleteStory = (id, callback) => {
   });
 };
 
+AdminModel.saveFileUrl = (url, callback) => {
+  const sql = "INSERT INTO story_images (url, createdAt, updatedAt) VALUES (?, NOW(), NOW())";
+  dbConn.query(sql, [url], (error, results) => {
+    if (error) {
+      console.error("Failed to insert URL into database: ", error);
+      return callback(error, null);
+    }
+    return callback(null, results);
+  });
+};
+
+
 module.exports = AdminModel;
