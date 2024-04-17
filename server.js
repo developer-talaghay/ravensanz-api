@@ -9,6 +9,18 @@ const app = express();
 const port = process.env.PORT || 8000;
 const path = require('path');
 
+// Firebase Initialization
+const admin = require('firebase-admin');
+const serviceAccount = require('./app/config/ravens-4a475-firebase-adminsdk-ff0rt-2710aefe35.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://ravens-4a475-default-rtdb.asia-southeast1.firebasedatabase.app",
+  storageBucket: "ravens-4a475.appspot.com"
+});
+const bucket = admin.storage().bucket();
+module.exports = { bucket };
+
 app.set("view engine", "ejs");
 
 // Define the directory where your images are stored
