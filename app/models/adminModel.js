@@ -241,15 +241,15 @@ AdminModel.deleteStory = (id, callback) => {
   });
 };
 
-AdminModel.saveFileUrl = (url, callback) => {
+AdminModel.saveFileUrl = async (url) => {
   const sql = "INSERT INTO story_images (url, createdAt, updatedAt) VALUES (?, NOW(), NOW())";
-  dbConn.query(sql, [url], (error, results) => {
-    if (error) {
-      console.error("Failed to insert URL into database: ", error);
-      return callback(error, null);
-    }
-    return callback(null, results);
-  });
+  try {
+    const [result] = await dbConn.promise().query(sql, [url]);
+    return result.insertId;
+  } catch (error) {
+    console.error("Failed to insert URL into database: ", error);
+    throw error; // Re-throw the error for handling in the controller
+  }
 };
 
 

@@ -23,6 +23,7 @@
     "firebase-admin": "^12.1.0",
     "formidable": "^3.5.1",
     "fs": "^0.0.1-security",
+    "isomorphic-fetch": "^3.0.0",
     "jsonwebtoken": "^9.0.0",
     "jwk-to-pem": "^2.0.5",
     "jwks-rsa": "^3.0.1",

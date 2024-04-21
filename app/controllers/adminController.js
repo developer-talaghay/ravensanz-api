@@ -6,7 +6,8 @@ const adminController = {};
 const querystring = require("querystring"); // Add this if not already imported
 const { v4: uuidv4 } = require("uuid");
 const { bucket } = require("./../../server");
-const fs = require('fs');
+const fs = require("fs");
+const fetch = require("isomorphic-fetch");
 
 // adminController.js
 
@@ -212,12 +213,10 @@ adminController.createStory = (req, res) => {
         if (error) {
           return res.status(500).json({ message: "Internal server error" });
         } else {
-          return res
-            .status(201)
-            .json({
-              message: "Story created successfully",
-              episodeId: result.episodeId,
-            });
+          return res.status(201).json({
+            message: "Story created successfully",
+            episodeId: result.episodeId,
+          });
         }
       }
     );
@@ -279,49 +278,74 @@ adminController.updateStory = (req, res) => {
 };
 
 adminController.uploadBookCover = async (req, res) => {
-    const form = new formidable.IncomingForm();
-    form.parse(req, async (err, fields, files) => {
-        if (err) {
-            console.error("Error during form parsing", err);
-            return res.status(400).send({ message: "Error parsing the upload" });
-        }
+  const form = new formidable.IncomingForm();
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      console.error("Error during form parsing", err);
+      return res.status(400).send({ message: "Error parsing the upload" });
+    }
 
-        // Since files.file is an array, access the first element
-        const file = files.file[0];
-        if (!file) {
-            return res.status(400).send({ message: "No file uploaded" });
-        }
+    // Access uploaded file
+    const file = files.file[0];
+    if (!file) {
+      return res.status(400).send({ message: "No file uploaded" });
+    }
 
-        console.log("File path:", file.filepath); // Ensure this is the correct property for the file path
+    console.log("File path:", file.filepath); // Ensure this is the correct property
 
-        const blob = bucket.file('book-covers/' + uuidv4() + '-' + file.originalFilename);
-        const blobStream = blob.createWriteStream({
-            metadata: {
-                contentType: file.mimetype, // Make sure mimetype is correctly referenced
-            },
-        });
+    // Extract filename and extension
+    const originalFilename = file.originalFilename.split(".");
+    const filename = originalFilename[0];
+    const fileType = file.type ? file.type.split("/")[1] : "jpg";
 
-        // Stream the file from the filepath provided by formidable
-        fs.createReadStream(file.filepath).pipe(blobStream);
+    // Construct unique filename without extension
+    const uniqueFilename = uuidv4();
+    const firebaseFilename = `${uniqueFilename}-${filename}.${fileType}`;
 
-        blobStream.on('error', (error) => {
-            console.error("Blob stream encountered an error: ", error);
-            res.status(500).send({ message: "Upload failed" });
-        });
-
-        blobStream.on('finish', () => {
-            const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(blob.name)}?alt=media`;
-
-            AdminModel.saveFileUrl(publicUrl, (error, results) => {
-                if (error) {
-                    console.error("Failed to insert URL into database: ", error);
-                    return res.status(500).send({ message: "Database operation failed" });
-                }
-                res.status(200).send({ message: "File uploaded successfully", url: publicUrl });
-            });
-        });
+    const blob = bucket.file("book-covers/" + firebaseFilename);
+    const blobStream = blob.createWriteStream({
+      metadata: {
+        contentType: file.mimetype,
+      },
     });
-};
 
+    // Stream the file
+    fs.createReadStream(file.filepath).pipe(blobStream);
+
+    blobStream.on("error", (error) => {
+      console.error("Blob stream encountered an error: ", error);
+      res.status(500).send({ message: "Upload failed" });
+    });
+
+    blobStream.on("finish", async () => {
+      // Get original URL without resizing
+      const originalUrl = `https://firebasestorage.googleapis.com/v0/b/${
+        bucket.name
+      }/o/${encodeURIComponent(blob.name)}?alt=media`;
+
+      const splittedFirstHalf = originalUrl.split("?")[0];
+      const replacedFileUrl = splittedFirstHalf.replace(
+        `.${fileType}`,
+        `_300x400.${fileType}`
+      );
+      const finalUrl = `${replacedFileUrl}?alt=media`;
+
+      try {
+        const insertedId = await AdminModel.saveFileUrl(finalUrl);
+        res
+          .status(200)
+          .send({
+            message: "File uploaded successfully",
+            url: finalUrl,
+            id: insertedId,
+          });
+      } catch (error) {
+        console.error("Error fetching file URL: ", error);
+        const errorMessage = `Error fetching file from URL: ${finalUrl}`;
+        res.status(500).send({ message: errorMessage });
+      }
+    });
+  });
+};
 
 module.exports = adminController;
