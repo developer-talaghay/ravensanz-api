@@ -330,20 +330,20 @@ adminController.uploadBookCover = async (req, res) => {
       );
       const finalUrl = `${replacedFileUrl}?alt=media`;
 
-      try {
-        const insertedId = await AdminModel.saveFileUrl(finalUrl);
-        res
-          .status(200)
-          .send({
+      AdminModel.saveFileUrl(finalUrl, (error, insertedId) => {
+        if (error) {
+          console.error("Error saving file URL: ", error);
+          res.status(500).send({ message: "Failed to save file URL" });
+        } else {
+          res.status(200).send({
             message: "File uploaded successfully",
             url: finalUrl,
             id: insertedId,
           });
-      } catch (error) {
-        console.error("Error fetching file URL: ", error);
-        const errorMessage = `Error fetching file from URL: ${finalUrl}`;
-        res.status(500).send({ message: errorMessage });
-      }
+        }
+      });
+
+      
     });
   });
 };
