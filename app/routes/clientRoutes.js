@@ -61,6 +61,7 @@ router.post("/stories/comments/flag", clientController.flagComment);
 router.post("/stories/wings", clientController.purchaseStoryWithWings);
 router.get("/stories/getWings", clientController.getWingsByUser);
 router.post("/stories/wingstopup", clientController.purchaseWings);
+router.post("/stories/bulkpurchase", clientController.postBulkPurchase);
 
 //user subcribe update
 router.post("/user/subscribe", clientController.subscribeUser);
