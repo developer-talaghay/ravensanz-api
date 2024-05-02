@@ -662,6 +662,27 @@ clientController.purchaseWings = (req, res) => {
   });
 };
 
+
+// Controller function to handle bulk purchase
+clientController.postBulkPurchase = (req, res) => {
+  const { user_id, story_id } = req.body;
+
+  if (!user_id || !story_id) {
+      return res.status(400).json({ message: "Both user_id and story_id are required" });
+  }
+
+  // Call the model function to insert data into user_purchase table and fetch story details
+  ClientModel.bulkPurchase(user_id, story_id, (error, result) => {
+      if (error) {
+          console.error("Error processing bulk purchase: ", error);
+          return res.status(500).json({ message: "Error processing bulk purchase", error });
+      }
+
+      return res.status(200).json(result);
+  });
+};
+
+
 clientController.getStoryByPage = (req, res) => {
   const storyId = req.query.story_id;
   const storyEpisode = req.query.story_episode;

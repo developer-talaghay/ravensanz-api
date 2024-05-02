@@ -1161,7 +1161,93 @@ ClientModel.addWings = (user_id, wingsToAdd, callback) => {
   });
 };
 
+// Model function to handle bulk purchase
+ClientModel.bulkPurchase = (user_id, story_id, callback) => {
+  // Check if user_id exists in user_details table
+  dbConn.query("SELECT * FROM user_details WHERE user_id = ?", [user_id], (error, userDetails) => {
+      if (error) {
+          console.error("Error checking user details: ", error);
+          return callback(error, null);
+      }
 
+      if (userDetails.length === 0) {
+          // User does not exist in user_details table
+          return callback("User does not exist", null);
+      }
+
+      // Fetch wingsRequired for the given storyId
+      dbConn.query("SELECT SUM(wingsRequired) AS totalWingsRequired FROM story_episodes WHERE storyId = ?", [story_id], (error, result) => {
+          if (error) {
+              console.error("Error retrieving wingsRequired for the story: ", error);
+              return callback(error, null);
+          }
+
+          if (result.length === 0 || result[0].totalWingsRequired === null) {
+              // No wingsRequired found for the provided storyId
+              return callback("No wingsRequired found for the provided storyId", null);
+          }
+
+          const totalWingsRequired = result[0].totalWingsRequired;
+
+// Check if the user has enough wingsCount
+if (userDetails[0].wingsCount < totalWingsRequired) {
+  return callback(`Insufficient wings. Total wings Required: ${totalWingsRequired}`, null);
+}
+
+
+          // Deduct totalWingsRequired from wingsCount
+          const remainingWingsCount = userDetails[0].wingsCount - totalWingsRequired;
+
+          // Update wingsCount in user_details table
+          dbConn.query("UPDATE user_details SET wingsCount = ? WHERE user_id = ?", [remainingWingsCount, user_id], (error, updateResult) => {
+              if (error) {
+                  console.error("Error updating wingsCount in user_details table: ", error);
+                  return callback(error, null);
+              }
+
+              // Proceed with the bulk purchase
+
+              // Get all subTitle from story_episodes where storyId = story_id
+              dbConn.query("SELECT subTitle FROM story_episodes WHERE storyId = ?", [story_id], (error, episodes) => {
+                  if (error) {
+                      console.error("Error retrieving story episodes by storyId: ", error);
+                      return callback(error, null);
+                  }
+
+                  if (episodes.length === 0) {
+                      // No data found for the provided storyId
+                      return callback("No story episodes found for the provided storyId", null);
+                  }
+
+                  // Insert each subTitle as a separate row into user_purchase table
+                  const insertPromises = episodes.map(episode => {
+                      const subTitle = episode.subTitle;
+                      return new Promise((resolve, reject) => {
+                          dbConn.query("INSERT INTO user_purchase (user_id, story_id, purchase_status, story_episodes) VALUES (?, ?, 1, ?)", [user_id, story_id, subTitle], (error, result) => {
+                              if (error) {
+                                  console.error("Error inserting data into user_purchase table: ", error);
+                                  reject(error);
+                              } else {
+                                  resolve();
+                              }
+                          });
+                      });
+                  });
+
+                  // Execute all insert queries
+                  Promise.all(insertPromises)
+                      .then(() => {
+                          // Return success message with totalWingsRequired and remaining wingsCount
+                          return callback(null, { message: "Bulk purchase successful", totalWingsRequired, remainingWingsCount });
+                      })
+                      .catch(error => {
+                          return callback(error, null);
+                      });
+              });
+          });
+      });
+  });
+};
 
 ClientModel.getStoryByPage = (storyId, storyEpisode, page, limit, userId, callback) => {
   const response = {};
