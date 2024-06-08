@@ -148,6 +148,7 @@ AdminModel.createStory = (
   language,
   genre,
   status,
+  imageId,
   callback
 ) => {
   const ravensanzQuery = "SELECT * FROM ravensanz_users WHERE id = ?";
@@ -168,10 +169,10 @@ AdminModel.createStory = (
       }
 
       const id = uuidv4();
-      const sql = `INSERT INTO story_lists (id, userId, title, blurb, language, genre, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`;
+      const sql = `INSERT INTO story_lists (id, userId, title, blurb, language, genre, status, imageId, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`;
       dbConn.query(
         sql,
-        [id, userId, title, blurb, language, genre, status],
+        [id, userId, title, blurb, language, genre, status, imageId],
         (error, result) => {
           if (error) {
             console.error("Error creating story: ", error);
@@ -185,12 +186,12 @@ AdminModel.createStory = (
 };
 
 AdminModel.updateStory = (id, storyDetails, callback) => {
-  const { userId, title, blurb, language, genre, status } = storyDetails;
-  const sql = `UPDATE story_lists SET userId = ?, title = ?, blurb = ?, language = ?, genre = ?, status = ? WHERE id = ?`;
+  const { userId, title, blurb, language, genre, status, imageId } = storyDetails;
+  const sql = `UPDATE story_lists SET userId = ?, title = ?, blurb = ?, language = ?, genre = ?, status = ?, imageId = ? WHERE id = ?`;
 
   dbConn.query(
     sql,
-    [userId, title, blurb, language, genre, status, id],
+    [userId, title, blurb, language, genre, status, imageId, id],
     (error, result) => {
       if (error) {
         console.error("Error updating story: ", error);

@@ -194,9 +194,9 @@ adminController.createStory = (req, res) => {
       decodedFields[key] = querystring.unescape(fields[key]);
     });
 
-    const { userId, title, blurb, language, genre, status } = decodedFields;
+    const { userId, title, blurb, language, genre, status, imageId } = decodedFields;
 
-    if (!userId || !title || !blurb || !language || !genre || !status) {
+    if (!userId || !title || !blurb || !language || !genre || !status || !imageId) {
       return res
         .status(400)
         .json({ message: "Missing required fields in request body" });
@@ -209,6 +209,7 @@ adminController.createStory = (req, res) => {
       language,
       genre,
       status,
+      imageId,
       (error, result) => {
         if (error) {
           return res.status(500).json({ message: "Internal server error" });
