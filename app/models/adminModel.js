@@ -208,33 +208,7 @@ AdminModel.updateStory = (id, storyDetails, callback) => {
 
 // In adminModel.js
 AdminModel.deleteStory = (id, callback) => {
-  // SQL query to check for any links in story_tags, story_episodes_views, and story_comments
-  const checkLinksSql = `
-        SELECT EXISTS (
-            SELECT 1 FROM story_tags WHERE storyId = ?
-            UNION ALL
-            SELECT 1 FROM story_episodes_views WHERE story_id = ?
-            UNION ALL
-            SELECT 1 FROM story_episodes WHERE storyId = ?
-        ) AS linkedExists;
-    `;
-
-  // Execute the query to check for linked records
-  dbConn.query(checkLinksSql, [id, id, id], (error, results) => {
-    if (error) {
-      console.error("Error checking for linked data: ", error);
-      return callback(error, null);
-    }
-
-    // Check if any linked records exist
-    if (results[0].linkedExists) {
-      return callback(null, {
-        message:
-          "Cannot delete story as there are linked records in other tables.",
-      });
-    } else {
-      // If no linked records, proceed with deletion
-      const deleteSql = `DELETE FROM story_lists WHERE id = ?`;
+  const deleteSql = `DELETE FROM story_lists WHERE id = ?`;
       dbConn.query(deleteSql, [id], (error, result) => {
         if (error) {
           console.error("Error deleting story: ", error);
@@ -242,8 +216,6 @@ AdminModel.deleteStory = (id, callback) => {
         }
         return callback(null, result);
       });
-    }
-  });
 };
 
 AdminModel.saveFileUrl = (url, callback) => {
@@ -272,6 +244,39 @@ AdminModel.getStoryTagsByStoryId = (storyId, callback) => {
   });
 };
 
+AdminModel.deleteStoryWithDetails = (id, callback) => {
+  const deleteEpisodesSql = `DELETE FROM story_episodes WHERE storyId = ?`;
+  const deleteTagsSql = `DELETE FROM story_tags WHERE storyId = ?`;
+  const deleteStorySql = `DELETE FROM story_lists WHERE id = ?`;
+
+  dbConn.query(deleteEpisodesSql, [id], (episodesError, episodesResult) => {
+    if (episodesError) {
+      return callback(episodesError, null);
+    }
+
+    dbConn.query(deleteTagsSql, [id], (tagsError, tagsResult) => {
+      if (tagsError) {
+        return callback(tagsError, null);
+      }
+
+      dbConn.query(deleteStorySql, [id], (storyError, storyResult) => {
+        if (storyError) {
+          return callback(storyError, null);
+        }
+
+        const result = {
+          episodesDeleted: episodesResult.affectedRows,
+          tagsDeleted: tagsResult.affectedRows,
+          storyDeleted: storyResult.affectedRows
+        };
+
+        callback(null, result);
+      });
+    });
+  });
+};
+
+
 
 AdminModel.addStoryTags = (storyId, tags, callback) => {
   const sql = "INSERT INTO story_tags (storyId, name, createdAt, updatedAt) VALUES ?";
@@ -290,6 +295,17 @@ AdminModel.deleteStoryTags = (storyId, callback) => {
   dbConn.query(sql, [storyId], (error, result) => {
     if (error) {
       console.error("Error deleting story tags: ", error);
+      return callback(error, null);
+    }
+    callback(null, result);
+  });
+};
+
+AdminModel.deleteEpisodesByStoryId = (storyId, callback) => {
+  const sql = "DELETE FROM story_episodes WHERE storyId = ?";
+  dbConn.query(sql, [storyId], (error, result) => {
+    if (error) {
+      console.error("Error deleting story episodes: ", error);
       return callback(error, null);
     }
     callback(null, result);

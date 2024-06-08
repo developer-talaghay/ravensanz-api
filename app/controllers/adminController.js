@@ -247,18 +247,18 @@ adminController.deleteStory = (req, res) => {
     return res.status(400).json({ message: "Story ID is required" });
   }
 
-  AdminModel.deleteStory(id, (error, result) => {
+  AdminModel.deleteStoryWithDetails(id, (error, result) => {
     if (error) {
       return res.status(500).json({ message: "Internal server error" });
-    } else {
-      // Check if the deletion was blocked due to linked records
-      if (result && result.message) {
-        return res.status(409).json({ message: result.message }); // 409 Conflict might be appropriate here
-      }
-      return res.status(200).json({ message: "Story deleted successfully" });
     }
+
+    res.status(200).json({
+      message: "Story and related data deleted successfully",
+      data: result
+    });
   });
 };
+
 
 adminController.updateStory = (req, res) => {
   const storyId = req.params.id;
