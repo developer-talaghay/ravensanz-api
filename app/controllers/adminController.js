@@ -1,4 +1,4 @@
-// adminController.js
+// File: app/controllers/adminController.js
 const AdminModel = require("../models/adminModel");
 const formidable = require("formidable");
 const bcrypt = require("bcrypt");
@@ -9,7 +9,6 @@ const { bucket } = require("./../../server");
 const fs = require("fs");
 const fetch = require("isomorphic-fetch");
 
-// adminController.js
 
 adminController.login = (req, res) => {
   const { email_add, password } = req.body;
@@ -185,6 +184,7 @@ adminController.createStory = (req, res) => {
   const form = new formidable.IncomingForm();
   form.parse(req, (err, fields) => {
     if (err) {
+      console.error("Error parsing form data: ", err);
       return res.status(400).json({ message: "Error parsing form data" });
     }
 
@@ -194,12 +194,11 @@ adminController.createStory = (req, res) => {
       decodedFields[key] = querystring.unescape(fields[key]);
     });
 
-    const { userId, title, blurb, language, genre, status, imageId } = decodedFields;
+    const { userId, title, blurb, language, genre, status, imageId, tags } = decodedFields;
 
     if (!userId || !title || !blurb || !language || !genre || !status || !imageId) {
-      return res
-        .status(400)
-        .json({ message: "Missing required fields in request body" });
+      console.error("Missing required fields in request body", decodedFields);
+      return res.status(400).json({ message: "Missing required fields in request body" });
     }
 
     AdminModel.createStory(
@@ -212,17 +211,34 @@ adminController.createStory = (req, res) => {
       imageId,
       (error, result) => {
         if (error) {
+          console.error("Error creating story: ", error);
           return res.status(500).json({ message: "Internal server error" });
-        } else {
-          return res.status(201).json({
-            message: "Story created successfully",
-            episodeId: result.episodeId,
+        }
+
+        const storyId = result.id; // Get the generated UUID
+        console.log("Create story result: ", result);
+
+        if (tags) {
+          const tagArray = tags.split(",").map(tag => tag.trim());
+          console.log("Adding tags: ", tagArray);
+          AdminModel.addStoryTags(storyId, tagArray, (error, tagResult) => {
+            if (error) {
+              console.error("Error adding story tags: ", error);
+              return res.status(500).json({ message: "Error adding story tags" });
+            }
+            console.log("Tags added successfully: ", tagResult);
+            return res.status(201).json({ message: "Story created successfully with tags" });
           });
+        } else {
+          return res.status(201).json({ message: "Story created successfully" });
         }
       }
     );
   });
 };
+
+
+
 
 // In adminController.js
 adminController.deleteStory = (req, res) => {
@@ -271,12 +287,29 @@ adminController.updateStory = (req, res) => {
     AdminModel.updateStory(storyId, decodedFields, (error, result) => {
       if (error) {
         return res.status(500).json({ message: "Internal server error" });
+      }
+
+      if (decodedFields.tags) {
+        const tagArray = decodedFields.tags.split(",").map(tag => tag.trim());
+        AdminModel.deleteStoryTags(storyId, (error, deleteResult) => {
+          if (error) {
+            return res.status(500).json({ message: "Error deleting old story tags" });
+          }
+
+          AdminModel.addStoryTags(storyId, tagArray, (error, addResult) => {
+            if (error) {
+              return res.status(500).json({ message: "Error adding new story tags" });
+            }
+            return res.status(200).json({ message: "Story updated successfully with tags" });
+          });
+        });
       } else {
         return res.status(200).json({ message: "Story updated successfully" });
       }
     });
   });
 };
+
 
 adminController.uploadBookCover = async (req, res) => {
   const form = new formidable.IncomingForm();

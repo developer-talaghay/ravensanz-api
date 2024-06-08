@@ -1,4 +1,4 @@
-// adminModel.js
+// File: app/models/adminModel.js
 const dbConn = require("../config/db.config");
 const { v4: uuidv4 } = require("uuid");
 
@@ -65,14 +65,15 @@ AdminModel.getStories = ({ authorId, searchQuery, isPublished }, callback) => {
     sql += ` WHERE ` + conditions.join(" AND ");
   }
 
-  dbConn.query(sql, params, (error, results) => {
+  dbConn.query(sql, params, (error, stories) => {
     if (error) {
       console.error("Error fetching stories: ", error);
       return callback(error, null);
     }
-    return callback(null, results);
+    callback(null, stories);
   });
 };
+
 
 AdminModel.getGenre = ({ searchQuery }, callback) => {
   let sql = `SELECT * FROM story_genre`;
@@ -154,12 +155,11 @@ AdminModel.createStory = (
   const ravensanzQuery = "SELECT * FROM ravensanz_users WHERE id = ?";
   dbConn.query(ravensanzQuery, [userId], (error, ravensanzResults) => {
     if (error) {
-      console.error(
-        "Error checking userId existence in ravensanz_users table: ",
-        error
-      );
+      console.error("Error checking userId existence in ravensanz_users table: ", error);
       return callback(error, null);
     }
+
+    console.log("ravensanzQuery result: ", ravensanzResults);
 
     const userQuery = "SELECT * FROM user WHERE id = ?";
     dbConn.query(userQuery, [userId], (error, userResults) => {
@@ -168,7 +168,9 @@ AdminModel.createStory = (
         return callback(error, null);
       }
 
-      const id = uuidv4();
+      console.log("userQuery result: ", userResults);
+
+      const id = uuidv4(); // Generate the UUID
       const sql = `INSERT INTO story_lists (id, userId, title, blurb, language, genre, status, imageId, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`;
       dbConn.query(
         sql,
@@ -178,12 +180,14 @@ AdminModel.createStory = (
             console.error("Error creating story: ", error);
             return callback(error, null);
           }
-          return callback(null, result);
+          console.log("Insert result: ", result);
+          return callback(null, { id }); // Return the generated UUID
         }
       );
     });
   });
 };
+
 
 AdminModel.updateStory = (id, storyDetails, callback) => {
   const { userId, title, blurb, language, genre, status, imageId } = storyDetails;
@@ -253,6 +257,42 @@ AdminModel.saveFileUrl = (url, callback) => {
     // Extract the inserted ID from the result object
     const insertedId = result.insertId;
     callback(null, insertedId);
+  });
+};
+
+AdminModel.getStoryTagsByStoryId = (storyId, callback) => {
+  const sql = "SELECT name FROM story_tags WHERE storyId = ?";
+  dbConn.query(sql, [storyId], (error, results) => {
+    if (error) {
+      console.error("Error fetching story tags: ", error);
+      return callback(error, null);
+    }
+    const tags = results.map(row => row.name);
+    callback(null, tags);
+  });
+};
+
+
+AdminModel.addStoryTags = (storyId, tags, callback) => {
+  const sql = "INSERT INTO story_tags (storyId, name, createdAt, updatedAt) VALUES ?";
+  const values = tags.map(tag => [storyId, tag.trim(), new Date(), new Date()]);
+  dbConn.query(sql, [values], (error, result) => {
+    if (error) {
+      console.error("Error adding story tags: ", error);
+      return callback(error, null);
+    }
+    callback(null, result);
+  });
+};
+
+AdminModel.deleteStoryTags = (storyId, callback) => {
+  const sql = "DELETE FROM story_tags WHERE storyId = ?";
+  dbConn.query(sql, [storyId], (error, result) => {
+    if (error) {
+      console.error("Error deleting story tags: ", error);
+      return callback(error, null);
+    }
+    callback(null, result);
   });
 };
 
