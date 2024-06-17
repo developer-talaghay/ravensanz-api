@@ -142,15 +142,23 @@ exports.getUser = (req, res) => {
         return res.status(404).json({ message: 'User details not found' });
       }
   
+      // Get stories by the author
       UserDetailsModel.getStoriesByAuthor(author, (error, stories) => {
         if (error) {
           console.error('Error retrieving stories: ', error);
           return res.status(500).json({ message: 'Error retrieving stories' });
         }
   
+        // Calculate total views
+        const totalViews = stories.reduce((sum, story) => sum + story.totalViews, 0);
+  
+        // Prepare response
         const response = {
           message: 'User details retrieved successfully',
-          authorDetails: authorDetails[0], // Assuming there is only one user with the provided username or name
+          authorDetails: {
+            ...authorDetails[0],
+            totalViews // Add total views to the author details
+          },
           stories: stories,
         };
   
