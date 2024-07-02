@@ -98,6 +98,12 @@ app.use('/api/v1/admin/stories', chapterCreation);
 const adminRoute = require('./app/routes/adminRoutes');
 app.use('/api/v1/admin', adminRoute);
 
+const writerRoute = require('./app/routes/writerRoutes');
+app.use('/api/v1/writers', writerRoute);
+
+const readerRoute = require('./app/routes/readerRoutes');
+app.use('/api/v1/readers', readerRoute);
+
 function isLoggedIn(req,res,next){
   req.user ? next() : res.sendStatus(401)
 }
