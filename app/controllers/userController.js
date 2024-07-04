@@ -63,7 +63,7 @@ function formatUserDetails(userDetails) {
   }
 
   const currentDate = new Date();
-  const defaultExpirationDate = new Date(currentDate.setDate(currentDate.getDate() + 3)).toISOString().split('T')[0];
+  const defaultExpirationDate = new Date(currentDate.setDate(currentDate.getDate() - 1)).toISOString().split('T')[0];
 
   return {
     id: userDetails.id || null,
