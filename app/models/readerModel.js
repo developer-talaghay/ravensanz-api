@@ -1,4 +1,5 @@
 const dbConn = require('../config/db.config');
+const bcrypt = require("bcrypt");
 
 const ReaderModel = {};
 
@@ -58,25 +59,34 @@ ReaderModel.updateReader = (id, updateData, callback) => {
 // POST reader
 ReaderModel.createReader = (newReader, callback) => {
   const { email_add, password, full_name, wingsCount, subscriptionExpirationDate } = newReader;
+  const saltRounds = 10;
 
-  // Insert into user table
-  const userSql = `INSERT INTO user (email_add, password, created_at, modified_at) VALUES (?, ?, NOW(), NOW())`;
-  dbConn.query(userSql, [email_add, password], (error, result) => {
-    if (error) {
-      console.error('Error creating reader: ', error);
-      return callback(error, null);
+  // Hash the password before inserting
+  bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
+    if (err) {
+      console.error("Error hashing password: ", err);
+      return callback(err, null);
+    } else {
+      // Insert into user table
+      const userSql = `INSERT INTO user (email_add, password, created_at, modified_at) VALUES (?, ?, NOW(), NOW())`;
+      dbConn.query(userSql, [email_add, hashedPassword], (error, result) => {
+        if (error) {
+          console.error('Error creating reader: ', error);
+          return callback(error, null);
+        }
+        const userId = result.insertId;
+
+        // Insert into user_details table
+        const detailsSql = `INSERT INTO user_details (user_id, full_name, wingsCount, subscriptionExpirationDate, created_at, modified_at) VALUES (?, ?, ?, ?, NOW(), NOW())`;
+        dbConn.query(detailsSql, [userId, full_name, wingsCount, subscriptionExpirationDate], (error, result) => {
+          if (error) {
+            console.error('Error creating reader details: ', error);
+            return callback(error, null);
+          }
+          callback(null, result);
+        });
+      });
     }
-    const userId = result.insertId;
-
-    // Insert into user_details table
-    const detailsSql = `INSERT INTO user_details (user_id, full_name, wingsCount, subscriptionExpirationDate, created_at, modified_at) VALUES (?, ?, ?, ?, NOW(), NOW())`;
-    dbConn.query(detailsSql, [userId, full_name, wingsCount, subscriptionExpirationDate], (error, result) => {
-      if (error) {
-        console.error('Error creating reader details: ', error);
-        return callback(error, null);
-      }
-      callback(null, result);
-    });
   });
 };
 

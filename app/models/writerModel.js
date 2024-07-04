@@ -1,4 +1,5 @@
 const dbConn = require('../config/db.config');
+const bcrypt = require("bcrypt");
 
 const WriterModel = {};
 
@@ -44,13 +45,29 @@ WriterModel.updateWriter = (id, updateData, callback) => {
 
 // POST writer
 WriterModel.createWriter = (newWriter, callback) => {
-  const sql = `INSERT INTO ravensanz_users SET ?`;
-  dbConn.query(sql, newWriter, (error, result) => {
-    if (error) {
-      console.error('Error creating writer: ', error);
-      return callback(error, null);
+  const { email_add, password, ...otherData } = newWriter;
+  const saltRounds = 10;
+
+  // Hash the password before inserting
+  bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
+    if (err) {
+      console.error("Error hashing password: ", err);
+      return callback(err, null);
+    } else {
+      const writerData = {
+        email_add,
+        password: hashedPassword,
+        ...otherData
+      };
+      const sql = `INSERT INTO ravensanz_users SET ?`;
+      dbConn.query(sql, writerData, (error, result) => {
+        if (error) {
+          console.error('Error creating writer: ', error);
+          return callback(error, null);
+        }
+        callback(null, result);
+      });
     }
-    callback(null, result);
   });
 };
 
