@@ -9,7 +9,7 @@ router.get('/', readerController.getAllReaders);
 router.get('/:id', readerController.getReaderById);
 
 // PATCH reader
-router.patch('/:id', readerController.updateReader);
+router.put('/:id', readerController.updateReader);
 
 // POST reader
 router.post('/', readerController.createReader);

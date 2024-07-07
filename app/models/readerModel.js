@@ -3,12 +3,26 @@ const bcrypt = require("bcrypt");
 
 const ReaderModel = {};
 
-// GET all readers
-ReaderModel.getAllReaders = (callback) => {
-  const sql = `SELECT u.id, d.full_name, u.email_add, d.wingsCount AS wings, d.subscriptionExpirationDate 
-               FROM user u
-               JOIN user_details d ON u.id = d.user_id LIMIT 100`;
-  dbConn.query(sql, (error, results) => {
+// GET all readers with optional search, order, and pagination
+ReaderModel.getAllReaders = (searchQuery, order = 'ASC', limit = 10, offset = 0, callback) => {
+  let sql = `SELECT u.id, d.full_name, u.email_add, d.wingsCount AS wings, d.subscriptionExpirationDate 
+             FROM user u
+             JOIN user_details d ON u.id = d.user_id 
+             WHERE 1=1`;
+
+  if (searchQuery) {
+    sql += ` AND d.full_name LIKE ?`;
+  }
+
+  sql += ` ORDER BY u.id ${order} LIMIT ? OFFSET ?`;
+
+  const queryParams = [];
+  if (searchQuery) {
+    queryParams.push(`%${searchQuery}%`);
+  }
+  queryParams.push(parseInt(limit, 10), parseInt(offset, 10));
+
+  dbConn.query(sql, queryParams, (error, results) => {
     if (error) {
       console.error('Error fetching readers: ', error);
       return callback(error, null);
@@ -34,26 +48,50 @@ ReaderModel.getReaderById = (id, callback) => {
 
 // PATCH reader
 ReaderModel.updateReader = (id, updateData, callback) => {
-  const { email_add, full_name, wingsCount, subscriptionExpirationDate } = updateData;
+  const { email_add, password, full_name, wingsCount, subscriptionExpirationDate } = updateData;
 
-  // Update user table
-  const userSql = `UPDATE user SET email_add = ? WHERE id = ?`;
-  dbConn.query(userSql, [email_add, id], (error, result) => {
-    if (error) {
-      console.error('Error updating reader email: ', error);
-      return callback(error, null);
-    }
+  const updateReaderData = (hashedPassword) => {
+    const userUpdateData = {
+      email_add,
+      ...(hashedPassword && { password: hashedPassword }),
+    };
 
-    // Update user_details table
-    const detailsSql = `UPDATE user_details SET full_name = ?, wingsCount = ?, subscriptionExpirationDate = ? WHERE user_id = ?`;
-    dbConn.query(detailsSql, [full_name, wingsCount, subscriptionExpirationDate, id], (error, result) => {
+    const userSql = `UPDATE user SET ? WHERE id = ?`;
+    dbConn.query(userSql, [userUpdateData, id], (error, result) => {
       if (error) {
-        console.error('Error updating reader details: ', error);
+        console.error('Error updating reader: ', error);
         return callback(error, null);
       }
-      callback(null, result);
+
+      const detailsUpdateData = {
+        full_name,
+        wingsCount,
+        subscriptionExpirationDate,
+      };
+
+      const detailsSql = `UPDATE user_details SET ? WHERE user_id = ?`;
+      dbConn.query(detailsSql, [detailsUpdateData, id], (error, result) => {
+        if (error) {
+          console.error('Error updating reader details: ', error);
+          return callback(error, null);
+        }
+        callback(null, result);
+      });
     });
-  });
+  };
+
+  if (password) {
+    const saltRounds = 10;
+    bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
+      if (err) {
+        console.error("Error hashing password: ", err);
+        return callback(err, null);
+      }
+      updateReaderData(hashedPassword);
+    });
+  } else {
+    updateReaderData(null);
+  }
 };
 
 // POST reader
@@ -78,12 +116,12 @@ ReaderModel.createReader = (newReader, callback) => {
 
         // Insert into user_details table
         const detailsSql = `INSERT INTO user_details (user_id, full_name, wingsCount, subscriptionExpirationDate, created_at, modified_at) VALUES (?, ?, ?, ?, NOW(), NOW())`;
-        dbConn.query(detailsSql, [userId, full_name, wingsCount, subscriptionExpirationDate], (error, result) => {
+        dbConn.query(detailsSql, [userId, full_name, wingsCount, subscriptionExpirationDate], (error, detailsResult) => {
           if (error) {
             console.error('Error creating reader details: ', error);
             return callback(error, null);
           }
-          callback(null, result);
+          callback(null, { userId, userDetailsId: detailsResult.insertId });
         });
       });
     }

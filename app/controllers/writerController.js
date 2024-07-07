@@ -4,7 +4,9 @@ const writerController = {};
 
 // GET all writers
 writerController.getAllWriters = (req, res) => {
-  WriterModel.getAllWriters((error, results) => {
+  const { searchQuery, order = 'ASC', page = 1, limit = 10 } = req.query;
+  const offset = (page - 1) * limit;
+  WriterModel.getAllWriters(searchQuery, order, limit, offset, (error, results) => {
     if (error) {
       return res.status(500).json({ message: 'Internal server error' });
     }

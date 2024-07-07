@@ -2,9 +2,11 @@ const ReaderModel = require('../models/readerModel');
 
 const readerController = {};
 
-// GET all readers
+// GET all readers with optional search, order, and pagination
 readerController.getAllReaders = (req, res) => {
-  ReaderModel.getAllReaders((error, results) => {
+  const { searchQuery, order = 'ASC', page = 1, limit = 10 } = req.query;
+  const offset = (page - 1) * limit;
+  ReaderModel.getAllReaders(searchQuery, order, limit, offset, (error, results) => {
     if (error) {
       return res.status(500).json({ message: 'Internal server error' });
     }
@@ -45,7 +47,7 @@ readerController.createReader = (req, res) => {
     if (error) {
       return res.status(500).json({ message: 'Internal server error' });
     }
-    res.status(201).json({ message: 'Reader created successfully', readerId: result.insertId });
+    res.status(201).json({ message: 'Reader created successfully', userId: result.userId, userDetailsId: result.userDetailsId });
   });
 };
 

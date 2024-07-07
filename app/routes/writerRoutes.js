@@ -9,7 +9,7 @@ router.get('/', writerController.getAllWriters);
 router.get('/:id', writerController.getWriterById);
 
 // PATCH writer
-router.patch('/:id', writerController.updateWriter);
+router.put('/:id', writerController.updateWriter);
 
 // POST writer
 router.post('/', writerController.createWriter);
