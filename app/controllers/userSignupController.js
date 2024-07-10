@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 
 exports.createUser = function (req, res) {
   const newUser = {
-    email_add: req.body.email_add.toLowerCase(), // Convert email to lowercase
+    email_add: req.body.email_add.toLowerCase(),
     password: req.body.password,
   };
 

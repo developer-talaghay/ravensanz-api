@@ -24,8 +24,8 @@ const insertUserDetails = (userId, userDetails, callback) => {
       userDetails.writerApplicationStatus,
       userDetails.imageId,
       userDetails.wingsCount,
-      userDetails.isSubscriber,
-      userDetails.subscriptionExpirationDate,
+      0,
+      "1970-01-01",
       userDetails.isReadingModeOver18,
       userDetails.writerBadge,
       userDetails.readerBadge,
@@ -57,7 +57,7 @@ const getDefaultUserDetails = () => {
     "writerApplicationStatus": "0",
     "imageId": "0",
     "wingsCount": 0,
-    "isSubscriber": "1",
+    "isSubscriber": 0,
     "subscriptionExpirationDate": defaultExpirationDate,
     "isReadingModeOver18": "0",
     "writerBadge": "0",
@@ -80,82 +80,36 @@ User.create = (newUser, callback) => {
         return callback("Email address already exists", null);
       } else {
         // Check if the email address exists in the ravensanz_users table
-        dbConn.query(
-          "SELECT * FROM ravensanz_users WHERE email_add = ?",
-          [newUser.email_add],
-          (error, ravensanzResult) => {
-            if (error) {
-              console.error("Error checking email address in ravensanz_users: ", error);
-              return callback(error, null);
-            } else if (ravensanzResult.length > 0) {
-              const userDetails = ravensanzResult[0];
-
-              // Insert the user into the user table
-              const saltRounds = 10;
-              const password = newUser.password.toString();
-              bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
-                if (err) {
-                  console.error("Error hashing password: ", err);
-                  return callback(err, null);
+        // Email address doesn't exist in ravensanz_users table, proceed to insert into user table
+        const saltRounds = 10;
+        const password = newUser.password.toString();
+        bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
+          if (err) {
+            console.error("Error hashing password: ", err);
+            return callback(err, null);
+          } else {
+            dbConn.query(
+              "INSERT INTO user (email_add, password, status) VALUES (?, ?, ?)",
+              [newUser.email_add, hashedPassword, "pending"],
+              (error, finalUserResult) => {
+                if (error) {
+                  console.error("Error inserting user into database: ", error);
+                  return callback(error, null);
                 } else {
-                  dbConn.query(
-                    "INSERT INTO user (email_add, password, status) VALUES (?, ?, ?)",
-                    [newUser.email_add, hashedPassword, "pending"],
-                    (error, finalUserResult) => {
-                      if (error) {
-                        console.error("Error inserting user into database: ", error);
-                        return callback(error, null);
-                      } else {
-                        const userId = finalUserResult.insertId; // Access the insertId from the finalUserResult
-                        console.log(userId);
-
-                        insertUserDetails(userId, userDetails, (error) => {
-                          if (error) {
-                            console.error("Error copying data to user_details: ", error);
-                            return callback(error, null);
-                          } else {
-                            return callback(null, finalUserResult);
-                          }
-                        });
-                      }
+                  // Insert default values into user_details
+                  insertUserDetails(finalUserResult.insertId, null, (error) => {
+                    if (error) {
+                      console.error("Error inserting default data into user_details: ", error);
+                      return callback(error, null);
+                    } else {
+                      return callback(null, finalUserResult);
                     }
-                  );
+                  });
                 }
-              });
-            } else {
-              // Email address doesn't exist in ravensanz_users table, proceed to insert into user table
-              const saltRounds = 10;
-              const password = newUser.password.toString();
-              bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
-                if (err) {
-                  console.error("Error hashing password: ", err);
-                  return callback(err, null);
-                } else {
-                  dbConn.query(
-                    "INSERT INTO user (email_add, password, status) VALUES (?, ?, ?)",
-                    [newUser.email_add, hashedPassword, "pending"],
-                    (error, finalUserResult) => {
-                      if (error) {
-                        console.error("Error inserting user into database: ", error);
-                        return callback(error, null);
-                      } else {
-                        // Insert default values into user_details
-                        insertUserDetails(finalUserResult.insertId, null, (error) => {
-                          if (error) {
-                            console.error("Error inserting default data into user_details: ", error);
-                            return callback(error, null);
-                          } else {
-                            return callback(null, finalUserResult);
-                          }
-                        });
-                      }
-                    }
-                  );
-                }
-              });
-            }
+              }
+            );
           }
-        );
+        });
       }
     }
   );
