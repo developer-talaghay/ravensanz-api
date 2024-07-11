@@ -53,6 +53,7 @@ userLoginController.checkEmail = (req, res) => {
           isReadingModeOver18: "0",
           writerBadge: "0",
           readerBadge: "0",
+          isAccountBanned: "0"
         };
         
         // Check if userDetails is not null and has at least one element
@@ -86,6 +87,7 @@ userLoginController.checkEmail = (req, res) => {
           isReadingModeOver18: userWithDetails.isReadingModeOver18 || defaultValues.isReadingModeOver18,
           writerBadge: userWithDetails.writerBadge || defaultValues.writerBadge,
           readerBadge: userWithDetails.readerBadge || defaultValues.readerBadge,
+          isAccountBanned: userWithDetails.isAccountBanned || defaultValues.isAccountBanned
         };
         
         // If userDetails is null or empty, set all properties to default values
@@ -109,6 +111,7 @@ userLoginController.checkEmail = (req, res) => {
           userWithDefaults.isReadingModeOver18 = defaultValues.isReadingModeOver18;
           userWithDefaults.writerBadge = defaultValues.writerBadge;
           userWithDefaults.readerBadge = defaultValues.readerBadge;
+          userWithDefaults.isAccountBanned = defaultValues.isAccountBanned;
           // ... (similar lines for other properties)
         }
         // Update device_token in the database

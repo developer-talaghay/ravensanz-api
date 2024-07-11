@@ -68,6 +68,55 @@ UserDetails.create = (newUserDetails, callback) => {
   );
 };
 
+UserDetails.update = (updatedUserDetails, callback) => {
+  const userId = updatedUserDetails.user_id;
+  if (!userId) {
+    return callback(new Error("User ID is required"), null);
+  }
+
+  // Create the query dynamically based on provided fields
+  const fields = [];
+  const values = [];
+
+  if (updatedUserDetails.full_name) {
+    fields.push("full_name = ?");
+    values.push(updatedUserDetails.full_name);
+  }
+  if (updatedUserDetails.display_name) {
+    fields.push("display_name = ?");
+    values.push(updatedUserDetails.display_name);
+  }
+  if (updatedUserDetails.birth_date) {
+    fields.push("birth_date = ?");
+    values.push(updatedUserDetails.birth_date);
+  }
+  if (updatedUserDetails.phone_number) {
+    fields.push("phone_number = ?");
+    values.push(updatedUserDetails.phone_number);
+  }
+  if (updatedUserDetails.is_account_banned !== undefined) {
+    fields.push("isAccountBanned = ?");
+    values.push(updatedUserDetails.is_account_banned);
+  }
+
+  if (fields.length === 0) {
+    return callback(new Error("No fields to update"), null);
+  }
+
+  values.push(userId); // Add user ID as the last parameter for the WHERE clause
+
+  const updateQuery = `UPDATE user_details SET ${fields.join(", ")} WHERE user_id = ?`;
+
+  dbConn.query(updateQuery, values, (updateError, updateResult) => {
+    if (updateError) {
+      console.error("Error updating user details: ", updateError);
+      return callback(updateError, null);
+    } else {
+      return callback(null, updateResult);
+    }
+  });
+};
+
 
 UserDetails.checkEmailExistence = (email, callback) => {
     dbConn.query(

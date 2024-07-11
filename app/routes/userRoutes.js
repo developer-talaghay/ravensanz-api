@@ -10,5 +10,6 @@ router.get("/getAuthor", userControllers.getAuthorUser);
 // forgotpassword/reset
 router.post("/forgotpassword", userControllers.checkEmail);
 router.post("/resetpassword", userControllers.resetPassword);
+router.put("/", userControllers.updateUserDetails);
 
 module.exports = router;

@@ -23,7 +23,29 @@ exports.createUserDetails = (req, res) => {
     }
   });
 };
+exports.updateUserDetails = (req, res) => {
+  const updatedUserDetails = {
+    user_id: req.body.user_id,
+    full_name: req.body.full_name,
+    display_name: req.body.display_name,
+    birth_date: req.body.birth_date,
+    phone_number: req.body.phone_number,
+    is_account_banned: req.body.is_account_banned
+  };
 
+  UserDetailsModel.update(updatedUserDetails, (error, result) => {
+    if (error) {
+      console.error("Error updating user details: ", error);
+      return res.status(500).send({ message: "Error updating user details" });
+    } else {
+      console.log("User details updated successfully");
+      res.status(201).json({
+        message: "User details updated successfully",
+        data: result,
+      });
+    }
+  });
+};
 exports.checkEmail = (req, res) => {
     const { email_add } = req.body;
   
