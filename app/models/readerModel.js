@@ -5,21 +5,19 @@ const ReaderModel = {};
 
 // GET all readers with optional search, order, and pagination
 ReaderModel.getAllReaders = (searchQuery, order = 'ASC', limit = 10, offset = 0, callback) => {
-  let sql = `SELECT u.id, d.full_name, u.email_add, d.wingsCount AS wings, d.subscriptionExpirationDate 
+  let sql = `SELECT u.id, d.full_name, u.email_add, d.display_name, d.wingsCount AS wings, d.subscriptionExpirationDate 
              FROM user u
              JOIN user_details d ON u.id = d.user_id 
              WHERE 1=1`;
 
+  const queryParams = [];
   if (searchQuery) {
-    sql += ` AND d.full_name LIKE ?`;
+    sql += ` AND (d.full_name LIKE ? OR u.email_add LIKE ? OR d.display_name LIKE ?)`;
+    queryParams.push(`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`);
   }
 
   sql += ` ORDER BY u.id ${order} LIMIT ? OFFSET ?`;
 
-  const queryParams = [];
-  if (searchQuery) {
-    queryParams.push(`%${searchQuery}%`);
-  }
   queryParams.push(parseInt(limit, 10), parseInt(offset, 10));
 
   dbConn.query(sql, queryParams, (error, results) => {
