@@ -5,7 +5,7 @@ const WriterModel = {};
 
 // GET all writers
 WriterModel.getAllWriters = (searchQuery, order, limit, offset, callback) => {
-  let sql = `SELECT id, full_name, email_add, wingsCount AS wings, subscriptionExpirationDate 
+  let sql = `SELECT id, full_name, display_name, email_add, wingsCount AS wings, subscriptionExpirationDate 
              FROM ravensanz_users 
              WHERE isWriterVerified = 1`;
              
@@ -32,7 +32,7 @@ WriterModel.getAllWriters = (searchQuery, order, limit, offset, callback) => {
 
 // GET writer by ID
 WriterModel.getWriterById = (id, callback) => {
-  const sql = `SELECT id, full_name, email_add, wingsCount AS wings, subscriptionExpirationDate 
+  const sql = `SELECT id, full_name, email_add, display_name, wingsCount AS wings, subscriptionExpirationDate 
                FROM ravensanz_users 
                WHERE id = ? AND isWriterVerified = 1`;
   dbConn.query(sql, [id], (error, result) => {
