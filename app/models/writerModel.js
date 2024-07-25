@@ -46,10 +46,11 @@ WriterModel.getWriterById = (id, callback) => {
 
 // PATCH writer
 WriterModel.updateWriter = (id, updateData, callback) => {
-  const { password, ...otherData } = updateData;
+  const { password, display_name, ...otherData } = updateData;
 
   const updateWriterData = (hashedPassword) => {
     const writerData = {
+      display_name,
       ...otherData,
       ...(hashedPassword && { password: hashedPassword }),
     };
@@ -80,7 +81,7 @@ WriterModel.updateWriter = (id, updateData, callback) => {
 
 // POST writer
 WriterModel.createWriter = (newWriter, callback) => {
-  const { email_add, password, ...otherData } = newWriter;
+  const { email_add, password, display_name, ...otherData } = newWriter;
   const saltRounds = 10;
 
   // Hash the password before inserting
@@ -92,6 +93,7 @@ WriterModel.createWriter = (newWriter, callback) => {
       const writerData = {
         email_add,
         password: hashedPassword,
+        display_name,
         ...otherData
       };
       const sql = `INSERT INTO ravensanz_users SET ?`;
