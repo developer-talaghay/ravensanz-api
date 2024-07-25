@@ -3,8 +3,16 @@ const dbConn = require('../config/db.config');
 // Model
 const StoryEpisodeModel = {};
 
-StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, callback) => {
-    dbConn.query("SELECT id, storyId, userId, number, subTitle, totalWords, isVIP, writerNote, status, publishedDate, adminNote, wingsRequired, likes, createdAt, updatedAt FROM story_episodes WHERE storyId = ?", [storyId], (error, episodes) => {
+StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, limit, callback) => {
+    let query = "SELECT id, storyId, userId, number, subTitle, totalWords, isVIP, writerNote, status, publishedDate, adminNote, wingsRequired, likes, createdAt, updatedAt FROM story_episodes WHERE storyId = ?";
+    const params = [storyId];
+    
+    if (limit) {
+        query += " LIMIT ?";
+        params.push(limit);
+    }
+
+    dbConn.query(query, params, (error, episodes) => {
         if (error) {
             console.error("Error retrieving story episodes by storyId: ", error);
             return callback(error, null);
@@ -13,19 +21,34 @@ StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, callback) => {
     });
 };
 
-StoryEpisodeModel.getStoryEpisodeByEpisodeId = (episodeId, callback) => { // Change function name
+StoryEpisodeModel.getStoryEpisodesByStatus = (status, limit, callback) => {
+    let query = "SELECT id, storyId, userId, number, subTitle, totalWords, isVIP, writerNote, status, publishedDate, adminNote, wingsRequired, likes, createdAt, updatedAt FROM story_episodes WHERE status = ?";
+    const params = [status];
+    
+    if (limit) {
+        query += " LIMIT ?";
+        params.push(limit);
+    }
+
+    dbConn.query(query, params, (error, episodes) => {
+        if (error) {
+            console.error("Error retrieving story episodes by status: ", error);
+            return callback(error, null);
+        }
+        return callback(null, episodes);
+    });
+};
+
+StoryEpisodeModel.getStoryEpisodeByEpisodeId = (episodeId, callback) => {
     dbConn.query("SELECT * FROM story_episodes WHERE id = ? LIMIT 1", [episodeId], (error, episode) => {
         if (error) {
             console.error("Error retrieving story episode by episodeId: ", error);
             return callback(error, null);
         }
-        return callback(null, episode); // Change episodes to episode
+        return callback(null, episode);
     });
 };
 
-
-
-// Model method to create story episodes
 StoryEpisodeModel.createStoryEpisodes = (userId, subTitle, storyLine, isVIP, writerNote, status, wingsRequired, storyId, totalWords, callback) => {
     const ravensanzQuery = 'SELECT * FROM ravensanz_users WHERE id = ?';
     dbConn.query(ravensanzQuery, [userId], (error, ravensanzResults) => {
@@ -90,11 +113,7 @@ StoryEpisodeModel.updateTotalPublishedChapters = (storyId, callback) => {
     });
 };
 
-
-
-// Model method to update story episodes
 StoryEpisodeModel.updateStoryEpisodes = (idValue, storyIdValue, subTitleValue, storyLineValue, totalWordsValue, isVIPValue, writerNoteValue, statusValue, publishedDateValue, wingsRequiredValue, callback) => {
-    // Check if storyId exists in story_episodes table
     const storyQuery = 'SELECT * FROM story_episodes WHERE id = ? AND storyId = ?';
     dbConn.query(storyQuery, [idValue, storyIdValue], (error, storyResults) => {
         if (error) {
@@ -102,15 +121,10 @@ StoryEpisodeModel.updateStoryEpisodes = (idValue, storyIdValue, subTitleValue, s
             return callback(error, null);
         }
 
-        // If episode exists, update the data
         if (storyResults.length > 0) {
-            // Form the update query
             const updateQuery = 'UPDATE story_episodes SET subTitle = ?, storyLine = ?, totalWords = ?, isVIP = ?, writerNote = ?, status = ?, publishedDate = ?, wingsRequired = ?, updatedAt = ? WHERE id = ? AND storyId = ?';
-
-            // Get current date and time
             const updatedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-            // Execute the update query
             dbConn.query(updateQuery, [subTitleValue, storyLineValue, totalWordsValue, isVIPValue, writerNoteValue, statusValue, publishedDateValue, wingsRequiredValue, updatedAt, idValue, storyIdValue], (error, result) => {
                 if (error) {
                     console.error("Error updating story episode: ", error);
@@ -124,16 +138,6 @@ StoryEpisodeModel.updateStoryEpisodes = (idValue, storyIdValue, subTitleValue, s
     });
 };
 
-// StoryEpisodeModel.deleteStoryEpisodeById = (id, callback) => {
-//     dbConn.query("DELETE FROM story_episodes WHERE id = ?", [id], (error, result) => {
-//         if (error) {
-//             console.error("Error deleting story episode by id: ", error);
-//             return callback(error);
-//         }
-//         return callback(null, result.affectedRows > 0); // Indicate success if rows were affected
-//     });
-// };
-
 StoryEpisodeModel.deleteStoryEpisodeById = (id, callback) => {
     dbConn.query("SELECT storyId FROM story_episodes WHERE id = ?", [id], (error, result) => {
         if (error) {
@@ -141,7 +145,6 @@ StoryEpisodeModel.deleteStoryEpisodeById = (id, callback) => {
             return callback(error, null);
         }
         if (result.length === 0) {
-            // No episode found with the provided id
             return callback(null, null);
         }
         const storyId = result[0].storyId;
@@ -150,13 +153,10 @@ StoryEpisodeModel.deleteStoryEpisodeById = (id, callback) => {
                 console.error("Error deleting story episode by id: ", deleteError);
                 return callback(deleteError, null);
             }
-            return callback(null, storyId); // Return the storyId of the deleted episode
+            return callback(null, storyId);
         });
     });
 };
-
-
-
 
 StoryEpisodeModel.getPublishedEpisodeCount = (storyId, callback) => {
     dbConn.query("SELECT COUNT(*) AS count FROM story_episodes WHERE storyId = ? AND status = 'Published'", [storyId], (error, result) => {

@@ -6,19 +6,32 @@ const chapterCreationController = {};
 
 chapterCreationController.getStoryEpisodes = (req, res) => {
     const storyId = req.query.storyId;
+    const episodeStatus = req.query.status;
+    const limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
 
-    if (!storyId) {
-        return res.status(400).json({ message: "Missing story_id parameter" });
+    if (!storyId && !episodeStatus) {
+        return res.status(400).json({ message: "Missing story_id or status parameter" });
     }
 
-    // Call the model to get story episodes by storyId
-    StoryEpisodeModel.getStoryEpisodesByStoryId(storyId, (error, episodes) => {
-        if (error) {
-            console.error("Error getting story episodes by storyId: ", error);
-            return res.status(500).json({ message: "Error getting story episodes" });
-        }
-        return res.status(200).json({ message: "Story episodes retrieved", data: episodes });
-    });
+    if (storyId) {
+        // Call the model to get story episodes by storyId
+        StoryEpisodeModel.getStoryEpisodesByStoryId(storyId, limit, (error, episodes) => {
+            if (error) {
+                console.error("Error getting story episodes by storyId: ", error);
+                return res.status(500).json({ message: "Error getting story episodes" });
+            }
+            return res.status(200).json({ message: "Story episodes retrieved", data: episodes });
+        });
+    } else {
+        // Call the model to get story episodes by status
+        StoryEpisodeModel.getStoryEpisodesByStatus(episodeStatus, limit, (error, episodes) => {
+            if (error) {
+                console.error("Error getting story episodes by status: ", error);
+                return res.status(500).json({ message: "Error getting story episodes" });
+            }
+            return res.status(200).json({ message: "Story episodes retrieved", data: episodes });
+        });
+    }
 };
 
 chapterCreationController.getChapterById = (req, res) => {
