@@ -17,7 +17,6 @@ ReaderModel.getAllReaders = (searchQuery, order = 'ASC', limit = 10, offset = 0,
   }
 
   sql += ` ORDER BY u.id ${order} LIMIT ? OFFSET ?`;
-
   queryParams.push(parseInt(limit, 10), parseInt(offset, 10));
 
   dbConn.query(sql, queryParams, (error, results) => {
