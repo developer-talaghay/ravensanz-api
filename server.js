@@ -1,3 +1,4 @@
+// Existing imports
 const express = require('express');
 const passport = require('passport');
 const bodyParser = require('body-parser');
@@ -8,6 +9,9 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 8000;
 const path = require('path');
+
+// New import for authorWingsPurchases routes
+const authorWingsPurchasesRoute = require('./app/routes/authorWingsPurchasesRoutes');
 
 // Firebase Initialization
 const admin = require('firebase-admin');
@@ -44,16 +48,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors());
 
-
-// firebase
-
-// Initialize Firebase Admin SDK
-// const admin = require('firebase-admin');
-// const serviceAccount = require('./firebase/ravensanz-10b88-firebase-adminsdk-x8ks2-979e958a37.json'); // Update with your credentials
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount),
-// });
-
 // Routes
 const userSignupRoute = require('./app/routes/userSignupRoutes');
 const userLoginRoute = require('./app/routes/userLoginRoutes');
@@ -71,6 +65,9 @@ const googleSignupRoute = require('./app/routes/googleAuthentication');
 const pushNotifRoute = require('./app/routes/pushNotificationRoutes');
 const inAppNotif = require('./app/routes/inAppNotifRoutes');
 const accountDeletion = require('./app/routes/accountDeletionRoutes');
+
+// Add new routes for authorWingsPurchases
+app.use('/api/v1/author-wings-purchases', authorWingsPurchasesRoute);
 
 app.use('/api/v1/signup', userSignupRoute);
 app.use('/api/v1/login', userLoginRoute);
@@ -181,7 +178,8 @@ app.get('/auth/google/logout', (req, res)=>{
   res.send("Logged Out");
 })
 
-
+// Add new routes for authorWingsPurchases
+app.use('/api/v1/author-wings-purchases', authorWingsPurchasesRoute);
 
 // Start the server
 app.listen(port, () => {

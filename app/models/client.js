@@ -989,8 +989,10 @@ ClientModel.getUserLikedComment = (user_id, story_id, callback) => {
 };
 
 // Purchase story with wings
+const log = (message) => console.log(`[LOG] ${message}`);
+
 ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRequired, callback) => {
-  // Check if the user has already bought the story
+  log('Checking if the user has already bought the story');
   dbConn.query(
     'SELECT purchase_status FROM user_purchase WHERE user_id = ? AND story_id = ? AND story_episodes = ?',
     [user_id, story_id, story_episodes],
@@ -1001,11 +1003,11 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
       }
 
       if (purchaseResults.length > 0 && purchaseResults[0].purchase_status === 1) {
-        // The user has already bought the story
+        log('The user has already bought the story');
         return callback({ message: 'Already bought. Thank you' }, null);
       }
 
-      // If the user hasn't bought the story, check if they have enough wings
+      log('Checking if the user has enough wings');
       dbConn.query('SELECT wingsCount FROM user_details WHERE user_id = ?', [user_id], (error, results) => {
         if (error) {
           console.error('Error retrieving user wingsCount: ', error);
@@ -1013,20 +1015,21 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
         }
 
         if (results.length === 0) {
+          log('User not found');
           return callback({ message: 'User not found' }, null);
         }
 
         const wingsCount = results[0].wingsCount;
+        log(`User has ${wingsCount} wings`);
 
-        // Check if the user has enough wings
         if (wingsCount < wingsRequired) {
+          log('Insufficient wings');
           return callback({ message: 'Insufficient wings. Please try again' }, null);
         }
 
-        // If the user has enough wings, subtract the wingsCount
         const updatedWingsCount = wingsCount - wingsRequired;
+        log(`Updating user's wingsCount to ${updatedWingsCount}`);
 
-        // Update the user's wingsCount in the user_details table
         dbConn.query('UPDATE user_details SET wingsCount = ? WHERE user_id = ?', [updatedWingsCount, user_id], (error, updateResult) => {
           if (error) {
             console.error('Error updating user wingsCount: ', error);
@@ -1034,10 +1037,10 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
           }
 
           if (updateResult.affectedRows === 0) {
+            log('Failed to update wingsCount');
             return callback({ message: 'Failed to update wingsCount' }, null);
           }
 
-          // Insert the purchase record
           const purchaseData = {
             user_id,
             story_id,
@@ -1045,13 +1048,84 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
             purchase_status: 1, // Set purchase_status to 1
           };
 
+          log('Inserting purchase record');
           dbConn.query('INSERT INTO user_purchase SET ?', purchaseData, (error, result) => {
             if (error) {
               console.error('Error inserting purchase record: ', error);
               return callback(error, null);
             }
 
-            return callback(null, result);
+            log('Retrieving author details');
+            dbConn.query(
+              `SELECT ru.id AS authorId, ru.full_name AS author, DATE_FORMAT(NOW(), '%m-%Y') AS monthYear, se.wingsRequired 
+              FROM story_lists sl
+              JOIN ravensanz_users ru ON sl.userId = ru.id
+              JOIN story_episodes se ON sl.id = se.storyId
+              WHERE sl.id = ?`,
+              [story_id],
+              (error, authorResults) => {
+                if (error) {
+                  console.error('Error retrieving author details: ', error);
+                  return callback(error);
+                }
+
+                if (authorResults.length === 0) {
+                  log('Author details not found');
+                  return callback({ message: 'Author details not found' }, null);
+                }
+
+                const authorData = authorResults[0];
+                const earnings = wingsRequired * 0.57;
+                log(`Author details found. Calculated earnings: ${earnings}`);
+
+                log('Checking for existing entry with pending status');
+                dbConn.query(
+                  `SELECT id, earnings, status FROM author_wings_purchases WHERE monthYear = ? AND authorId = ? AND status = 'pending'`,
+                  [authorData.monthYear, authorData.authorId],
+                  (error, existingResults) => {
+                    if (error) {
+                      console.error('Error checking existing author_wings_purchases: ', error);
+                      return callback(error);
+                    }
+
+                    if (existingResults.length > 0) {
+                      log('Existing entry found. Updating earnings');
+                      dbConn.query(
+                        `UPDATE author_wings_purchases 
+                        SET earnings = earnings + ? 
+                        WHERE id = ?`,
+                        [earnings, existingResults[0].id],
+                        (error, updateResult) => {
+                          if (error) {
+                            console.error('Error updating existing author_wings_purchases: ', error);
+                            return callback(error);
+                          }
+
+                          log('Earnings updated successfully');
+                          return callback(null, result);
+                        }
+                      );
+                    } else {
+                      log('No existing entry with pending status found. Inserting new row');
+                      dbConn.query(
+                        `INSERT INTO author_wings_purchases (monthYear, authorId, author, earnings, status)
+                        VALUES (?, ?, ?, ?, 'pending')`,
+                        [authorData.monthYear, authorData.authorId, authorData.author, earnings],
+                        (error, insertResult) => {
+                          if (error) {
+                            console.error('Error inserting into author_wings_purchases: ', error);
+                            return callback(error);
+                          }
+
+                          log('New row inserted successfully');
+                          return callback(null, result);
+                        }
+                      );
+                    }
+                  }
+                );
+              }
+            );
           });
         });
       });
