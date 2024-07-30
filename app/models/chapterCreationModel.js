@@ -4,7 +4,7 @@ const dbConn = require('../config/db.config');
 const StoryEpisodeModel = {};
 
 StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, limit, callback) => {
-    let query = "SELECT id, storyId, userId, number, subTitle, totalWords, isVIP, writerNote, status, publishedDate, adminNote, wingsRequired, likes, createdAt, updatedAt FROM story_episodes WHERE storyId = ?";
+    let query = "SELECT id, storyId, userId, number, subTitle, totalWords, isVIP, writerNote, status, publishedDate, adminNote, wingsRequired, likes, storyLine, createdAt, updatedAt FROM story_episodes WHERE storyId = ?";
     const params = [storyId];
     
     if (limit) {
@@ -22,7 +22,7 @@ StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, limit, callback) => {
 };
 
 StoryEpisodeModel.getStoryEpisodesByStatus = (status, limit, callback) => {
-    let query = "SELECT id, storyId, userId, number, subTitle, totalWords, isVIP, writerNote, status, publishedDate, adminNote, wingsRequired, likes, createdAt, updatedAt FROM story_episodes WHERE status = ?";
+    let query = "SELECT id, storyId, userId, number, subTitle, totalWords, isVIP, writerNote, status, publishedDate, adminNote, wingsRequired, likes, storyLine, createdAt, updatedAt FROM story_episodes WHERE status = ?";
     const params = [status];
     
     if (limit) {
