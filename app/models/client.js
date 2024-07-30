@@ -1078,9 +1078,9 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
                 const earnings = wingsRequired * 0.57;
                 log(`Author details found. Calculated earnings: ${earnings}`);
 
-                log('Checking for existing entry with pending status');
+                log('Checking for existing entry with status NOT paid');
                 dbConn.query(
-                  `SELECT id, earnings, status FROM author_wings_purchases WHERE monthYear = ? AND authorId = ? AND status = 'pending'`,
+                  `SELECT id, earnings, status FROM author_wings_purchases WHERE monthYear = ? AND authorId = ? AND status != 'paid'`,
                   [authorData.monthYear, authorData.authorId],
                   (error, existingResults) => {
                     if (error) {
@@ -1106,10 +1106,10 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
                         }
                       );
                     } else {
-                      log('No existing entry with pending status found. Inserting new row');
+                      log('No existing entry with status NOT paid found. Inserting new row');
                       dbConn.query(
                         `INSERT INTO author_wings_purchases (monthYear, authorId, author, earnings, status)
-                        VALUES (?, ?, ?, ?, 'pending')`,
+                        VALUES (?, ?, ?, ?, 'in review')`,
                         [authorData.monthYear, authorData.authorId, authorData.author, earnings],
                         (error, insertResult) => {
                           if (error) {
