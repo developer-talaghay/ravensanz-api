@@ -1057,11 +1057,20 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
 
             log('Retrieving author details');
             dbConn.query(
-              `SELECT ru.id AS authorId, ru.full_name AS author, DATE_FORMAT(NOW(), '%m-%Y') AS monthYear, se.wingsRequired 
-              FROM story_lists sl
-              JOIN ravensanz_users ru ON sl.userId = ru.id
-              JOIN story_episodes se ON sl.id = se.storyId
-              WHERE sl.id = ?`,
+              `SELECT 
+              ru.id AS authorId, 
+              ru.full_name AS author, 
+              DATE_FORMAT(NOW(), '%m-%Y') AS monthYear, 
+              se.wingsRequired,
+              sl.royaltyPercentage 
+          FROM 
+              story_lists sl
+          JOIN 
+              ravensanz_users ru ON sl.userId = ru.id
+          JOIN 
+              story_episodes se ON sl.id = se.storyId
+          WHERE 
+              sl.id = ?`,
               [story_id],
               (error, authorResults) => {
                 if (error) {
@@ -1075,7 +1084,9 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
                 }
 
                 const authorData = authorResults[0];
-                const earnings = wingsRequired * 0.57;
+                const royaltyPercentage = authorData.royaltyPercentage;
+                const tax = wingsRequired * 0.57;
+                const earnings =  tax * (royaltyPercentage / 100);
                 log(`Author details found. Calculated earnings: ${earnings}`);
 
                 log('Checking for existing entry with status NOT paid');
