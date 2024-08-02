@@ -150,6 +150,7 @@ AdminModel.createStory = (
   genre,
   status,
   imageId,
+  royaltyPercentage,
   callback
 ) => {
   const ravensanzQuery = "SELECT * FROM ravensanz_users WHERE id = ?";
@@ -171,10 +172,14 @@ AdminModel.createStory = (
       console.log("userQuery result: ", userResults);
 
       const id = uuidv4(); // Generate the UUID
-      const sql = `INSERT INTO story_lists (id, userId, title, blurb, language, genre, status, imageId, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`;
+      const sql = `
+        INSERT INTO story_lists (
+          id, userId, title, blurb, language, genre, status, imageId, royaltyPercentage, createdAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+      `;
       dbConn.query(
         sql,
-        [id, userId, title, blurb, language, genre, status, imageId],
+        [id, userId, title, blurb, language, genre, status, imageId, royaltyPercentage],
         (error, result) => {
           if (error) {
             console.error("Error creating story: ", error);
@@ -190,12 +195,12 @@ AdminModel.createStory = (
 
 
 AdminModel.updateStory = (id, storyDetails, callback) => {
-  const { userId, title, blurb, language, genre, status, imageId } = storyDetails;
-  const sql = `UPDATE story_lists SET userId = ?, title = ?, blurb = ?, language = ?, genre = ?, status = ?, imageId = ? WHERE id = ?`;
+  const { userId, title, blurb, language, genre, status, imageId, royaltyPercentage } = storyDetails;
+  const sql = `UPDATE story_lists SET userId = ?, title = ?, blurb = ?, language = ?, genre = ?, status = ?, imageId = ?, royaltyPercentage = ? WHERE id = ?`;
 
   dbConn.query(
     sql,
-    [userId, title, blurb, language, genre, status, imageId, id],
+    [userId, title, blurb, language, genre, status, imageId, royaltyPercentage, id],
     (error, result) => {
       if (error) {
         console.error("Error updating story: ", error);
@@ -205,6 +210,7 @@ AdminModel.updateStory = (id, storyDetails, callback) => {
     }
   );
 };
+
 
 // In adminModel.js
 AdminModel.deleteStory = (id, callback) => {
