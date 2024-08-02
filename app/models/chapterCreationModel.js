@@ -4,7 +4,34 @@ const dbConn = require('../config/db.config');
 const StoryEpisodeModel = {};
 
 StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, limit, callback) => {
-    let query = "SELECT id, storyId, userId, number, subTitle, totalWords, isVIP, writerNote, status, publishedDate, adminNote, wingsRequired, likes, storyLine, createdAt, updatedAt FROM story_episodes WHERE storyId = ?";
+    let query = `
+    SELECT 
+      se.id, 
+      se.storyId, 
+      se.userId, 
+      se.number, 
+      se.subTitle, 
+      se.totalWords, 
+      se.isVIP, 
+      se.writerNote, 
+      se.status, 
+      se.publishedDate, 
+      se.adminNote, 
+      se.wingsRequired, 
+      se.likes, 
+      se.storyLine, 
+      se.createdAt, 
+      se.updatedAt,
+      ru.display_name AS author
+    FROM 
+      story_episodes se
+    JOIN 
+      ravensanz_users ru 
+    ON 
+      se.userId = ru.id
+    WHERE 
+      se.storyId = ?
+  `;    
     const params = [storyId];
     
     if (limit) {
@@ -22,8 +49,35 @@ StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, limit, callback) => {
 };
 
 StoryEpisodeModel.getStoryEpisodesByStatus = (status, limit, callback) => {
-    let query = "SELECT id, storyId, userId, number, subTitle, totalWords, isVIP, writerNote, status, publishedDate, adminNote, wingsRequired, likes, storyLine, createdAt, updatedAt FROM story_episodes WHERE status = ?";
-    const params = [status];
+    let query = `
+    SELECT 
+      se.id, 
+      se.storyId, 
+      se.userId, 
+      se.number, 
+      se.subTitle, 
+      se.totalWords, 
+      se.isVIP, 
+      se.writerNote, 
+      se.status, 
+      se.publishedDate, 
+      se.adminNote, 
+      se.wingsRequired, 
+      se.likes, 
+      se.storyLine, 
+      se.createdAt, 
+      se.updatedAt,
+      ru.display_name AS author
+    FROM 
+      story_episodes se
+    JOIN 
+      ravensanz_users ru 
+    ON 
+      se.userId = ru.id
+    WHERE 
+      se.status = ?
+  `;    
+  const params = [status];
     
     if (limit) {
         query += " LIMIT ?";
