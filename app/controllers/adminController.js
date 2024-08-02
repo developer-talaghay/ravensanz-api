@@ -194,9 +194,9 @@ adminController.createStory = (req, res) => {
       decodedFields[key] = querystring.unescape(fields[key]);
     });
 
-    const { userId, title, blurb, language, genre, status, imageId, tags } = decodedFields;
+    const { userId, title, blurb, language, genre, status, imageId, tags, royaltyPercentage } = decodedFields;
 
-    if (!userId || !title || !blurb || !language || !genre || !status || !imageId) {
+    if (!userId || !title || !blurb || !language || !genre || !status || !royaltyPercentage) {
       console.error("Missing required fields in request body", decodedFields);
       return res.status(400).json({ message: "Missing required fields in request body" });
     }
@@ -209,6 +209,7 @@ adminController.createStory = (req, res) => {
       genre,
       status,
       imageId,
+      royaltyPercentage,
       (error, result) => {
         if (error) {
           console.error("Error creating story: ", error);
@@ -279,9 +280,10 @@ adminController.updateStory = (req, res) => {
       !decodedFields.blurb ||
       !decodedFields.language ||
       !decodedFields.genre ||
-      !decodedFields.status
+      !decodedFields.status ||
+      !decodedFields.royaltyPercentage
     ) {
-      return res.status(400).json({ message: "Missing required fields" });
+      return res.status(400).json({ message: "Missing or invalid required fields" });
     }
 
     AdminModel.updateStory(storyId, decodedFields, (error, result) => {
