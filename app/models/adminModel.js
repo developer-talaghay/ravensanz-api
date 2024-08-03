@@ -175,8 +175,8 @@ AdminModel.createStory = (
       const sql = `
         INSERT INTO story_lists (
           id, userId, title, blurb, language, genre, status, imageId, royaltyPercentage, createdAt
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-      `;
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`
+      ;
       dbConn.query(
         sql,
         [id, userId, title, blurb, language, genre, status, imageId, royaltyPercentage],
@@ -196,20 +196,41 @@ AdminModel.createStory = (
 
 AdminModel.updateStory = (id, storyDetails, callback) => {
   const { userId, title, blurb, language, genre, status, imageId, royaltyPercentage } = storyDetails;
-  const sql = `UPDATE story_lists SET userId = ?, title = ?, blurb = ?, language = ?, genre = ?, status = ?, imageId = ?, royaltyPercentage = ? WHERE id = ?`;
 
-  dbConn.query(
-    sql,
-    [userId, title, blurb, language, genre, status, imageId, royaltyPercentage, id],
-    (error, result) => {
-      if (error) {
-        console.error("Error updating story: ", error);
-        return callback(error, null);
-      }
-      return callback(null, result);
+  // Check for existing entry with status 'in review' for the same userId
+  const checkExistingQuery = `
+    SELECT * FROM author_wings_purchases 
+    WHERE authorId = ? 
+    AND status = 'in review'
+  `;
+
+  dbConn.query(checkExistingQuery, [userId], (error, existingResults) => {
+    if (error) {
+      console.error("Error checking existing author_wings_purchases: ", error);
+      return callback(error, null);
     }
-  );
+
+    if (existingResults.length > 0) {
+      console.error("Existing balance needs to be settled before changing the royaltyPercentage");
+      return callback({ message: "Please settle the existing balance before changing the royaltyPercentage" }, null);
+    }
+
+    const sql = `UPDATE story_lists SET userId = ?, title = ?, blurb = ?, language = ?, genre = ?, status = ?, imageId = ?, royaltyPercentage = ? WHERE id = ?`;
+
+    dbConn.query(
+      sql,
+      [userId, title, blurb, language, genre, status, imageId, royaltyPercentage, id],
+      (error, result) => {
+        if (error) {
+          console.error("Error updating story: ", error);
+          return callback(error, null);
+        }
+        return callback(null, result);
+      }
+    );
+  });
 };
+
 
 
 // In adminModel.js
