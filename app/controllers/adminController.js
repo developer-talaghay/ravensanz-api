@@ -240,7 +240,6 @@ adminController.createStory = (req, res) => {
 
 
 
-
 // In adminController.js
 adminController.deleteStory = (req, res) => {
   const { id } = req.query;
@@ -288,6 +287,9 @@ adminController.updateStory = (req, res) => {
 
     AdminModel.updateStory(storyId, decodedFields, (error, result) => {
       if (error) {
+        if (error.message === "Please settle the existing balance before changing the royaltyPercentage") {
+          return res.status(400).json({ message: error.message });
+        }
         return res.status(500).json({ message: "Internal server error" });
       }
 
@@ -311,6 +313,7 @@ adminController.updateStory = (req, res) => {
     });
   });
 };
+
 
 
 adminController.uploadBookCover = async (req, res) => {
