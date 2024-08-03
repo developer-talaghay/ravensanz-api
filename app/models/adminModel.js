@@ -197,14 +197,19 @@ AdminModel.createStory = (
 AdminModel.updateStory = (id, storyDetails, callback) => {
   const { userId, title, blurb, language, genre, status, imageId, royaltyPercentage } = storyDetails;
 
-  // Check for existing entry with status 'in review' for the same userId
+  // Get the current month and year in the format 08-2024
+  const now = new Date();
+  const monthYear = `${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
+
+  // Check for existing entry with status 'in review' for the same userId and monthYear
   const checkExistingQuery = `
     SELECT * FROM author_wings_purchases 
     WHERE authorId = ? 
     AND status = 'in review'
+    AND monthYear = ?
   `;
 
-  dbConn.query(checkExistingQuery, [userId], (error, existingResults) => {
+  dbConn.query(checkExistingQuery, [userId, monthYear], (error, existingResults) => {
     if (error) {
       console.error("Error checking existing author_wings_purchases: ", error);
       return callback(error, null);
@@ -215,7 +220,12 @@ AdminModel.updateStory = (id, storyDetails, callback) => {
       return callback({ message: "Please settle the existing balance before changing the royaltyPercentage" }, null);
     }
 
-    const sql = `UPDATE story_lists SET userId = ?, title = ?, blurb = ?, language = ?, genre = ?, status = ?, imageId = ?, royaltyPercentage = ? WHERE id = ?`;
+    // Proceed with update if there is no 'in review' status for the given monthYear
+    const sql = `
+      UPDATE story_lists 
+      SET userId = ?, title = ?, blurb = ?, language = ?, genre = ?, status = ?, imageId = ?, royaltyPercentage = ? 
+      WHERE id = ?
+    `;
 
     dbConn.query(
       sql,
@@ -225,11 +235,18 @@ AdminModel.updateStory = (id, storyDetails, callback) => {
           console.error("Error updating story: ", error);
           return callback(error, null);
         }
+        if (result.affectedRows === 0) {
+          console.error("No story found with the provided id");
+          return callback({ message: "No story found with the provided id" }, null);
+        }
+        console.log("Story updated successfully: ", result);
         return callback(null, result);
       }
     );
   });
 };
+
+
 
 
 
