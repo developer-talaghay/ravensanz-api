@@ -991,7 +991,7 @@ ClientModel.getUserLikedComment = (user_id, story_id, callback) => {
 // Purchase story with wings
 const log = (message) => console.log(`[LOG] ${message}`);
 
-ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRequired, callback) => {
+ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wings_required,after_deduction, callback) => {
   log('Checking if the user has already bought the story');
   dbConn.query(
     'SELECT purchase_status FROM user_purchase WHERE user_id = ? AND story_id = ? AND story_episodes = ?',
@@ -1022,12 +1022,12 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
         const wingsCount = results[0].wingsCount;
         log(`User has ${wingsCount} wings`);
 
-        if (wingsCount < wingsRequired) {
+        if (wingsCount < wings_required) {
           log('Insufficient wings');
           return callback({ message: 'Insufficient wings. Please try again' }, null);
         }
 
-        const updatedWingsCount = wingsCount - wingsRequired;
+        const updatedWingsCount = wingsCount - wings_required;
         log(`Updating user's wingsCount to ${updatedWingsCount}`);
 
         dbConn.query('UPDATE user_details SET wingsCount = ? WHERE user_id = ?', [updatedWingsCount, user_id], (error, updateResult) => {
@@ -1040,11 +1040,12 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
             log('Failed to update wingsCount');
             return callback({ message: 'Failed to update wingsCount' }, null);
           }
-
           const purchaseData = {
             user_id,
             story_id,
             story_episodes,
+            wings_required,
+            after_deduction,
             purchase_status: 1, // Set purchase_status to 1
           };
 
@@ -1057,11 +1058,20 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
 
             log('Retrieving author details');
             dbConn.query(
-              `SELECT ru.id AS authorId, ru.full_name AS author, DATE_FORMAT(NOW(), '%m-%Y') AS monthYear, se.wingsRequired 
-              FROM story_lists sl
-              JOIN ravensanz_users ru ON sl.userId = ru.id
-              JOIN story_episodes se ON sl.id = se.storyId
-              WHERE sl.id = ?`,
+              `SELECT 
+              ru.id AS authorId, 
+              ru.full_name AS author, 
+              DATE_FORMAT(NOW(), '%m-%Y') AS monthYear, 
+              se.wingsRequired,
+              sl.royaltyPercentage 
+          FROM 
+              story_lists sl
+          JOIN 
+              ravensanz_users ru ON sl.userId = ru.id
+          JOIN 
+              story_episodes se ON sl.id = se.storyId
+          WHERE 
+              sl.id = ?`,
               [story_id],
               (error, authorResults) => {
                 if (error) {
@@ -1075,7 +1085,12 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
                 }
 
                 const authorData = authorResults[0];
-                const earnings = wingsRequired * 0.57;
+                const royaltyPercentage = authorData.royaltyPercentage;
+                const earnings = after_deduction;
+                const adminShare = earnings * ((100 - royaltyPercentage)/100);
+                const royaltyComputation = after_deduction * (royaltyPercentage / 100);
+
+                //afterdeduction
                 log(`Author details found. Calculated earnings: ${earnings}`);
 
                 log('Checking for existing entry with status NOT paid');
@@ -1092,9 +1107,9 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
                       log('Existing entry found. Updating earnings');
                       dbConn.query(
                         `UPDATE author_wings_purchases 
-                        SET earnings = earnings + ? 
+                        SET earnings = earnings + ? , adminShare = adminShare + ?, royaltyComputation = royaltyComputation +?
                         WHERE id = ?`,
-                        [earnings, existingResults[0].id],
+                        [earnings,adminShare, royaltyComputation, existingResults[0].id],
                         (error, updateResult) => {
                           if (error) {
                             console.error('Error updating existing author_wings_purchases: ', error);
@@ -1108,9 +1123,9 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wingsRe
                     } else {
                       log('No existing entry with status NOT paid found. Inserting new row');
                       dbConn.query(
-                        `INSERT INTO author_wings_purchases (monthYear, authorId, author, earnings, status)
-                        VALUES (?, ?, ?, ?, 'in review')`,
-                        [authorData.monthYear, authorData.authorId, authorData.author, earnings],
+                        `INSERT INTO author_wings_purchases (monthYear, authorId, author, earnings, adminShare, royaltyComputation, status)
+                        VALUES (?, ?, ?, ?,?,?, 'in review')`,
+                        [authorData.monthYear, authorData.authorId, authorData.author, earnings, adminShare, royaltyComputation],
                         (error, insertResult) => {
                           if (error) {
                             console.error('Error inserting into author_wings_purchases: ', error);
