@@ -37,24 +37,29 @@ UserModel.getUserDetailsByUserId = (userId, callback) => {
         // Check the subscriptionExpirationDate and update isSubscriber accordingly
         const now = new Date();
         const subscriptionExpirationDate = new Date(userDetails.subscriptionExpirationDate);
+        const subscriptionExpirationDatePlusOne = new Date(subscriptionExpirationDate);
+        subscriptionExpirationDatePlusOne.setDate(subscriptionExpirationDatePlusOne.getDate() + 1);
 
         let isSubscriber = "0";
-        if (subscriptionExpirationDate > now) {
+        if (subscriptionExpirationDatePlusOne > now) {
           isSubscriber = "1";
         }
 
-        // Update the isSubscriber field in the database
+        // Update the isSubscriber and subscriptionExpirationDate fields in the database
         dbConn.query(
           "UPDATE user_details SET isSubscriber = ? WHERE user_id = ?",
           [isSubscriber, userId],
           (updateError, updateResult) => {
             if (updateError) {
-              console.error("Error updating isSubscriber: ", updateError);
+              console.error("Error updating isSubscriber and subscriptionExpirationDate: ", updateError);
               return callback(updateError, null);
             }
 
-            // Return the updated user details
+            // Update the userDetails object with the new values
             userDetails.isSubscriber = isSubscriber;
+            userDetails.subscriptionExpirationDate = subscriptionExpirationDatePlusOne.toISOString();
+
+            // Return the updated user details
             return callback(null, [userDetails]);
           }
         );
@@ -64,6 +69,7 @@ UserModel.getUserDetailsByUserId = (userId, callback) => {
     }
   );
 };
+
 
 UserModel.updateUserToken = (userId, token, callback) => {
   dbConn.query(
