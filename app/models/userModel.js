@@ -182,21 +182,6 @@ UserDetails.checkEmailExistence = (email, callback) => {
     );
   };
 
-  // UserDetails.getUserDetailsByUserId = (user_id, callback) => {
-  //   dbConn.query(
-  //     'SELECT u.id, u.status, u.type, u.email_add, ud.full_name, ud.display_name, ud.birth_date, ud.country, ud.phone_number, ud.modified_at, ud.created_at, ud.isAdmin, ud.isWriterVerified, ud.isEmailVerified, ud.writerApplicationStatus, ud.imageId, ud.wingsCount, ud.isSubscriber, ud.subscriptionExpirationDate, ud.isReadingModeOver18, ud.writerBadge, ud.readerBadge FROM user u LEFT JOIN user_details ud ON u.id = ud.user_id WHERE u.id = ?',
-  //     [user_id],
-  //     (error, result) => {
-  //       if (error) {
-  //         console.error('Error fetching user details: ', error);
-  //         return callback(error, null);
-  //       } else {
-  //         return callback(null, result);
-  //       }
-  //     }
-  //   );
-  // };
-
   UserDetails.getUserDetailsByUserId = (user_id, callback) => {
     dbConn.query(
       'SELECT u.id, u.status, u.type, u.email_add, ud.full_name, ud.display_name, ud.birth_date, ud.country, ud.phone_number, ud.modified_at, ud.created_at, ud.isAdmin, ud.isWriterVerified, ud.isEmailVerified, ud.writerApplicationStatus, ud.imageId, ud.wingsCount, ud.isSubscriber, ud.subscriptionExpirationDate, ud.isReadingModeOver18, ud.writerBadge, ud.readerBadge FROM user u LEFT JOIN user_details ud ON u.id = ud.user_id WHERE u.id = ?',
