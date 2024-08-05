@@ -216,7 +216,7 @@ UserDetails.checkEmailExistence = (email, callback) => {
           // Update the isSubscriber field in the database if it has changed
           if (userDetails.isSubscriber !== isSubscriber) {
             dbConn.query(
-              "UPDATE user_details SET isSubscriber = ?, subscriptionExpirationDate = ? WHERE user_id = ?",
+              "UPDATE user_details SET isSubscriber = ? WHERE user_id = ?",
               [isSubscriber, user_id],
               (updateError, updateResult) => {
                 if (updateError) {
