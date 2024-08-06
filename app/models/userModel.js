@@ -190,13 +190,66 @@ UserDetails.checkEmailExistence = (email, callback) => {
         if (error) {
           console.error('Error fetching user details: ', error);
           return callback(error, null);
+        }
+  
+        if (result.length > 0) {
+          const userDetails = result[0];
+  
+          // Check the subscriptionExpirationDate and update isSubscriber accordingly
+          const now = new Date();
+          const subscriptionExpirationDate = new Date(userDetails.subscriptionExpirationDate);
+          const subscriptionExpirationDatePlusOne = new Date(subscriptionExpirationDate);
+          subscriptionExpirationDatePlusOne.setDate(subscriptionExpirationDatePlusOne.getDate() + 1);
+  
+          console.log(`Current date: ${now}`);
+          console.log(`Subscription expiration date: ${subscriptionExpirationDate}`);
+          console.log(`Subscription expiration date plus one day: ${subscriptionExpirationDatePlusOne}`);
+  
+          let isSubscriber = "0";
+          if (subscriptionExpirationDatePlusOne > now) {
+            isSubscriber = "1";
+          }
+  
+          console.log(`Current isSubscriber: ${userDetails.isSubscriber}`);
+          console.log(`Calculated isSubscriber: ${isSubscriber}`);
+  
+          // Update the isSubscriber field in the database if it has changed
+          if (userDetails.isSubscriber !== isSubscriber) {
+            dbConn.query(
+              "UPDATE user_details SET isSubscriber = ? WHERE user_id = ?",
+              [isSubscriber, user_id],
+              (updateError, updateResult) => {
+                if (updateError) {
+                  console.error("Error updating isSubscriber: ", updateError);
+                  return callback(updateError, null);
+                }
+  
+                console.log(`isSubscriber updated to: ${isSubscriber} for user_id: ${user_id}`);
+                console.log(`SubscriptionExpirationDate updated to: ${subscriptionExpirationDatePlusOne.toISOString()} for user_id: ${user_id}`);
+  
+                // Update the isSubscriber field and subscriptionExpirationDate in the result object
+                userDetails.isSubscriber = isSubscriber;
+                userDetails.subscriptionExpirationDate = subscriptionExpirationDatePlusOne.toISOString();
+  
+                return callback(null, [userDetails]);
+              }
+            );
+          } else {
+            // No need to update the database if isSubscriber is already correct
+            // Ensure the subscriptionExpirationDate is returned correctly
+            userDetails.subscriptionExpirationDate = subscriptionExpirationDatePlusOne.toISOString();
+  
+            return callback(null, [userDetails]);
+          }
         } else {
-          return callback(null, result);
+          return callback(null, null);
         }
       }
     );
   };
-
+  
+  
+  
   UserDetails.getAuthorUserDetailsByAuthor = (author, callback) => {
     dbConn.query(
       'SELECT * FROM ravensanz_users WHERE display_name = ? OR full_name = ?',
