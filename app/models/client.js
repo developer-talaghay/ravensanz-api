@@ -991,7 +991,7 @@ ClientModel.getUserLikedComment = (user_id, story_id, callback) => {
 // Purchase story with wings
 const log = (message) => console.log(`[LOG] ${message}`);
 
-ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wings_required,after_deduction, callback) => {
+ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wings_required, callback) => {
   log('Checking if the user has already bought the story');
   dbConn.query(
     'SELECT purchase_status FROM user_purchase WHERE user_id = ? AND story_id = ? AND story_episodes = ?',
@@ -1028,6 +1028,7 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wings_r
         }
 
         const updatedWingsCount = wingsCount - wings_required;
+        const after_deduction = wings_required - (wings_required*0.15);
         log(`Updating user's wingsCount to ${updatedWingsCount}`);
 
         dbConn.query('UPDATE user_details SET wingsCount = ? WHERE user_id = ?', [updatedWingsCount, user_id], (error, updateResult) => {
