@@ -1026,9 +1026,21 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wings_r
           log('Insufficient wings');
           return callback({ message: 'Insufficient wings. Please try again' }, null);
         }
+         // Fetch royaltyPercentage from story_lists table
+    dbConn.query('SELECT royaltyPercentage FROM story_lists WHERE userId = ?', [user_id], (error, storyResults) => {
+      if (error) {
+        console.error('Error retrieving royaltyPercentage: ', error);
+        return callback(error);
+      }
 
+      if (storyResults.length === 0) {
+        console.log('Story not found for user');
+        return callback({ message: 'Story not found for user' }, null);
+      }
+      const royaltyPercentage = storyResults[0].royaltyPercentage;
+      console.log(royaltyPercentage)
         const updatedWingsCount = wingsCount - wings_required;
-        const after_deduction = wings_required - (wings_required*0.15);
+        const after_deduction = wings_required - (wings_required*royaltyPercentage);
         log(`Updating user's wingsCount to ${updatedWingsCount}`);
 
         dbConn.query('UPDATE user_details SET wingsCount = ? WHERE user_id = ?', [updatedWingsCount, user_id], (error, updateResult) => {
@@ -1089,7 +1101,7 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wings_r
                 const royaltyPercentage = authorData.royaltyPercentage;
                 const earnings = after_deduction;
                 const adminShare = earnings * ((100 - royaltyPercentage)/100);
-                const royaltyComputation = after_deduction * (royaltyPercentage / 100);
+                const royaltyComputation = after_deduction * (royaltyPercentage );
 
                 //afterdeduction
                 log(`Author details found. Calculated earnings: ${earnings}`);
@@ -1147,6 +1159,8 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wings_r
       });
     }
   );
+}
+)
 };
 
 ClientModel.getWingsCountByUserId = (user_id, callback) => {
