@@ -648,8 +648,8 @@ ClientModel.commentStory = (userId, storyId, comment, callback) => {
               const title = rows[0].title;
 
               // Insert into in_app_notifications table
-              const notificationMessage = `One of the readers commented on your story ${title}`;
-              const notificationTitle = `${title} New Comment`;
+              const notificationMessage = `Someone has commented on your story ${title}`;
+              const notificationTitle = `New Comment: ${title}`;
 
               dbConn.query(
                 'INSERT INTO in_app_notifications (user_id, notification_type, title, message) VALUES (?, ?, ?, ?)',
