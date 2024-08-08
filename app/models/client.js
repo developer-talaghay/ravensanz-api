@@ -608,7 +608,6 @@ ClientModel.getLikedStories = (userId, callback) => {
   );
 };
 
-// model
 ClientModel.commentStory = (userId, storyId, comment, callback) => {
   // Function to insert the new comment
   function insertComment(parentCommentId) {
@@ -634,7 +633,42 @@ ClientModel.commentStory = (userId, storyId, comment, callback) => {
           modified_at,
         };
 
-        return callback(null, insertedComment);
+        // Fetch the userId and title from story_lists table
+        dbConn.query(
+          'SELECT userId, title FROM story_lists WHERE id = ?',
+          [storyId],
+          (err, rows) => {
+            if (err) {
+              console.error('Error fetching story details: ', err);
+              return callback(err);
+            }
+
+            if (rows.length > 0) {
+              const storyOwnerId = rows[0].userId;
+              const title = rows[0].title;
+
+              // Insert into in_app_notifications table
+              const notificationMessage = `One of the readers commented on your story ${title}`;
+              const notificationTitle = `${title} New Comment`;
+
+              dbConn.query(
+                'INSERT INTO in_app_notifications (user_id, notification_type, title, message) VALUES (?, ?, ?, ?)',
+                [storyOwnerId, 1, notificationTitle, notificationMessage],
+                (err, result) => {
+                  if (err) {
+                    console.error('Error inserting notification: ', err);
+                    return callback(err);
+                  }
+
+                  return callback(null, insertedComment);
+                }
+              );
+            } else {
+              console.error('Story not found in story_lists table');
+              return callback(new Error('Story not found'));
+            }
+          }
+        );
       }
     );
   }
