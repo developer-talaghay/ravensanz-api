@@ -39,7 +39,7 @@ InAppNotificationModel.getSpecificNotifications = (user_id, callback) => {
   const sqlQuery = `
     SELECT *
     FROM in_app_notifications
-    WHERE user_id = ?
+    WHERE user_id = ? OR user_id = 0
     ORDER BY is_read ASC, notif_id ASC
   `;
   
@@ -62,33 +62,51 @@ InAppNotificationModel.getSpecificNotifications = (user_id, callback) => {
   });
 };
 
-InAppNotificationModel.createGeneralNotificationForAllUsers = (title, message, callback) => {
-  const sqlQuery = 'SELECT id FROM user';
+// InAppNotificationModel.createGeneralNotificationForAllUsers = (title, message, callback) => {
+//   const sqlQuery = 'SELECT id FROM user';
   
-  dbConn.query(sqlQuery, (error, results) => {
+//   dbConn.query(sqlQuery, (error, results) => {
+//     if (error) {
+//       return callback(error, null);
+//     }
+
+//     const userIds = results.map(row => row.id);
+
+//     const placeholders = userIds.map(() => '(?, ?, ?, ?)').join(', ');
+//     const sqlParams = userIds.flatMap(userId => [userId, 0, title, message]);
+
+//     const bulkInsertQuery = `
+//       INSERT INTO in_app_notifications (user_id, notification_type, title, message)
+//       VALUES ${placeholders}
+//     `;
+  
+//     dbConn.query(bulkInsertQuery, sqlParams, (error, result) => {
+//       if (error) {
+//         return callback(error, null);
+//       }
+
+//       return callback(null, { message: 'Notifications created for all users' });
+//     });
+//   });
+// };
+
+InAppNotificationModel.createGeneralNotificationForAllUsers = (title, message, callback) => {
+  const insertQuery = `
+    INSERT INTO in_app_notifications (user_id, notification_type, title, message)
+    VALUES (0, 0, ?, ?)
+  `;
+
+  const sqlParams = [title, message];
+
+  dbConn.query(insertQuery, sqlParams, (error, result) => {
     if (error) {
       return callback(error, null);
     }
 
-    const userIds = results.map(row => row.id);
-
-    const placeholders = userIds.map(() => '(?, ?, ?, ?)').join(', ');
-    const sqlParams = userIds.flatMap(userId => [userId, 0, title, message]);
-
-    const bulkInsertQuery = `
-      INSERT INTO in_app_notifications (user_id, notification_type, title, message)
-      VALUES ${placeholders}
-    `;
-  
-    dbConn.query(bulkInsertQuery, sqlParams, (error, result) => {
-      if (error) {
-        return callback(error, null);
-      }
-
-      return callback(null, { message: 'Notifications created for all users' });
-    });
+    return callback(null, { message: 'Notification created for all users with user_id 0' });
   });
 };
+
 
 InAppNotificationModel.getAllGeneralNotifications = (callback) => {
   const sqlQuery = 'SELECT * FROM in_app_notifications WHERE notification_type = 0 ORDER BY created_at DESC';
