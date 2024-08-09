@@ -22,10 +22,10 @@ StoryEpisodeModel.getStoryEpisodesByStoryId = (storyId, limit, callback) => {
       se.storyLine, 
       se.createdAt, 
       se.updatedAt,
-      ru.display_name AS author
+      IFNULL(ru.display_name, 'Unknown Author') AS author
     FROM 
       story_episodes se
-    JOIN 
+    LEFT JOIN 
       ravensanz_users ru 
     ON 
       se.userId = ru.id
