@@ -1061,7 +1061,7 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wings_r
           return callback({ message: 'Insufficient wings. Please try again' }, null);
         }
          // Fetch royaltyPercentage from story_lists table
-    dbConn.query('SELECT royaltyPercentage FROM story_lists WHERE userId = ?', [user_id], (error, storyResults) => {
+    dbConn.query('SELECT royaltyPercentage FROM story_lists WHERE id = ?', [story_id], (error, storyResults) => {
       if (error) {
         console.error('Error retrieving royaltyPercentage: ', error);
         return callback(error);
