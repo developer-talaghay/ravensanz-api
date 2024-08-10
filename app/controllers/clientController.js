@@ -595,13 +595,14 @@ clientController.purchaseStoryWithWings = (req, res) => {
   const { user_id, story_id } = req.body;
   const story_episodes = req.body.subTitle;
   const wings_required = req.body.wingsRequired;
+  const deduction_percentage = req.body.deduction_percentage || 0.43;
 
 
   if (!user_id || !story_id || !story_episodes || !wings_required) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  ClientModel.purchaseStoryWithWings(user_id, story_id, story_episodes, wings_required, (error, result) => {
+  ClientModel.purchaseStoryWithWings(user_id, story_id, story_episodes, wings_required, deduction_percentage, (error, result) => {
     if (error) {
       if (error.message === 'Insufficient wings. Please try again') {
         return res.status(400).json(error);

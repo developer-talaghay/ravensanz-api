@@ -1025,7 +1025,7 @@ ClientModel.getUserLikedComment = (user_id, story_id, callback) => {
 // Purchase story with wings
 const log = (message) => console.log(`[LOG] ${message}`);
 
-ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wings_required, callback) => {
+ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wings_required,deduction_percentage, callback) => {
   log('Checking if the user has already bought the story');
   dbConn.query(
     'SELECT purchase_status FROM user_purchase WHERE user_id = ? AND story_id = ? AND story_episodes = ?',
@@ -1073,8 +1073,8 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wings_r
       }
       const royaltyPercentage = storyResults[0].royaltyPercentage;
       console.log(royaltyPercentage)
-        const updatedWingsCount = wingsCount - wings_required;
-        const after_deduction = wings_required - (wings_required*royaltyPercentage);
+        const updatedWingsCount = (wingsCount - wings_required);
+        const after_deduction = wings_required - (wings_required* deduction_percentage);
         log(`Updating user's wingsCount to ${updatedWingsCount}`);
 
         dbConn.query('UPDATE user_details SET wingsCount = ? WHERE user_id = ?', [updatedWingsCount, user_id], (error, updateResult) => {
@@ -1134,7 +1134,7 @@ ClientModel.purchaseStoryWithWings = (user_id, story_id, story_episodes, wings_r
                 const authorData = authorResults[0];
                 const royaltyPercentage = authorData.royaltyPercentage;
                 const earnings = after_deduction;
-                const adminShare = earnings * ((100 - royaltyPercentage)/100);
+                const adminShare = earnings * ((100 - (royaltyPercentage*100))/100);
                 const royaltyComputation = after_deduction * (royaltyPercentage );
 
                 //afterdeduction
