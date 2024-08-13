@@ -103,7 +103,7 @@ exports.forgotPassword = (req, res) => {
           secure: false,
           auth: {
             user: "rs@ravensanz.ca",
-            pass: "enozdthcveopibvr",
+            pass: "walhzpqdqmynmkqx",
           },
         });
 
