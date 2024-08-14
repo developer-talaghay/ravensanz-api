@@ -70,13 +70,13 @@ exports.getPictureByUserId = (req, res) => {
   PictureUploadModel.findOne(user_id, (err, picture) => {
     if (err) {
       console.error(err);
-      return res.status(200).json({ url: 'http://13.55.104.237:8000/images/default_ic.png' });
+      return res.status(200).json({ url: 'http://13.237.23.153:8000/images/default_ic.png' });
     }
 
     if (!picture) {
       console.error(`Picture not found for user_id: ${user_id}`);
       // Return the default picture URL if no picture is found
-      return res.status(200).json({ url: 'http://13.55.104.237:8000/images/default_ic.png' });
+      return res.status(200).json({ url: 'http://13.237.23.153:8000/images/default_ic.png' });
     }
 
     const { picture_directory } = picture;
@@ -88,7 +88,7 @@ exports.getPictureByUserId = (req, res) => {
 
     // Construct the URL to the picture
     // const pictureURL = `http://localhost:8000/images/${path.basename(picture_directory)}`;
-     const pictureURL = `http://13.55.104.237:8000/images/${path.basename(picture_directory)}`;
+     const pictureURL = `http://13.237.23.153:8000/images/${path.basename(picture_directory)}`;
     res.status(200).json({ url: pictureURL });
   });
 };

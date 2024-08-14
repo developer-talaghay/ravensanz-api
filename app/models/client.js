@@ -752,7 +752,7 @@ ClientModel.getAllCommentsByStoryId = (storyId, callback) => {
     // Update the url value to the default if it's NULL
     for (const comment of filteredComments) {
       if (comment.url === null) {
-        comment.url = 'http://13.55.104.237:8000/images/default_ic.png';
+        comment.url = 'http://13.237.23.153:8000/images/default_ic.png';
       }
       if (comment.display_name === null) {
         comment.display_name = 'Anonymous';
