@@ -76,7 +76,7 @@ function sendVerificationEmail(email, token) {
     secure: false,
     auth: {
       user: "rs@ravensanz.ca",
-      pass: "lnuycqgvqoiziunz",
+      pass: "pthc vagb ubvt owrz",
     },
   });
 
